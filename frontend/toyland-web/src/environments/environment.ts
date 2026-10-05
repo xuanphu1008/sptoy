@@ -5,6 +5,6 @@ const host = location.hostname;
 
 export const environment = {
   apiUrl: host.endsWith('.onrender.com')
-    ? 'https://toyland-api.onrender.com/api/v1'
+    ? 'https://sptoy-api.onrender.com/api/v1'
     : `http://${host}:8080/api/v1`,
 };
