@@ -1,6 +1,5 @@
 package com.toyland.report;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -160,7 +159,7 @@ public class AdminReportController {
 		String filename = name + "-" + p.from().format(F) + (p.from().equals(p.to()) ? "" : "-" + p.to().format(F)) + ".xlsx";
 		audit.log("EXPORT", "REPORT", name, "Xuất Excel báo cáo " + what + " (" + p.from().format(D) + " - " + p.to().format(D) + ")");
 		return ResponseEntity.ok()
-				.header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment().filename(filename, StandardCharsets.UTF_8).build().toString())
+				.header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment().filename(filename).build().toString())
 				.contentType(XLSX)
 				.body(file);
 	}

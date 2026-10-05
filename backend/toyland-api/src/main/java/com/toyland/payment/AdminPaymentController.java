@@ -1,6 +1,5 @@
 package com.toyland.payment;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -95,7 +94,7 @@ public class AdminPaymentController {
 		String filename = "so-thu-chi-" + p.from().format(F) + "-" + p.to().format(F) + ".xlsx";
 		audit.log("EXPORT", "PAYMENT", filename, "Xuất Excel sổ thu - chi (" + p.from().format(D) + " - " + p.to().format(D) + ")");
 		return ResponseEntity.ok()
-				.header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment().filename(filename, StandardCharsets.UTF_8).build().toString())
+				.header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment().filename(filename).build().toString())
 				.contentType(XLSX)
 				.body(file);
 	}

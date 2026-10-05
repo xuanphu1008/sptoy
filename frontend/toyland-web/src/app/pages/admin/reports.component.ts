@@ -21,6 +21,7 @@ import {
 import { NotifyService } from '../../core/notify.service';
 import { ThemeService } from '../../core/theme.service';
 import { VndPipe } from '../../core/vnd.pipe';
+import { saveBlob } from '../../core/download';
 
 type Tab = 'sales' | 'products' | 'inventory' | 'customers';
 
@@ -274,15 +275,7 @@ export class ReportsComponent implements OnInit {
     this.api.exportReport(t, q).subscribe({
       next: (res: HttpResponse<Blob>) => {
         this.exporting.set(false);
-        const cd = res.headers.get('Content-Disposition') ?? '';
-        const m = /filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i.exec(cd);
-        const name = m ? decodeURIComponent(m[1] ?? m[2]) : `bao-cao-${t}.xlsx`;
-        const url = URL.createObjectURL(res.body as Blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = name;
-        a.click();
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        const name = saveBlob(res, `bao-cao-${t}.xlsx`);
         this.notify.success(`Đã tải ${name}`);
       },
       error: (e) => {
