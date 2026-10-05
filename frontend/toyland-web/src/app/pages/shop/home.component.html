@@ -1,0 +1,156 @@
+@if (data(); as d) {
+  <!-- ================= HERO ================= -->
+  <section class="container hero-wrap">
+    @if (banner(); as b) {
+      @let l = link(b.linkUrl);
+      <div class="hero" [style.background]="heroBg(b)" (mouseenter)="paused.set(true)" (mouseleave)="paused.set(false)"
+           aria-roledescription="carousel" aria-label="Chương trình nổi bật">
+        <span class="blob b1" aria-hidden="true"></span><span class="blob b2" aria-hidden="true"></span>
+        <div class="hero-text">
+          @for (x of [b.id]; track x) {
+            <div class="swap">
+              <span class="eyebrow" [style.color]="accent(b)"><mat-icon>auto_awesome</mat-icon>
+                {{ d.campaigns.length ? d.campaigns[0].name : 'Bộ sưu tập mới cho bé' }}</span>
+              <h1>{{ b.title }}</h1>
+              @if (b.subtitle) { <p class="sub">{{ b.subtitle }}</p> }
+              <div class="cta-row">
+                <a mat-flat-button class="cta" [routerLink]="l.path" [queryParams]="l.query">{{ b.buttonText || 'Mua ngay' }}<mat-icon iconPositionEnd>arrow_forward</mat-icon></a>
+                <a mat-stroked-button class="cta-2" routerLink="/products">Xem tất cả đồ chơi</a>
+              </div>
+            </div>
+          }
+          <div class="trust">
+            <span class="faces" aria-hidden="true"><i style="background: var(--p-pink)">M</i><i style="background: var(--p-sky)">H</i><i style="background: var(--p-butter)">A</i></span>
+            <span><b>10.000+</b> ba mẹ tin chọn</span>
+            <span class="sep"></span>
+            <span class="rate"><mat-icon>star</mat-icon><b>4,9</b>/5</span>
+          </div>
+        </div>
+        <tl-hero-toys class="hero-art" />
+        @if (d.banners.length > 1) {
+          <div class="hero-nav">
+            <button class="nav-btn" (click)="go(slide() - 1)" aria-label="Banner trước"><mat-icon>chevron_left</mat-icon></button>
+            <div class="dots" role="tablist">
+              @for (x of d.banners; track x.id; let i = $index) {
+                <button role="tab" [class.on]="i === slide()" [attr.aria-selected]="i === slide()" (click)="go(i)" [attr.aria-label]="'Banner ' + (i + 1)"></button>
+              }
+            </div>
+            <button class="nav-btn" (click)="go(slide() + 1)" aria-label="Banner sau"><mat-icon>chevron_right</mat-icon></button>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <div class="container">
+    <!-- ================= DANH MUC ================= -->
+    <div class="section-title">
+      <h2><span class="emoji-ico" style="background: var(--p-pink)"><mat-icon>category</mat-icon></span><span class="squiggle">Khám phá danh mục</span></h2>
+      <a class="see-all" routerLink="/products">Tất cả <mat-icon>arrow_forward</mat-icon></a>
+    </div>
+    <div class="cats">
+      @for (c of d.categories; track c.id; let i = $index) {
+        <a class="cat" [routerLink]="['/products']" [queryParams]="{ category: c.slug }" [style.--c]="pastel(i)">
+          <span class="ci">@if (c.imageUrl) { <img [src]="c.imageUrl" [alt]="c.name" /> } @else { <mat-icon>{{ c.icon || 'toys' }}</mat-icon> }</span>
+          <b>{{ c.name }}</b>
+          <small>{{ c.children.length ? c.children.length + ' nhóm' : 'Xem ngay' }}</small>
+        </a>
+      }
+    </div>
+
+    <!-- ================= THEO DO TUOI ================= -->
+    <div class="section-title">
+      <h2><span class="emoji-ico" style="background: var(--p-butter)"><mat-icon>child_care</mat-icon></span><span class="squiggle">Chọn theo tuổi của bé</span></h2>
+    </div>
+    <div class="ages">
+      @for (a of ages; track a.value; let i = $index) {
+        <a class="age" [routerLink]="['/products']" [queryParams]="{ age: a.value }" [style.--c]="pastel(i + 2)">
+          <span class="age-num">{{ ageBig[a.value].big }}<small>{{ ageBig[a.value].unit }}</small></span>
+          <span class="age-hint">{{ ageBig[a.value].hint }}</span>
+          <mat-icon class="age-ico">{{ a.icon }}</mat-icon>
+        </a>
+      }
+    </div>
+
+    <!-- ================= DANG GIAM GIA ================= -->
+    @if (d.onSale.length) {
+      <section class="flash">
+        <div class="flash-head">
+          <div>
+            <h2><mat-icon>local_fire_department</mat-icon> Săn sale cùng ToyLand</h2>
+            @if (d.campaigns[0]; as c) { <p>{{ c.name }} · giảm đến <b>{{ c.discountPercent }}%</b></p> }
+          </div>
+          @if (d.campaigns[0]; as c) { <div class="cd"><span>Kết thúc sau</span><tl-countdown [end]="c.endAt" /></div> }
+          <a class="see-all" routerLink="/products" [queryParams]="{ onSale: true }">Xem tất cả <mat-icon>arrow_forward</mat-icon></a>
+        </div>
+        <div class="products-grid">
+          @for (p of d.onSale; track p.id) { <tl-product-card [product]="p" /> }
+        </div>
+      </section>
+    }
+
+    @if (d.featured.length) {
+      <div class="section-title">
+        <h2><span class="emoji-ico" style="background: var(--p-lilac)"><mat-icon>star</mat-icon></span><span class="squiggle">Nổi bật tuần này</span></h2>
+        <a class="see-all" routerLink="/products" [queryParams]="{ featured: true }">Xem thêm <mat-icon>arrow_forward</mat-icon></a>
+      </div>
+      <div class="products-grid">@for (p of d.featured; track p.id) { <tl-product-card [product]="p" /> }</div>
+    }
+
+    @if (d.bestSellers.length) {
+      <div class="section-title">
+        <h2><span class="emoji-ico" style="background: var(--p-mint)"><mat-icon>emoji_events</mat-icon></span><span class="squiggle">Bé nào cũng mê</span></h2>
+        <a class="see-all" routerLink="/products" [queryParams]="{ sort: 'bestseller' }">Bán chạy <mat-icon>arrow_forward</mat-icon></a>
+      </div>
+      <div class="products-grid">@for (p of d.bestSellers; track p.id) { <tl-product-card [product]="p" /> }</div>
+    }
+
+    <!-- ================= NHAN VAT ================= -->
+    @if (d.franchises.length) {
+      <div class="section-title">
+        <h2><span class="emoji-ico" style="background: var(--p-sky)"><mat-icon>auto_awesome</mat-icon></span><span class="squiggle">Thế giới nhân vật</span></h2>
+      </div>
+      <div class="franchises">
+        @for (f of d.franchises; track f.id; let i = $index) {
+          <a class="fr" [routerLink]="['/products']" [queryParams]="{ franchise: f.slug }" [style.--c]="pastel(i + 1)">
+            <span class="fr-img">@if (f.imageUrl) { <img [src]="f.imageUrl" [alt]="f.name" /> } @else { <mat-icon>auto_awesome</mat-icon> }</span>
+            <b>{{ f.name }}</b>
+          </a>
+        }
+      </div>
+    }
+
+    @if (d.newArrivals.length) {
+      <div class="section-title">
+        <h2><span class="emoji-ico" style="background: var(--p-peach)"><mat-icon>new_releases</mat-icon></span><span class="squiggle">Vừa cập bến</span></h2>
+        <a class="see-all" routerLink="/products" [queryParams]="{ sort: 'newest' }">Hàng mới <mat-icon>arrow_forward</mat-icon></a>
+      </div>
+      <div class="products-grid">@for (p of d.newArrivals; track p.id) { <tl-product-card [product]="p" /> }</div>
+    }
+
+    <!-- ================= THUONG HIEU ================= -->
+    @if (d.brands.length) {
+      <div class="section-title">
+        <h2><span class="emoji-ico" style="background: var(--p-mint)"><mat-icon>verified</mat-icon></span><span class="squiggle">Thương hiệu chính hãng</span></h2>
+      </div>
+      <div class="brands">
+        @for (b of d.brands; track b.id) {
+          <a class="brand" [routerLink]="['/products']" [queryParams]="{ brand: b.slug }">
+            @if (b.logoUrl) { <img [src]="b.logoUrl" [alt]="b.name" /> } @else { <b>{{ b.name }}</b> }
+            @if (b.country) { <small>{{ b.country }}</small> }
+          </a>
+        }
+      </div>
+    }
+
+    @if (recentProducts().length) {
+      <div class="section-title">
+        <h2><span class="emoji-ico" style="background: var(--p-butter)"><mat-icon>history</mat-icon></span><span class="squiggle">Bé vừa xem</span></h2>
+      </div>
+      <div class="products-grid">@for (p of recentProducts().slice(0, 5); track p.id) { <tl-product-card [product]="p" /> }</div>
+    }
+  </div>
+} @else {
+  <div class="container hero-wrap"><div class="hero skeleton" style="min-height: 440px"></div></div>
+  <div class="container"><div class="products-grid mt-24">@for (i of [1, 2, 3, 4, 5]; track i) { <div class="skeleton" style="height: 320px"></div> }</div></div>
+}

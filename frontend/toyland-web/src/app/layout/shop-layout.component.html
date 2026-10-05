@@ -1,0 +1,171 @@
+<mat-sidenav-container class="shell" autosize>
+  <!-- Menu danh muc tren mobile -->
+  <mat-sidenav mode="over" [opened]="menuOpen()" (closedStart)="menuOpen.set(false)" class="mobile-menu">
+    <div class="mm-head"><tl-logo [size]="34" /></div>
+    @for (c of catalog.categories(); track c.id; let i = $index) {
+      <a class="mm-item" [routerLink]="['/products']" [queryParams]="{ category: c.slug }">
+        <span class="mm-ico" [style.background]="pastel(i)"><mat-icon>{{ c.icon || 'toys' }}</mat-icon></span>{{ c.name }}
+      </a>
+      @for (s of c.children; track s.id) {
+        <a class="mm-sub" [routerLink]="['/products']" [queryParams]="{ category: s.slug }">{{ s.name }}</a>
+      }
+    }
+    <a class="mm-item" routerLink="/products" [queryParams]="{ onSale: true }"><span class="mm-ico hot"><mat-icon>local_fire_department</mat-icon></span>Khuyến mãi</a>
+    <a class="mm-item" routerLink="/track-order"><span class="mm-ico" style="background: var(--p-sky)"><mat-icon>local_shipping</mat-icon></span>Tra cứu đơn hàng</a>
+  </mat-sidenav>
+
+  <!-- Gio hang truot ben phai -->
+  <mat-sidenav position="end" mode="over" [opened]="cart.drawerOpen()" (closedStart)="cart.drawerOpen.set(false)" class="cart-drawer">
+    <tl-cart-drawer (close)="cart.drawerOpen.set(false)" />
+  </mat-sidenav>
+
+  <mat-sidenav-content (scroll)="onScroll($event)">
+    <div class="topbar hide-mobile">
+      <div class="container row between">
+        <span class="tb-msg"><mat-icon>local_shipping</mat-icon> Freeship đơn từ 500K <span class="dot">•</span> <mat-icon>autorenew</mat-icon> Đổi trả 7 ngày <span class="dot">•</span> <mat-icon>verified</mat-icon> 100% chính hãng</span>
+        <span class="row tb-links">
+          <a routerLink="/track-order">Tra cứu đơn hàng</a>
+          <a routerLink="/policy/shipping">Giao hàng</a>
+          <a href="tel:19001234"><mat-icon>call</mat-icon> 1900 1234</a>
+        </span>
+      </div>
+    </div>
+
+    <header class="header" [class.scrolled]="scrolled()">
+      <div class="container bar">
+        <button mat-icon-button class="show-mobile" (click)="menuOpen.set(true)" aria-label="Mở danh mục"><mat-icon>menu</mat-icon></button>
+        <a routerLink="/" class="logo-link" aria-label="ToyLand - Trang chủ"><tl-logo [size]="42" /></a>
+
+        <form class="search grow" (ngSubmit)="search()" role="search">
+          <mat-icon class="s-ico">search</mat-icon>
+          <input name="q" [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" [matAutocomplete]="ac"
+                 placeholder="Bé muốn tìm gì hôm nay? (lego, gấu bông…)" autocomplete="off" aria-label="Tìm sản phẩm" />
+          <button type="submit" class="s-btn" aria-label="Tìm kiếm"><mat-icon>arrow_forward</mat-icon></button>
+        </form>
+        <mat-autocomplete #ac="matAutocomplete" class="suggest-panel">
+          @if (suggestion(); as s) {
+            @for (c of s.categories; track c.value) {
+              <mat-option (onSelectionChange)="pick(['/products'], { category: c.value })">
+                <mat-icon>category</mat-icon> Danh mục: <b>{{ c.label }}</b>
+              </mat-option>
+            }
+            @for (b of s.brands; track b.value) {
+              <mat-option (onSelectionChange)="pick(['/products'], { brand: b.value })">
+                <mat-icon>verified</mat-icon> Thương hiệu: <b>{{ b.label }}</b>
+              </mat-option>
+            }
+            @for (p of s.products; track p.id) {
+              <mat-option (onSelectionChange)="pick(['/products', p.slug])" class="sug-prod">
+                <div class="row">
+                  <img [src]="p.imageUrl" alt="" class="thumb" />
+                  <div class="grow"><div class="ellipsis">{{ p.name }}</div><div class="price small">{{ p.price | vnd }}</div></div>
+                </div>
+              </mat-option>
+            }
+            @if (!s.products.length && !s.categories.length && !s.brands.length) {
+              <mat-option disabled>Chưa có gợi ý phù hợp — thử từ khoá khác nhé</mat-option>
+            }
+          }
+        </mat-autocomplete>
+
+        <div class="actions">
+          @if (!auth.isStaff()) {
+            <a class="act hide-mobile" routerLink="/account/wishlist" matTooltip="Yêu thích" aria-label="Yêu thích"><mat-icon>favorite_border</mat-icon></a>
+          }
+          @if (auth.user(); as u) {
+            <tl-notification-bell />
+            <button class="act user" [matMenuTriggerFor]="userMenu" aria-label="Tài khoản">
+              <span class="avatar">{{ u.fullName.charAt(0) }}</span><span class="hide-mobile ellipsis uname">{{ u.fullName }}</span>
+            </button>
+            <mat-menu #userMenu="matMenu">
+              @if (auth.isStaff()) {
+                <a mat-menu-item routerLink="/admin"><mat-icon>dashboard</mat-icon>Trang quản trị</a>
+                <mat-divider />
+              }
+              <a mat-menu-item routerLink="/account/profile"><mat-icon>person</mat-icon>Tài khoản của tôi</a>
+              <a mat-menu-item routerLink="/account/orders"><mat-icon>receipt_long</mat-icon>Đơn mua</a>
+              <a mat-menu-item routerLink="/account/points"><mat-icon>stars</mat-icon>Điểm thưởng</a>
+              <a mat-menu-item routerLink="/account/wishlist"><mat-icon>favorite</mat-icon>Yêu thích</a>
+              <a mat-menu-item routerLink="/account/addresses"><mat-icon>home_pin</mat-icon>Sổ địa chỉ</a>
+              <mat-divider />
+              <button mat-menu-item (click)="logout()"><mat-icon>logout</mat-icon>Đăng xuất</button>
+            </mat-menu>
+          } @else {
+            <a class="act login" routerLink="/login"><mat-icon>person_outline</mat-icon><span class="hide-mobile">Đăng nhập</span></a>
+          }
+          <button class="act cart" [class.bump]="cart.bumping()" (click)="cart.drawerOpen.set(true)" aria-label="Giỏ hàng">
+            <mat-icon>shopping_bag</mat-icon>
+            @if (cart.count()) { <span class="badge">{{ cart.count() > 99 ? '99+' : cart.count() }}</span> }
+          </button>
+        </div>
+      </div>
+
+      <!-- Mega menu -->
+      <nav class="nav hide-mobile" (mouseleave)="hoverCat.set(null)" aria-label="Danh mục sản phẩm">
+        <div class="container nav-row">
+          @for (c of catalog.categories(); track c.id; let i = $index) {
+            <a class="nav-item" [routerLink]="['/products']" [queryParams]="{ category: c.slug }" (mouseenter)="hoverCat.set(c.id)"
+               [class.active]="hoverCat() === c.id">
+              <span class="nav-dot" [style.background]="pastel(i)"><mat-icon>{{ c.icon || 'toys' }}</mat-icon></span>{{ c.name }}
+            </a>
+          }
+          <span class="spacer"></span>
+          <a class="nav-item hot" routerLink="/products" [queryParams]="{ onSale: true }" (mouseenter)="hoverCat.set(null)">
+            <mat-icon>local_fire_department</mat-icon>Khuyến mãi
+          </a>
+        </div>
+        @for (c of catalog.categories(); track c.id; let i = $index) {
+          @if (hoverCat() === c.id) {
+            <div class="mega">
+              <div class="container mega-grid">
+                <div class="mega-col">
+                  <h4>{{ c.name }}</h4>
+                  @for (s of c.children; track s.id) {
+                    <a [routerLink]="['/products']" [queryParams]="{ category: s.slug }" class="mega-link">{{ s.name }}</a>
+                  }
+                  <a [routerLink]="['/products']" [queryParams]="{ category: c.slug }" class="mega-all">Xem tất cả <mat-icon>arrow_forward</mat-icon></a>
+                </div>
+                <div class="mega-col">
+                  <h4>Theo độ tuổi</h4>
+                  <div class="age-pills">
+                    @for (a of ages; track a.value) {
+                      <a [routerLink]="['/products']" [queryParams]="{ category: c.slug, age: a.value }" class="age-pill">{{ a.label }}</a>
+                    }
+                  </div>
+                </div>
+                <div class="mega-col">
+                  <h4>Thương hiệu</h4>
+                  @for (b of catalog.brands().slice(0, 7); track b.id) {
+                    <a [routerLink]="['/products']" [queryParams]="{ category: c.slug, brand: b.slug }" class="mega-link">{{ b.name }}</a>
+                  }
+                </div>
+                <a class="mega-promo" [style.background]="pastel(i)" [routerLink]="['/products']" [queryParams]="{ category: c.slug, sort: 'bestseller' }">
+                  <mat-icon>{{ c.icon || 'toys' }}</mat-icon>
+                  <b>Bán chạy nhất<br />{{ c.name }}</b>
+                  <span>Khám phá ngay →</span>
+                </a>
+              </div>
+            </div>
+          }
+        }
+      </nav>
+    </header>
+    <tl-verify-email-banner />
+
+    <main class="main">
+      <router-outlet />
+    </main>
+
+    <tl-shop-footer />
+
+    <!-- Thanh dieu huong duoi cung tren mobile -->
+    <nav class="bottom-nav show-mobile" aria-label="Điều hướng nhanh">
+      <a routerLink="/" routerLinkActive="on" [routerLinkActiveOptions]="{ exact: true }"><mat-icon>home</mat-icon>Trang chủ</a>
+      <a (click)="menuOpen.set(true)"><mat-icon>category</mat-icon>Danh mục</a>
+      <a routerLink="/cart" routerLinkActive="on" class="bn-cart">
+        <span class="bn-ico"><mat-icon>shopping_bag</mat-icon>@if (cart.count()) { <span class="badge">{{ cart.count() }}</span> }</span>Giỏ hàng
+      </a>
+      <a [routerLink]="auth.isLoggedIn() ? '/account/profile' : '/login'" routerLinkActive="on"><mat-icon>person</mat-icon>Tài khoản</a>
+    </nav>
+  </mat-sidenav-content>
+</mat-sidenav-container>

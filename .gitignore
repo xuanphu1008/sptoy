@@ -1,0 +1,29 @@
+# ---- Khong dua len GitHub ----
+# Thu muc rieng tren may / ban cu
+Claude outputs/
+.github/modernize/
+backend/toyland-backend/
+
+# Build & thu vien tai ve
+**/node_modules/
+**/target/
+**/dist/
+**/.angular/
+**/bin/
+
+# File upload cua nguoi dung
+**/uploads/
+
+# IDE
+**/.settings/
+**/.classpath
+**/.project
+**/.factorypath
+**/.vscode/
+**/.idea/
+
+# Linh tinh
+*.log
+.DS_Store
+Thumbs.db
+~$*

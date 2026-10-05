@@ -1,0 +1,18 @@
+.auth-card { max-width: 440px; margin: 24px auto; padding: 32px 28px 28px; position: relative; overflow: hidden; }
+.auth-card::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 110px; background: radial-gradient(60% 100% at 50% 0%, var(--p-peach), transparent 70%); pointer-events: none; }
+.auth-card > * { position: relative; }
+.head { text-align: center; margin-bottom: 12px; }
+.head mat-icon { font-size: 34px; width: 64px; height: 64px; display: inline-grid; place-items: center; border-radius: 22px; background: var(--grad-cta); color: #fff; box-shadow: var(--clay-btn); --r: -6deg; transform: rotate(-6deg); animation: tl-float 5s ease-in-out infinite; }
+.head h1 { margin: 4px 0; }
+.alert { background: var(--tl-yellow-soft); padding: 10px 12px; border-radius: 10px; margin-bottom: 12px; font-size: 14px; }
+.alert.err { background: var(--tl-red-soft); color: var(--tl-red-dark); font-weight: 600; }
+.alert.ok { background: var(--tl-green-soft); color: var(--tl-green); font-weight: 600; }
+.submit { height: 48px; font-size: 16px; font-weight: 800; margin: 12px 0; }
+.link { color: var(--tl-red); }
+.demo { background: var(--tl-hover); border-radius: 10px; padding: 12px; margin-top: 12px; }
+/* icon prefix: de MDC tu can le (khong them margin) de nhan noi khong bi lech */
+mat-icon[matPrefix] { color: var(--tl-subtle); }
+/* Chua khoang cho dong goi y / bao loi duoi moi o -> khong de len nhan cua o ben duoi */
+.auth-card .mat-mdc-form-field { margin-bottom: 10px; }
+.auth-card .mat-mdc-form-field-hint { color: var(--tl-muted); }
+.auth-card .mat-mdc-form-field-error, .auth-card .mat-mdc-form-field-hint { line-height: 1.35; }

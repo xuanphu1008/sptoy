@@ -1,0 +1,86 @@
+<div class="page-title">
+  <h1>Tổng quan kinh doanh</h1>
+  <span class="spacer"></span>
+  <div class="row wrap range">
+    <mat-button-toggle-group [value]="preset()" hideSingleSelectionIndicator>
+      <mat-button-toggle [value]="7" (click)="setPreset(7)">7 ngày</mat-button-toggle>
+      <mat-button-toggle [value]="30" (click)="setPreset(30)">30 ngày</mat-button-toggle>
+      <mat-button-toggle [value]="90" (click)="setPreset(90)">90 ngày</mat-button-toggle>
+    </mat-button-toggle-group>
+    <mat-form-field class="dense-field">
+      <mat-label>Khoảng ngày</mat-label>
+      <mat-date-range-input [rangePicker]="picker">
+        <input matStartDate [(ngModel)]="from" placeholder="Từ" />
+        <input matEndDate [(ngModel)]="to" placeholder="Đến" (dateChange)="custom()" />
+      </mat-date-range-input>
+      <mat-datepicker-toggle matIconSuffix [for]="picker" />
+      <mat-date-range-picker #picker />
+    </mat-form-field>
+  </div>
+</div>
+
+@if (d(); as d) {
+  <div class="stats">
+    <div class="stat-card"><div class="ico c-red"><mat-icon>payments</mat-icon></div>
+      <div><div class="v">{{ d.summary.revenue | vnd }}</div><div class="l">Doanh thu (đơn hoàn tất/đã giao)</div></div></div>
+    <div class="stat-card"><div class="ico c-blue"><mat-icon>receipt_long</mat-icon></div>
+      <div><div class="v">{{ d.summary.orders }}</div><div class="l">Đơn hàng · {{ d.summary.completedOrders }} hoàn tất</div></div></div>
+    <div class="stat-card"><div class="ico c-green"><mat-icon>shopping_bag</mat-icon></div>
+      <div><div class="v">{{ d.summary.avgOrderValue | vnd }}</div><div class="l">Giá trị đơn trung bình</div></div></div>
+    <div class="stat-card"><div class="ico c-orange"><mat-icon>cancel</mat-icon></div>
+      <div><div class="v">{{ d.summary.cancelRate | number: '1.0-1' }}%</div><div class="l">Tỉ lệ huỷ ({{ d.summary.cancelledOrders }} đơn)</div></div></div>
+    <div class="stat-card"><div class="ico c-violet"><mat-icon>person_add</mat-icon></div>
+      <div><div class="v">{{ d.summary.newCustomers }}</div><div class="l">Khách hàng mới</div></div></div>
+    <a class="stat-card" routerLink="/admin/orders" [queryParams]="{ status: 'PENDING' }"><div class="ico c-yellow"><mat-icon>pending_actions</mat-icon></div>
+      <div><div class="v">{{ d.summary.pendingOrders }}</div><div class="l">Đơn chờ xác nhận →</div></div></a>
+    <a class="stat-card" routerLink="/admin/returns"><div class="ico c-red"><mat-icon>assignment_return</mat-icon></div>
+      <div><div class="v">{{ d.summary.pendingReturns }}</div><div class="l">Yêu cầu trả hàng chờ duyệt →</div></div></a>
+    <a class="stat-card" routerLink="/admin/inventory" [queryParams]="{ lowStock: true }"><div class="ico c-grey"><mat-icon>inventory</mat-icon></div>
+      <div><div class="v">{{ d.summary.lowStockVariants }}</div><div class="l">Biến thể sắp hết hàng (≤5) →</div></div></a>
+  </div>
+
+  @for (k of [theme.dark()]; track k) {
+  <div class="charts">
+    <div class="card"><h3>Doanh thu & số đơn theo ngày</h3><div class="chart-box"><canvas baseChart type="line" [data]="revenueChart()" [options]="revenueOptions"></canvas></div></div>
+    <div class="card"><h3>Trạng thái đơn hàng</h3><div class="chart-box"><canvas baseChart type="doughnut" [data]="statusChart()" [options]="pieOptions"></canvas></div></div>
+    <div class="card"><h3>Doanh thu theo danh mục</h3><div class="chart-box sm"><canvas baseChart type="bar" [data]="categoryChart()" [options]="barOptions"></canvas></div></div>
+    <div class="card"><h3>Phương thức thanh toán</h3><div class="chart-box sm"><canvas baseChart type="doughnut" [data]="paymentChart()" [options]="pieOptions"></canvas></div></div>
+  </div>
+
+  }
+
+  <div class="charts mt-16">
+    <div class="card">
+      <h3>Top sản phẩm bán chạy</h3>
+      <table class="simple">
+        <tr><th>#</th><th>Sản phẩm</th><th class="r">SL bán</th><th class="r">Doanh thu</th></tr>
+        @for (t of d.topProducts; track $index; let i = $index) {
+          <tr><td><span class="rank">{{ i + 1 }}</span></td>
+            <td>@if (t.productId) { <a [routerLink]="['/admin/products', t.productId]">{{ t.name }}</a> } @else { {{ t.name }} }</td>
+            <td class="r">{{ t.quantity }}</td><td class="r">{{ t.revenue | vnd }}</td></tr>
+        } @empty { <tr><td colspan="4" class="muted">Chưa có dữ liệu</td></tr> }
+      </table>
+    </div>
+    <div class="card">
+      <h3>Cảnh báo tồn kho thấp</h3>
+      <table class="simple">
+        @for (l of d.lowStock; track l.variantId) {
+          <tr><td><a [routerLink]="['/admin/products', l.productId]">{{ l.productName }}</a><div class="small muted">{{ l.variantName || l.sku }}</div></td>
+            <td class="r"><span class="chip" [class.red]="l.stock === 0" [class.orange]="l.stock > 0">{{ l.stock }}</span></td></tr>
+        } @empty { <tr><td class="muted">Không có biến thể nào sắp hết 👍</td></tr> }
+      </table>
+    </div>
+  </div>
+
+  <div class="card mt-16">
+    <div class="row between"><h3 class="mb-0">Đơn hàng mới nhất</h3><a mat-button routerLink="/admin/orders">Xem tất cả →</a></div>
+    <table class="simple">
+      <tr><th>Mã đơn</th><th>Khách hàng</th><th>Ngày đặt</th><th>Thanh toán</th><th>Trạng thái</th><th class="r">Tổng tiền</th></tr>
+      @for (o of d.recentOrders; track o.id) {
+        <tr><td><a [routerLink]="['/admin/orders', o.id]"><b>{{ o.orderCode }}</b></a></td><td>{{ o.customerName }}</td>
+          <td>{{ o.createdAt | date: 'dd/MM HH:mm' }}</td><td>{{ o.paymentMethod }}</td>
+          <td><span class="chip st-{{ o.status }}">{{ o.statusLabel }}</span></td><td class="r">{{ o.totalAmount | vnd }}</td></tr>
+      }
+    </table>
+  </div>
+}

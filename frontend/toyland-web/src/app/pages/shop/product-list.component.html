@@ -1,0 +1,145 @@
+<div class="container page">
+  <nav class="crumbs small muted">
+    <a routerLink="/">Trang chủ</a> ›
+    <a routerLink="/products">Sản phẩm</a>
+    @if (category(); as c) { › <span>{{ c.name }}</span> }
+  </nav>
+
+  <div class="layout">
+    <!-- ===== Bo loc ===== -->
+    <aside class="filters-panel" [class.open]="filtersOpen()">
+      <div class="fp-head row between">
+        <h3 class="mb-0"><mat-icon>filter_alt</mat-icon> Bộ lọc</h3>
+        <button mat-icon-button class="show-mobile" (click)="filtersOpen.set(false)"><mat-icon>close</mat-icon></button>
+      </div>
+      @if (facets(); as f) {
+        <mat-accordion multi displayMode="flat">
+          <mat-expansion-panel [expanded]="true">
+            <mat-expansion-panel-header>Danh mục</mat-expansion-panel-header>
+            @if (params()['category']) { <a class="f-link bold" (click)="setCategory(null)">‹ Tất cả danh mục</a> }
+            @for (c of f.categories; track c.value) {
+              <a class="f-link" [class.on]="params()['category'] === c.value" (click)="setCategory(c.value)">
+                {{ c.label }} <span class="cnt">{{ c.count }}</span>
+              </a>
+            }
+          </mat-expansion-panel>
+
+          <mat-expansion-panel [expanded]="true">
+            <mat-expansion-panel-header>Độ tuổi</mat-expansion-panel-header>
+            @for (a of f.ages; track a.value) {
+              <mat-checkbox [checked]="has('age', a.value)" (change)="toggle('age', a.value)" [disabled]="!a.count && !has('age', a.value)">
+                {{ a.label }} <span class="cnt">({{ a.count }})</span>
+              </mat-checkbox>
+            }
+          </mat-expansion-panel>
+
+          <mat-expansion-panel [expanded]="true">
+            <mat-expansion-panel-header>Khoảng giá</mat-expansion-panel-header>
+            @for (r of priceRanges; track r.label) {
+              <a class="f-link" [class.on]="isRange(r)" (click)="isRange(r) ? applyPrice(null, null) : applyPrice(r.min, r.max)">{{ r.label }}</a>
+            }
+            <div class="row price-in">
+              <input type="number" placeholder="Từ" [(ngModel)]="minPrice" min="0" step="10000" />
+              <span>-</span>
+              <input type="number" placeholder="Đến" [(ngModel)]="maxPrice" min="0" step="10000" />
+            </div>
+            <button mat-stroked-button class="full mt-8" (click)="applyPrice(minPrice, maxPrice)">Áp dụng</button>
+          </mat-expansion-panel>
+
+          @if (f.brands.length) {
+            <mat-expansion-panel [expanded]="true">
+              <mat-expansion-panel-header>Thương hiệu</mat-expansion-panel-header>
+              <div class="scroll">
+                @for (b of f.brands; track b.value) {
+                  <mat-checkbox [checked]="has('brand', b.value)" (change)="toggle('brand', b.value)">
+                    {{ b.label }} <span class="cnt">({{ b.count }})</span>
+                  </mat-checkbox>
+                }
+              </div>
+            </mat-expansion-panel>
+          }
+
+          @if (f.franchises.length) {
+            <mat-expansion-panel>
+              <mat-expansion-panel-header>Nhân vật / Chủ đề</mat-expansion-panel-header>
+              @for (b of f.franchises; track b.value) {
+                <mat-checkbox [checked]="has('franchise', b.value)" (change)="toggle('franchise', b.value)">
+                  {{ b.label }} <span class="cnt">({{ b.count }})</span>
+                </mat-checkbox>
+              }
+            </mat-expansion-panel>
+          }
+
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>Giới tính</mat-expansion-panel-header>
+            @for (g of f.genders; track g.value) {
+              <mat-checkbox [checked]="has('gender', g.value)" (change)="toggle('gender', g.value)">
+                {{ g.label }} <span class="cnt">({{ g.count }})</span>
+              </mat-checkbox>
+            }
+          </mat-expansion-panel>
+        </mat-accordion>
+
+        <div class="toggles">
+          <mat-slide-toggle [checked]="!!params()['inStock']" (change)="setFlag('inStock', $event.checked)">Chỉ hiện hàng còn</mat-slide-toggle>
+          <mat-slide-toggle [checked]="!!params()['onSale']" (change)="setFlag('onSale', $event.checked)">Đang giảm giá</mat-slide-toggle>
+        </div>
+      }
+    </aside>
+    @if (filtersOpen()) { <div class="backdrop" (click)="filtersOpen.set(false)"></div> }
+
+    <!-- ===== Ket qua ===== -->
+    <section class="results">
+      <div class="head">
+        <div>
+          <h1>{{ heading() }}</h1>
+          @if (category()?.description) { <p class="muted mt-0">{{ category()?.description }}</p> }
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <button mat-stroked-button class="show-mobile" (click)="filtersOpen.set(true)"><mat-icon>tune</mat-icon>Lọc</button>
+        <span class="muted">{{ result()?.totalElements ?? 0 }} sản phẩm</span>
+        <span class="spacer"></span>
+        <span class="muted small hide-mobile">Sắp xếp:</span>
+        <div class="sorts hide-mobile">
+          @for (s of sorts; track s.value) {
+            <button class="sort" [class.on]="(params()['sort'] || 'newest') === s.value" (click)="sortBy(s.value)">{{ s.label }}</button>
+          }
+        </div>
+        <mat-form-field class="show-mobile dense-field sort-sel">
+          <mat-select [value]="params()['sort'] || 'newest'" (selectionChange)="sortBy($event.value)">
+            @for (s of sorts; track s.value) { <mat-option [value]="s.value">{{ s.label }}</mat-option> }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      @if (activeChips().length) {
+        <mat-chip-set class="chips">
+          @for (c of activeChips(); track c.key + (c.value || '')) {
+            <mat-chip (removed)="removeChip(c)">{{ c.label }}<button matChipRemove><mat-icon>cancel</mat-icon></button></mat-chip>
+          }
+          <button mat-button (click)="clearAll()">Xoá tất cả</button>
+        </mat-chip-set>
+      }
+
+      @if (result(); as r) {
+        @if (r.content.length) {
+          <div class="products-grid">
+            @for (p of r.content; track p.id) { <tl-product-card [product]="p" /> }
+          </div>
+          @if (r.totalPages > 1) {
+            <mat-paginator [length]="r.totalElements" [pageIndex]="r.page" [pageSize]="r.size" [hidePageSize]="true" [showFirstLastButtons]="true" (page)="page($event)" />
+          }
+        } @else {
+          <div class="empty card">
+            <mat-icon>search_off</mat-icon>
+            <h3>Không tìm thấy sản phẩm phù hợp</h3>
+            <p>Hãy thử bỏ bớt bộ lọc hoặc tìm với từ khoá khác (hỗ trợ gõ không dấu, ví dụ "gau bong").</p>
+            <button mat-flat-button (click)="clearAll()">Xoá bộ lọc</button>
+          </div>
+        }
+      }
+    </section>
+  </div>
+</div>

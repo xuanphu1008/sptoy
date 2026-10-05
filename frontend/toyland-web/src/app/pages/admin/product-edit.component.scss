@@ -1,0 +1,25 @@
+.tab { padding: 20px 4px 8px; }
+.span2 { grid-column: span 2; }
+.toggles { gap: 24px; margin-bottom: 16px; }
+h4 { margin: 12px 0 10px; color: var(--tl-red-dark); }
+.imgs { display: flex; flex-wrap: wrap; gap: 12px; }
+.img-it { position: relative; width: 140px; }
+.img-it img { width: 140px; height: 140px; object-fit: cover; border-radius: 10px; border: 2px solid transparent; }
+.img-it.main img { border-color: var(--tl-red); }
+.badge { position: absolute; top: 6px; left: 6px; background: var(--tl-red); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 6px; }
+.img-acts { display: flex; justify-content: center; }
+.img-add { width: 140px; height: 140px; border: 2px dashed var(--tl-border-strong); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: var(--tl-muted); }
+.img-add:hover { border-color: var(--tl-red); color: var(--tl-red); }
+.opt-box { background: var(--tl-hover); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+.v-table { overflow-x: auto; }
+.v-table table { border-collapse: collapse; width: 100%; font-size: 13px; }
+.v-table th { text-align: left; padding: 8px 6px; background: var(--tl-table-head); white-space: nowrap; }
+.v-table td { padding: 4px 6px; border-bottom: 1px solid var(--tl-border); }
+.v-table tr.off { opacity: .5; }
+.v-table input { border: 1px solid var(--tl-border); border-radius: 8px; padding: 6px 8px; font: inherit; background: var(--tl-card); color: var(--tl-text); }
+.v-table input:focus { outline: 2px solid var(--tl-red); border-color: transparent; }
+.w-sm { width: 80px; } .w-md { width: 140px; } .w-num { width: 110px; }
+.ap { border: 0; background: var(--tl-red-soft); color: var(--tl-red); border-radius: 4px; cursor: pointer; font-weight: 900; }
+.serp { background: #fff; border: 1px solid var(--tl-border); border-radius: 10px; padding: 12px 16px; max-width: 640px; font-family: Arial, sans-serif; }
+.s-title { color: #1a0dab; font-size: 19px; } .s-url { color: #006621; font-size: 13px; } .s-desc { color: #545454; font-size: 13px; }
+@media (max-width: 600px) { .span2 { grid-column: auto; } }

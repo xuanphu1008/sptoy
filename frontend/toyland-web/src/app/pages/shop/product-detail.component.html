@@ -1,0 +1,244 @@
+@if (p(); as p) {
+  <div class="container page">
+    <nav class="crumbs small muted">
+      <a routerLink="/">Trang chủ</a>
+      @for (c of p.breadcrumbs; track c.slug) { › <a [routerLink]="['/products']" [queryParams]="{ category: c.slug }">{{ c.name }}</a> }
+      › <span>{{ p.name }}</span>
+    </nav>
+
+    <div class="top card">
+      <!-- ===== Gallery ===== -->
+      <div class="gallery">
+        <div class="main-img" (click)="zoomImg.set(activeImage() || images()[0])">
+          <img [src]="activeImage() || images()[0]" [alt]="p.name" />
+          @if (variant()?.discountPercent) { <span class="off">-{{ variant()?.discountPercent }}%</span> }
+          <mat-icon class="zoom">zoom_in</mat-icon>
+        </div>
+        <div class="thumbs">
+          @for (img of images(); track img) {
+            <img [src]="img" alt="" [class.on]="img === (activeImage() || images()[0])" (click)="activeImage.set(img)" (mouseenter)="activeImage.set(img)" />
+          }
+        </div>
+        @if (p.videoUrl) {
+          <a mat-stroked-button [href]="p.videoUrl" target="_blank" class="mt-8"><mat-icon>play_circle</mat-icon>Xem video sản phẩm</a>
+        }
+      </div>
+
+      <!-- ===== Thong tin mua hang ===== -->
+      <div class="info">
+        <div class="tags">
+          @if (p.brand) { <a class="chip red" [routerLink]="['/products']" [queryParams]="{ brand: p.brand.slug }">{{ p.brand.name }}</a> }
+          @if (p.campaignBadge) { <span class="chip orange"><mat-icon>local_fire_department</mat-icon>{{ p.campaignBadge }}</span> }
+          @if (p.onlineExclusive) { <span class="chip blue">Chỉ có online</span> }
+          @if (p.crCertified) { <span class="chip green"><mat-icon>verified</mat-icon>Đạt chuẩn CR</span> }
+        </div>
+        <h1>{{ p.name }}</h1>
+        <div class="row small wrap stats">
+          @if (p.reviewCount) {
+            <a href="#reviews" class="row"><b>{{ p.avgRating | number: '1.1-1' }}</b><tl-stars [value]="p.avgRating" /></a>
+            <span class="sep">|</span><span><b>{{ p.reviewCount }}</b> đánh giá</span>
+          } @else { <span class="muted">Chưa có đánh giá</span> }
+          <span class="sep">|</span><span>Đã bán <b>{{ p.soldCount }}</b></span>
+          @if (variant(); as v) { <span class="sep">|</span><span class="muted">SKU: {{ v.sku }}</span> }
+        </div>
+        @if (p.shortDescription) { <p class="short">{{ p.shortDescription }}</p> }
+
+        <div class="price-box">
+          @if (variant(); as v) {
+            <span class="price big">{{ v.price | vnd }}</span>
+            @if (v.originalPrice && v.originalPrice > v.price) {
+              <span class="price-old">{{ v.originalPrice | vnd }}</span><span class="discount-tag">-{{ v.discountPercent }}%</span>
+            }
+          } @else {
+            <span class="price big">{{ priceRange().min | vnd }}@if (priceRange().max > priceRange().min) { - {{ priceRange().max | vnd }} }</span>
+          }
+        </div>
+
+        <!-- Bien the (toi da 2 thuoc tinh, kieu Shopee) -->
+        @if (p.option1Name) {
+          <div class="opt">
+            <div class="opt-label">{{ p.option1Name }}: <b>{{ sel1() }}</b></div>
+            <div class="opt-values">
+              @for (o of p.option1Values; track o) {
+                @let st1 = optionState(1, o);
+                <button class="ov" [class.on]="sel1() === o" [class.oos]="st1 !== 'ok'" [disabled]="st1 === 'none'" (click)="choose(1, o)"
+                        [matTooltip]="st1 === 'oos' ? 'Tạm hết hàng' : ''">{{ o }}</button>
+              }
+            </div>
+          </div>
+        }
+        @if (p.option2Name) {
+          <div class="opt">
+            <div class="opt-label">{{ p.option2Name }}: <b>{{ sel2() }}</b></div>
+            <div class="opt-values">
+              @for (o of p.option2Values; track o) {
+                @let st2 = optionState(2, o);
+                <button class="ov" [class.on]="sel2() === o" [class.oos]="st2 !== 'ok'" [disabled]="st2 === 'none'" (click)="choose(2, o)"
+                        [matTooltip]="st2 === 'oos' ? 'Tạm hết hàng' : ''">{{ o }}</button>
+              }
+            </div>
+          </div>
+        }
+
+        <div class="opt row wrap">
+          <span class="opt-label mb-0">Số lượng</span>
+          <div class="qty">
+            <button (click)="changeQty(-1)" [disabled]="qty() <= 1">−</button>
+            <input type="number" [value]="qty()" readonly />
+            <button (click)="changeQty(1)" [disabled]="qty() >= (variant()?.stock ?? 0) || qty() >= maxQty">+</button>
+          </div>
+          @if (variant(); as v) {
+            @if (!v.inStock) { <span class="chip red">Hết hàng</span> }
+            @else if (v.stock <= 5) { <span class="chip orange">Chỉ còn {{ v.stock }} sản phẩm</span> }
+            @else { <span class="muted small">{{ v.stock }} sản phẩm có sẵn</span> }
+          } @else if (p.option1Name) {
+            <span class="chip grey">Phân loại này không có</span>
+          }
+        </div>
+
+        @if (p.status === 'COMING_SOON') {
+          <div class="notice"><mat-icon>schedule</mat-icon>Sản phẩm sắp về hàng — hãy thêm vào yêu thích để theo dõi.</div>
+        }
+
+        <div class="buy row">
+          <button mat-stroked-button class="grow add" [disabled]="!canBuy()" (click)="addToCart()"><mat-icon>add_shopping_cart</mat-icon>Thêm vào giỏ</button>
+          <button mat-flat-button class="grow" [disabled]="!canBuy()" (click)="addToCart(true)">Mua ngay</button>
+          <button mat-icon-button (click)="wishlist.toggle(p.id)" [matTooltip]="liked() ? 'Bỏ yêu thích' : 'Yêu thích'">
+            <mat-icon [class.liked]="liked()">{{ liked() ? 'favorite' : 'favorite_border' }}</mat-icon>
+          </button>
+          <button mat-icon-button (click)="share()" matTooltip="Chia sẻ"><mat-icon>share</mat-icon></button>
+        </div>
+
+        <!-- An toan cho be -->
+        <div class="safety">
+          <div class="s-title"><mat-icon>health_and_safety</mat-icon>Thông tin an toàn</div>
+          <div class="grid-2 small">
+            <div><mat-icon>child_care</mat-icon>Độ tuổi: <b>{{ p.ageLabel }}</b></div>
+            <div><mat-icon>wc</mat-icon>Phù hợp: <b>{{ gender[p.gender] }}</b></div>
+            @if (p.material) { <div><mat-icon>texture</mat-icon>Chất liệu: <b>{{ p.material }}</b></div> }
+            @if (p.battery) { <div><mat-icon>battery_charging_full</mat-icon>Pin: <b>{{ p.battery }}</b></div> }
+          </div>
+          @if (p.smallPartsWarning) {
+            <div class="warn"><mat-icon>warning</mat-icon><b>CẢNH BÁO:</b> Sản phẩm có chi tiết nhỏ, có nguy cơ hóc nghẹn. Không dành cho trẻ dưới 3 tuổi.</div>
+          }
+          @if (p.safetyWarning) { <div class="warn soft"><mat-icon>info</mat-icon>{{ p.safetyWarning }}</div> }
+        </div>
+
+        <div class="policies small">
+          <div><mat-icon>local_shipping</mat-icon>Miễn phí giao hàng cho đơn từ {{ cart.config().freeShipThreshold | vnd }} (giao bởi GHN)</div>
+          <div><mat-icon>autorenew</mat-icon>Đổi trả trong 7 ngày nếu sản phẩm lỗi</div>
+          <div><mat-icon>card_giftcard</mat-icon>Có dịch vụ gói quà kèm thiệp</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Tabs ===== -->
+    <div class="card mt-16">
+      <mat-tab-group animationDuration="150ms" mat-stretch-tabs="false">
+        <mat-tab label="Mô tả sản phẩm">
+          <div class="prose tab-body" [innerHTML]="p.description || 'Đang cập nhật mô tả.'"></div>
+        </mat-tab>
+        <mat-tab label="Thông số kỹ thuật">
+          <table class="specs tab-body">
+            @if (p.brand) { <tr><th>Thương hiệu</th><td>{{ p.brand.name }}</td></tr> }
+            @if (p.brandOrigin) { <tr><th>Xuất xứ thương hiệu</th><td>{{ p.brandOrigin }}</td></tr> }
+            @if (p.madeIn) { <tr><th>Nơi sản xuất</th><td>{{ p.madeIn }}</td></tr> }
+            <tr><th>Độ tuổi</th><td>{{ p.ageLabel }}</td></tr>
+            <tr><th>Giới tính</th><td>{{ gender[p.gender] }}</td></tr>
+            @if (p.material) { <tr><th>Chất liệu</th><td>{{ p.material }}</td></tr> }
+            @if (dims()) { <tr><th>Kích thước hộp</th><td>{{ dims() }}</td></tr> }
+            @if (variant()?.weightGram) { <tr><th>Khối lượng</th><td>{{ variant()?.weightGram }} g</td></tr> }
+            @if (p.battery) { <tr><th>Pin</th><td>{{ p.battery }}</td></tr> }
+            @if (p.manufactureYear) { <tr><th>Năm sản xuất</th><td>{{ p.manufactureYear }}</td></tr> }
+            @if (p.importer) { <tr><th>Đơn vị nhập khẩu</th><td>{{ p.importer }}</td></tr> }
+            @if (p.franchises.length) {
+              <tr><th>Nhân vật / Chủ đề</th><td>
+                @for (f of p.franchises; track f.id) { <a [routerLink]="['/products']" [queryParams]="{ franchise: f.slug }" class="chip">{{ f.name }}</a> }
+              </td></tr>
+            }
+            <tr><th>Tiêu chuẩn an toàn</th><td>{{ p.crCertified ? 'Đạt chứng nhận hợp quy CR (QCVN 3:2019/BKHCN)' : 'Đang cập nhật' }}</td></tr>
+            @for (s of p.specs; track s.key) { <tr><th>{{ s.key }}</th><td>{{ s.value }}</td></tr> }
+          </table>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+
+    <!-- ===== Danh gia ===== -->
+    <div class="card mt-16" id="reviews">
+      <h2>Đánh giá sản phẩm</h2>
+      @if (summary(); as s) {
+        <div class="rv-summary">
+          <div class="avg">
+            <div class="big-num">{{ s.average | number: '1.1-1' }}<span>/5</span></div>
+            <tl-stars [value]="s.average" [size]="22" />
+            <div class="muted small">{{ s.total }} đánh giá</div>
+          </div>
+          <div class="bars">
+            @for (r of starRows(); track r.star) {
+              <div class="bar-row" (click)="filterReviews(r.star)">
+                <span>{{ r.star }} <mat-icon>star</mat-icon></span>
+                <div class="bar"><div [style.width.%]="r.pct"></div></div>
+                <span class="muted">{{ r.count }}</span>
+              </div>
+            }
+          </div>
+          <div class="rv-filters">
+            <button class="ov" [class.on]="!reviewFilter().rating && !reviewFilter().withImages" (click)="filterReviews(null)">Tất cả</button>
+            @for (n of starOptions; track n) {
+              <button class="ov" [class.on]="reviewFilter().rating === n" (click)="filterReviews(n)">{{ n }} sao</button>
+            }
+            <button class="ov" [class.on]="reviewFilter().withImages" (click)="filterReviews(null, true)">Có hình ảnh ({{ s.withImages }})</button>
+          </div>
+        </div>
+      }
+      @if (reviews(); as r) {
+        @for (rv of r.content; track rv.id) {
+          <div class="review">
+            <div class="avatar">{{ rv.userName.charAt(0) }}</div>
+            <div class="grow">
+              <div class="row wrap"><b>{{ rv.userName }}</b>
+                @if (rv.verifiedPurchase) { <span class="chip green"><mat-icon>verified</mat-icon>Đã mua hàng</span> }
+              </div>
+              <tl-stars [value]="rv.rating" [size]="14" />
+              <div class="muted small">{{ rv.createdAt | date: 'dd/MM/yyyy HH:mm' }}@if (rv.variantName) { · Phân loại: {{ rv.variantName }} }</div>
+              @if (rv.comment) { <p>{{ rv.comment }}</p> }
+              @if (rv.imageUrls.length) {
+                <div class="rv-imgs">@for (u of rv.imageUrls; track u) { <img [src]="u" alt="" (click)="zoomImg.set(u)" /> }</div>
+              }
+              @if (rv.adminReply) {
+                <div class="reply"><b>Phản hồi của ToyLand:</b> {{ rv.adminReply }}</div>
+              }
+            </div>
+          </div>
+        } @empty {
+          <div class="empty"><mat-icon>rate_review</mat-icon><p>Chưa có đánh giá phù hợp. Hãy mua hàng và là người đầu tiên đánh giá!</p></div>
+        }
+        @if (r.totalPages > 1) {
+          <mat-paginator [length]="r.totalElements" [pageIndex]="r.page" [pageSize]="r.size" [hidePageSize]="true" (page)="reviewPage($event)" />
+        }
+      }
+    </div>
+
+    @if (p.related.length) {
+      <div class="section-title"><h2>Sản phẩm tương tự</h2></div>
+      <div class="products-grid">@for (r of p.related; track r.id) { <tl-product-card [product]="r" /> }</div>
+    }
+  </div>
+
+  <!-- Thanh mua hang co dinh tren mobile -->
+  <div class="sticky-buy show-mobile">
+    <div class="grow"><div class="price">{{ (variant()?.price ?? priceRange().min) | vnd }}</div><div class="small muted ellipsis">{{ variant()?.name || p.name }}</div></div>
+    <button mat-stroked-button [disabled]="!canBuy()" (click)="addToCart()"><mat-icon>add_shopping_cart</mat-icon></button>
+    <button mat-flat-button [disabled]="!canBuy()" (click)="addToCart(true)">Mua ngay</button>
+  </div>
+
+  @if (zoomImg(); as z) {
+    <div class="lightbox" (click)="zoomImg.set(null)"><img [src]="z" alt="" /><mat-icon>close</mat-icon></div>
+  }
+} @else if (error()) {
+  <div class="container page">
+    <div class="card empty"><mat-icon>sentiment_dissatisfied</mat-icon><h3>{{ error() }}</h3><a mat-flat-button routerLink="/products">Xem sản phẩm khác</a></div>
+  </div>
+} @else {
+  <div class="container page"><div class="card" style="height: 480px"></div></div>
+}

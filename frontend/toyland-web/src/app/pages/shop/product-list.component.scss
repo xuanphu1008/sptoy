@@ -1,0 +1,29 @@
+.crumbs { margin-bottom: 12px; } .crumbs a:hover { color: var(--tl-red); }
+.layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 20px; align-items: start; }
+.filters-panel { background: #fff; border-radius: var(--tl-radius); box-shadow: var(--tl-shadow); padding: 12px 0; position: sticky; top: 130px; max-height: calc(100vh - 150px); overflow: auto; }
+.fp-head { padding: 0 16px 8px; }
+.fp-head h3 { display: flex; align-items: center; gap: 6px; }
+.filters-panel mat-checkbox { display: block; margin-left: -8px; }
+.f-link { display: flex; justify-content: space-between; padding: 6px 0; cursor: pointer; font-size: 14px; }
+.f-link:hover, .f-link.on { color: var(--tl-red); font-weight: 700; }
+.cnt { color: var(--tl-muted); font-size: 12px; font-weight: 400; }
+.scroll { max-height: 240px; overflow: auto; }
+.price-in input { width: 100%; min-width: 0; border: 1px solid var(--tl-border); border-radius: 8px; padding: 8px; font: inherit; }
+.toggles { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+.head h1 { margin-bottom: 4px; }
+.toolbar { display: flex; align-items: center; gap: 10px; background: #fff; border-radius: 12px; padding: 8px 12px; margin: 12px 0; box-shadow: var(--tl-shadow); }
+.sorts { display: flex; gap: 6px; flex-wrap: wrap; }
+.sort { border: 1px solid var(--tl-border); background: #fff; border-radius: 8px; padding: 6px 12px; cursor: pointer; font: inherit; font-size: 13px; }
+.sort.on { background: var(--tl-red); border-color: var(--tl-red); color: #fff; font-weight: 700; }
+.sort-sel { width: 160px; }
+.chips { margin-bottom: 12px; display: block; }
+mat-paginator { margin-top: 20px; border-radius: 12px; }
+.backdrop { display: none; }
+@media (max-width: 960px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .filters-panel { position: fixed; top: 0; left: 0; bottom: 0; width: 300px; max-height: none; z-index: 1000; border-radius: 0; transform: translateX(-105%); transition: transform .25s; }
+  .filters-panel.open { transform: none; }
+  .backdrop { display: block; position: fixed; inset: 0; background: rgb(0 0 0 / 40%); z-index: 999; }
+  .show-mobile { display: inline-flex !important; }
+  .sorts, .toolbar .hide-mobile { display: none !important; }
+}

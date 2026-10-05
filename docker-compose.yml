@@ -1,0 +1,60 @@
+# Chay toan bo he thong ToyLand bang Docker:  docker compose up -d --build
+#   Web khach hang / quan tri : http://localhost:4200
+#   REST API + Swagger         : http://localhost:8080/swagger-ui.html
+#   MySQL (tu may ngoai)       : localhost:3307  (root / toyland123)
+# Lan dau MySQL tu chay database/toyland_v2.sql de tao CSDL + du lieu mau.
+# Muon tao lai CSDL tu dau: docker compose down -v  roi  up lai.
+services:
+  db:
+    image: mysql:8.0
+    container_name: toyland-db
+    environment:
+      MYSQL_ROOT_PASSWORD: toyland123
+      TZ: Asia/Ho_Chi_Minh
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci", "--default-time-zone=+07:00"]
+    ports:
+      - "3307:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./database/toyland_v2.sql:/docker-entrypoint-initdb.d/01-toyland_v2.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-ptoyland123"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  api:
+    build: ./backend/toyland-api
+    container_name: toyland-api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/toyland_v2?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh&characterEncoding=UTF-8
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: toyland123
+      APP_FRONTEND_URL: http://localhost:4200
+      APP_PUBLIC_BASE_URL: http://localhost:8080
+      APP_CORS_ALLOWED_ORIGINS: http://localhost:4200
+      APP_UPLOAD_DIR: /app/uploads
+      APP_MOMO_REDIRECT_URL: http://localhost:4200/payment/momo-return
+      # Dien khi can: APP_JWT_SECRET, APP_MOMO_PARTNER_CODE, APP_MOMO_ACCESS_KEY, APP_MOMO_SECRET_KEY,
+      #               APP_MOMO_IPN_URL (ngrok), APP_GHN_TOKEN, APP_GHN_SHOP_ID,
+      #               APP_MAIL_ENABLED=true, SPRING_MAIL_HOST, SPRING_MAIL_USERNAME, SPRING_MAIL_PASSWORD
+    ports:
+      - "8080:8080"
+    volumes:
+      - uploads:/app/uploads
+
+  web:
+    build: ./frontend/toyland-web
+    container_name: toyland-web
+    depends_on:
+      - api
+    ports:
+      - "4200:80"
+
+volumes:
+  db-data:
+  uploads:

@@ -1,0 +1,194 @@
+@let prod = p();
+<div class="page-title">
+  <a mat-icon-button routerLink="/admin/products"><mat-icon>arrow_back</mat-icon></a>
+  <h1>{{ isNew() ? 'Thêm sản phẩm mới' : 'Sửa: ' + prod.name }}</h1>
+  <span class="spacer"></span>
+  @if (!isNew()) { <a mat-stroked-button [routerLink]="['/products', prod.slug]" target="_blank"><mat-icon>visibility</mat-icon>Xem</a> }
+  <button mat-flat-button (click)="save()" [disabled]="saving()"><mat-icon>save</mat-icon>{{ saving() ? 'Đang lưu…' : 'Lưu sản phẩm' }}</button>
+</div>
+
+<div class="card">
+  <mat-tab-group animationDuration="100ms" mat-stretch-tabs="false">
+    <!-- ================= THONG TIN CHUNG ================= -->
+    <mat-tab label="Thông tin chung">
+      <div class="tab">
+        <div class="grid-2">
+          <mat-form-field class="span2"><mat-label>Tên sản phẩm</mat-label><input matInput [(ngModel)]="prod.name" (ngModelChange)="onName()" maxlength="200" required /></mat-form-field>
+          <mat-form-field><mat-label>Slug (URL)</mat-label><input matInput [(ngModel)]="prod.slug" /><mat-hint>Để trống sẽ tự tạo từ tên</mat-hint></mat-form-field>
+          <mat-form-field><mat-label>Trạng thái</mat-label>
+            <mat-select [(ngModel)]="prod.status">@for (s of statuses; track s[0]) { <mat-option [value]="s[0]">{{ s[1] }}</mat-option> }</mat-select></mat-form-field>
+          <mat-form-field><mat-label>Danh mục</mat-label>
+            <mat-select [(ngModel)]="prod.categoryId" required>@for (c of cats(); track c.id) { <mat-option [value]="c.id">{{ '— '.repeat(c.depth) }}{{ c.name }}</mat-option> }</mat-select></mat-form-field>
+          <mat-form-field><mat-label>Thương hiệu</mat-label>
+            <mat-select [(ngModel)]="prod.brandId"><mat-option [value]="null">(Không)</mat-option>@for (b of brands(); track b.id) { <mat-option [value]="b.id">{{ b.name }}</mat-option> }</mat-select></mat-form-field>
+          <mat-form-field class="span2"><mat-label>Nhân vật / Chủ đề (franchise)</mat-label>
+            <mat-select [(ngModel)]="prod.franchiseIds" multiple>@for (f of franchises(); track f.id) { <mat-option [value]="f.id">{{ f.name }}</mat-option> }</mat-select></mat-form-field>
+        </div>
+        <div class="row wrap toggles">
+          <mat-slide-toggle [(ngModel)]="prod.featured">Sản phẩm nổi bật (trang chủ)</mat-slide-toggle>
+          <mat-slide-toggle [(ngModel)]="prod.onlineExclusive">Chỉ bán online</mat-slide-toggle>
+        </div>
+        <mat-form-field class="full"><mat-label>Mô tả ngắn</mat-label><textarea matInput rows="2" maxlength="500" [(ngModel)]="prod.shortDescription"></textarea></mat-form-field>
+        <mat-form-field class="full"><mat-label>Mô tả chi tiết (hỗ trợ HTML cơ bản)</mat-label><textarea matInput rows="8" [(ngModel)]="prod.description"></textarea></mat-form-field>
+      </div>
+    </mat-tab>
+
+    <!-- ================= AN TOAN & THONG SO ================= -->
+    <mat-tab label="An toàn & Thông số">
+      <div class="tab">
+        <h4>Độ tuổi & đối tượng</h4>
+        <div class="grid-3">
+          <mat-form-field><mat-label>Tuổi tối thiểu</mat-label>
+            <mat-select [(ngModel)]="prod.ageMinMonths">@for (a of ages; track a) { <mat-option [value]="a">{{ ageLabel(a) }}</mat-option> }</mat-select></mat-form-field>
+          <mat-form-field><mat-label>Tuổi tối đa</mat-label>
+            <mat-select [(ngModel)]="prod.ageMaxMonths"><mat-option [value]="null">Không giới hạn (+)</mat-option>
+              @for (a of ages; track a) { <mat-option [value]="a">{{ ageLabel(a) }}</mat-option> }</mat-select></mat-form-field>
+          <mat-form-field><mat-label>Giới tính</mat-label>
+            <mat-select [(ngModel)]="prod.gender">@for (g of genders; track g[0]) { <mat-option [value]="g[0]">{{ g[1] }}</mat-option> }</mat-select></mat-form-field>
+        </div>
+        <h4>An toàn (theo QCVN 3:2019/BKHCN)</h4>
+        <div class="row wrap toggles">
+          <mat-checkbox [(ngModel)]="prod.crCertified">Đã có chứng nhận hợp quy CR</mat-checkbox>
+          <mat-checkbox [(ngModel)]="prod.smallPartsWarning">Có chi tiết nhỏ (cảnh báo trẻ &lt; 3 tuổi)</mat-checkbox>
+        </div>
+        <mat-form-field class="full"><mat-label>Cảnh báo an toàn khác</mat-label><input matInput [(ngModel)]="prod.safetyWarning" maxlength="500" placeholder="Cần có sự giám sát của người lớn…" /></mat-form-field>
+        <h4>Xuất xứ & chất liệu</h4>
+        <div class="grid-3">
+          <mat-form-field><mat-label>Chất liệu</mat-label><input matInput [(ngModel)]="prod.material" /></mat-form-field>
+          <mat-form-field><mat-label>Xuất xứ thương hiệu</mat-label><input matInput [(ngModel)]="prod.brandOrigin" /></mat-form-field>
+          <mat-form-field><mat-label>Nơi sản xuất</mat-label><input matInput [(ngModel)]="prod.madeIn" /></mat-form-field>
+          <mat-form-field><mat-label>Năm sản xuất</mat-label><input matInput type="number" [(ngModel)]="prod.manufactureYear" /></mat-form-field>
+          <mat-form-field><mat-label>Pin</mat-label><input matInput [(ngModel)]="prod.battery" placeholder="3 x AA (không kèm)" /></mat-form-field>
+          <mat-form-field><mat-label>Đơn vị nhập khẩu</mat-label><input matInput [(ngModel)]="prod.importer" /></mat-form-field>
+        </div>
+        <h4>Kích thước hộp (dùng tính phí GHN)</h4>
+        <div class="grid-3">
+          <mat-form-field><mat-label>Dài (cm)</mat-label><input matInput type="number" min="1" [(ngModel)]="prod.lengthCm" /></mat-form-field>
+          <mat-form-field><mat-label>Rộng (cm)</mat-label><input matInput type="number" min="1" [(ngModel)]="prod.widthCm" /></mat-form-field>
+          <mat-form-field><mat-label>Cao (cm)</mat-label><input matInput type="number" min="1" [(ngModel)]="prod.heightCm" /></mat-form-field>
+        </div>
+        <mat-form-field class="full"><mat-label>Video (YouTube URL)</mat-label><input matInput [(ngModel)]="prod.videoUrl" /></mat-form-field>
+
+        <div class="row between"><h4>Thông số kỹ thuật bổ sung</h4><button mat-button (click)="addSpec()"><mat-icon>add</mat-icon>Thêm dòng</button></div>
+        @for (s of prod.specs; track $index; let i = $index) {
+          <div class="row">
+            <mat-form-field class="grow dense-field"><mat-label>Tên thông số</mat-label><input matInput [(ngModel)]="s.key" placeholder="Số mảnh ghép" /></mat-form-field>
+            <mat-form-field class="grow dense-field"><mat-label>Giá trị</mat-label><input matInput [(ngModel)]="s.value" placeholder="1.000 mảnh" /></mat-form-field>
+            <button mat-icon-button (click)="removeSpec(i)"><mat-icon>close</mat-icon></button>
+          </div>
+        }
+      </div>
+    </mat-tab>
+
+    <!-- ================= HINH ANH ================= -->
+    <mat-tab label="Hình ảnh ({{ prod.images.length }})">
+      <div class="tab">
+        <p class="muted small">Ảnh đầu tiên là ảnh đại diện, ảnh thứ hai hiển thị khi rê chuột trên thẻ sản phẩm.</p>
+        <div class="imgs">
+          @for (u of prod.images; track $index; let i = $index) {
+            <div class="img-it" [class.main]="i === 0">
+              <img [src]="u" alt="" />
+              @if (i === 0) { <span class="badge">Ảnh chính</span> }
+              <div class="img-acts">
+                <button mat-icon-button (click)="moveImage(i, -1)" [disabled]="i === 0"><mat-icon>chevron_left</mat-icon></button>
+                <button mat-icon-button (click)="removeImage(i)"><mat-icon>delete</mat-icon></button>
+                <button mat-icon-button (click)="moveImage(i, 1)" [disabled]="i === prod.images.length - 1"><mat-icon>chevron_right</mat-icon></button>
+              </div>
+            </div>
+          }
+          <label class="img-add">
+            <mat-icon>{{ uploading() ? 'hourglass_top' : 'cloud_upload' }}</mat-icon><span>Tải ảnh lên</span>
+            <input type="file" accept="image/*" multiple hidden (change)="upload($event)" />
+          </label>
+        </div>
+        <div class="row mt-16">
+          <mat-form-field class="grow dense-field"><mat-label>Hoặc dán URL ảnh</mat-label><input matInput [(ngModel)]="newImageUrl" (keyup.enter)="addImageUrl()" /></mat-form-field>
+          <button mat-stroked-button (click)="addImageUrl()">Thêm</button>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- ================= BIEN THE ================= -->
+    <mat-tab label="Biến thể & Giá ({{ prod.variants.length }})">
+      <div class="tab">
+        <div class="opt-box">
+          <p class="muted small mt-0">Tối đa 2 thuộc tính (giống Shopee), ví dụ: <b>Màu sắc</b> × <b>Kích thước</b>. Để trống nếu sản phẩm chỉ có 1 loại.</p>
+          <div class="grid-2">
+            <div>
+              <mat-form-field class="full dense-field"><mat-label>Thuộc tính 1</mat-label><input matInput [(ngModel)]="prod.option1Name" placeholder="Màu sắc" /></mat-form-field>
+              @if (prod.option1Name) {
+                <mat-form-field class="full"><mat-label>Giá trị (Enter để thêm)</mat-label>
+                  <mat-chip-grid #g1>
+                    @for (v of values1(); track v) { <mat-chip-row (removed)="removeValue(1, v)">{{ v }}<button matChipRemove><mat-icon>cancel</mat-icon></button></mat-chip-row> }
+                    <input [matChipInputFor]="g1" (matChipInputTokenEnd)="addValue(1, $event)" placeholder="Đỏ, Xanh…" />
+                  </mat-chip-grid>
+                </mat-form-field>
+              }
+            </div>
+            <div>
+              <mat-form-field class="full dense-field"><mat-label>Thuộc tính 2</mat-label><input matInput [(ngModel)]="prod.option2Name" [disabled]="!prod.option1Name" placeholder="Kích thước" /></mat-form-field>
+              @if (prod.option1Name && prod.option2Name) {
+                <mat-form-field class="full"><mat-label>Giá trị (Enter để thêm)</mat-label>
+                  <mat-chip-grid #g2>
+                    @for (v of values2(); track v) { <mat-chip-row (removed)="removeValue(2, v)">{{ v }}<button matChipRemove><mat-icon>cancel</mat-icon></button></mat-chip-row> }
+                    <input [matChipInputFor]="g2" (matChipInputTokenEnd)="addValue(2, $event)" placeholder="30cm, 50cm…" />
+                  </mat-chip-grid>
+                </mat-form-field>
+              }
+            </div>
+          </div>
+          <button mat-flat-button (click)="generate()"><mat-icon>auto_fix_high</mat-icon>Tạo danh sách biến thể</button>
+        </div>
+
+        <div class="v-table">
+          <table>
+            <tr>
+              @if (prod.option1Name) { <th>{{ prod.option1Name }}</th> }
+              @if (prod.option1Name && prod.option2Name) { <th>{{ prod.option2Name }}</th> }
+              <th>SKU</th><th>Barcode</th>
+              <th>Giá bán <button class="ap" (click)="applyAll('price')" matTooltip="Áp dụng dòng đầu cho tất cả">⇩</button></th>
+              <th>Giá gốc <button class="ap" (click)="applyAll('compareAtPrice')" matTooltip="Áp dụng cho tất cả">⇩</button></th>
+              <th>Giá vốn <button class="ap" (click)="applyAll('costPrice')" matTooltip="Áp dụng cho tất cả">⇩</button></th>
+              <th>Tồn kho</th>
+              <th>KL (g) <button class="ap" (click)="applyAll('weightGram')" matTooltip="Áp dụng cho tất cả">⇩</button></th>
+              <th>Ảnh riêng (URL)</th><th>Bán</th>
+            </tr>
+            @for (v of prod.variants; track $index) {
+              <tr [class.off]="!v.active">
+                @if (prod.option1Name) { <td><input [(ngModel)]="v.option1" class="w-sm" /></td> }
+                @if (prod.option1Name && prod.option2Name) { <td><input [(ngModel)]="v.option2" class="w-sm" /></td> }
+                <td><input [(ngModel)]="v.sku" class="w-md" /></td>
+                <td><input [(ngModel)]="v.barcode" class="w-md" /></td>
+                <td><input type="number" [(ngModel)]="v.price" class="w-num" /></td>
+                <td><input type="number" [(ngModel)]="v.compareAtPrice" class="w-num" /></td>
+                <td><input type="number" [(ngModel)]="v.costPrice" class="w-num" /></td>
+                <td>
+                  @if (v.id) { <span class="chip" [class.red]="!v.stock" [matTooltip]="'Điều chỉnh ở mục Kho hàng'">{{ v.stock }}</span> }
+                  @else { <input type="number" min="0" [(ngModel)]="v.initialStock" class="w-sm" matTooltip="Tồn ban đầu" /> }
+                </td>
+                <td><input type="number" min="1" [(ngModel)]="v.weightGram" class="w-sm" /></td>
+                <td><input [(ngModel)]="v.imageUrl" class="w-md" placeholder="https://…" /></td>
+                <td><mat-checkbox [(ngModel)]="v.active" /></td>
+              </tr>
+            }
+          </table>
+        </div>
+        <p class="small muted">Giá gốc &gt; giá bán sẽ hiển thị gạch ngang và % giảm. Chương trình khuyến mãi đang chạy sẽ giảm thêm trên giá bán.
+          Biến thể đã có đơn hàng không bị xoá mà chỉ được tắt.</p>
+      </div>
+    </mat-tab>
+
+    <!-- ================= SEO ================= -->
+    <mat-tab label="SEO">
+      <div class="tab">
+        <mat-form-field class="full"><mat-label>Meta title</mat-label><input matInput maxlength="200" [(ngModel)]="prod.metaTitle" /></mat-form-field>
+        <mat-form-field class="full"><mat-label>Meta description</mat-label><textarea matInput rows="3" maxlength="300" [(ngModel)]="prod.metaDescription"></textarea></mat-form-field>
+        <div class="serp">
+          <div class="s-title">{{ prod.metaTitle || prod.name || 'Tên sản phẩm' }}</div>
+          <div class="s-url">localhost:4200/products/{{ prod.slug || 'slug-san-pham' }}</div>
+          <div class="s-desc">{{ prod.metaDescription || prod.shortDescription || 'Mô tả hiển thị trên Google…' }}</div>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

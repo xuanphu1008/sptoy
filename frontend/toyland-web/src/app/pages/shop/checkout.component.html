@@ -1,0 +1,168 @@
+<div class="container page">
+  <div class="row between wrap">
+    <h1>Thanh toán</h1>
+    <a mat-button routerLink="/cart"><mat-icon>arrow_back</mat-icon>Quay lại giỏ hàng</a>
+  </div>
+
+  <div class="layout">
+    <div>
+      <!-- 1. Dia chi -->
+      <section class="card step">
+        <h3><span class="num">1</span>Địa chỉ nhận hàng</h3>
+        @if (selectedAddress(); as a) {
+          @if (!showAllAddresses()) {
+            <div class="addr on">
+              <mat-icon>location_on</mat-icon>
+              <div class="grow">
+                <b>{{ a.receiverName }}</b> · {{ a.phone }} @if (a.isDefault) { <span class="chip red">Mặc định</span> }
+                <div class="muted">{{ a.fullAddress }}</div>
+                @if (!a.wardCode) { <div class="small hint">Địa chỉ nhập tay → phí ship tính theo mức cố định.</div> }
+              </div>
+              <button mat-button (click)="showAllAddresses.set(true)">Thay đổi</button>
+            </div>
+          } @else {
+            @for (x of addresses(); track x.id) {
+              <div class="addr" [class.on]="x.id === addressId()" (click)="chooseAddress(x.id)">
+                <mat-radio-button [checked]="x.id === addressId()" />
+                <div class="grow">
+                  <b>{{ x.receiverName }}</b> · {{ x.phone }} @if (x.isDefault) { <span class="chip red">Mặc định</span> }
+                  <div class="muted">{{ x.fullAddress }}</div>
+                </div>
+                <button mat-button (click)="$event.stopPropagation(); addAddress(x)">Sửa</button>
+              </div>
+            }
+          }
+        } @else {
+          <p class="muted">Bạn chưa có địa chỉ giao hàng.</p>
+        }
+        <button mat-stroked-button (click)="addAddress()"><mat-icon>add</mat-icon>Thêm địa chỉ mới</button>
+      </section>
+
+      <!-- 2. San pham -->
+      <section class="card step">
+        <h3><span class="num">2</span>Sản phẩm ({{ quote()?.lines?.length ?? 0 }})</h3>
+        @for (l of quote()?.lines ?? []; track l.variantId) {
+          <div class="line-item">
+            <img [src]="l.imageUrl || ph" alt="" />
+            <div class="info">
+              <div class="name">{{ l.productName }}</div>
+              @if (l.variantName) { <div class="variant">{{ l.variantName }}</div> }
+              @if (!l.available) { <div class="warn">{{ l.message }}</div> }
+            </div>
+            <div class="right">
+              <div>{{ l.unitPrice | vnd }} × {{ l.quantity }}</div>
+              <div class="price">{{ l.lineTotal | vnd }}</div>
+            </div>
+          </div>
+        }
+        <div class="gift">
+          <mat-checkbox [checked]="giftWrap()" (change)="toggleGift($event.checked)">
+            <mat-icon>card_giftcard</mat-icon> Gói quà tặng kèm thiệp (+{{ cart.config().giftWrapFee | vnd }})
+          </mat-checkbox>
+          @if (giftWrap()) {
+            <mat-form-field class="full mt-8"><mat-label>Lời chúc trên thiệp</mat-label>
+              <textarea matInput rows="2" maxlength="300" [(ngModel)]="giftMessage" placeholder="Chúc bé sinh nhật vui vẻ!"></textarea>
+            </mat-form-field>
+          }
+        </div>
+        <mat-form-field class="full"><mat-label>Ghi chú cho cửa hàng (không bắt buộc)</mat-label>
+          <input matInput maxlength="500" [(ngModel)]="note" placeholder="Ví dụ: giao giờ hành chính" />
+        </mat-form-field>
+      </section>
+
+      <!-- 3. Voucher -->
+      <section class="card step">
+        <h3><span class="num">3</span>Mã giảm giá</h3>
+        @if (appliedVoucher() && quote()?.voucherCode) {
+          <div class="applied">
+            <mat-icon>check_circle</mat-icon>
+            <div class="grow"><b>{{ quote()?.voucherCode }}</b> — {{ quote()?.voucherName }}</div>
+            <button mat-button (click)="removeVoucher()">Bỏ mã</button>
+          </div>
+        } @else {
+          <div class="row">
+            <mat-form-field class="grow dense-field"><mat-label>Nhập mã giảm giá</mat-label>
+              <input matInput [(ngModel)]="voucherInput" (keyup.enter)="applyVoucher()" style="text-transform: uppercase" />
+            </mat-form-field>
+            <button mat-flat-button (click)="applyVoucher()">Áp dụng</button>
+          </div>
+          @if (vouchers().length) {
+            <div class="vlist">
+              @for (v of vouchers(); track v.id) {
+                <div class="ticket" (click)="applyVoucher(v.code)">
+                  <div class="t-left">{{ v.type === 'FREESHIP' ? 'FREE SHIP' : v.type === 'PERCENT' ? '-' + v.value + '%' : 'GIẢM' }}</div>
+                  <div class="t-body"><b>{{ v.code }}</b><div class="small">{{ v.summary }}</div></div>
+                </div>
+              }
+            </div>
+          }
+        }
+      </section>
+
+      <!-- Diem thuong -->
+      @if (quote(); as q) {
+        <section class="card step points" [class.on]="usePoints()">
+          <div class="pt-ico"><mat-icon>stars</mat-icon></div>
+          <div class="grow">
+            <b>Điểm thưởng ToyLand</b>
+            @if (q.pointsBalance > 0) {
+              <div class="small muted">Bạn có <b>{{ q.pointsBalance }}</b> điểm · dùng tối đa <b>{{ q.pointsMax }}</b> điểm cho đơn này
+                (giảm {{ q.pointsMax * q.pointValue | vnd }})</div>
+            } @else {
+              <div class="small muted">Chưa có điểm. Mỗi 10.000đ mua hàng được tích điểm, 1 điểm = {{ q.pointValue }}đ cho lần mua sau.</div>
+            }
+            @if (q.pointsToEarn > 0) { <div class="small earn"><mat-icon>add_circle</mat-icon>Nhận thêm <b>{{ q.pointsToEarn }}</b> điểm khi đơn hoàn tất</div> }
+          </div>
+          <mat-slide-toggle [checked]="usePoints()" (change)="togglePoints($event.checked)" [disabled]="q.pointsMax <= 0"
+                            aria-label="Dùng điểm thưởng">Dùng điểm</mat-slide-toggle>
+        </section>
+      }
+
+      <!-- 4. Thanh toan -->
+      <section class="card step">
+        <h3><span class="num">4</span>Phương thức thanh toán</h3>
+        <mat-radio-group [value]="payment()" (change)="payment.set($event.value)" class="pay">
+          <mat-radio-button value="COD" class="pm" [class.on]="payment() === 'COD'">
+            <div class="row"><mat-icon>payments</mat-icon><div><b>Thanh toán khi nhận hàng (COD)</b><div class="small muted">Trả tiền mặt cho shipper khi nhận hàng</div></div></div>
+          </mat-radio-button>
+          <mat-radio-button value="MOMO" class="pm" [class.on]="payment() === 'MOMO'" [disabled]="quote() && !quote()!.momoEnabled">
+            <div class="row"><span class="momo">MoMo</span><div><b>Thanh toán qua ví MoMo</b>
+              <div class="small muted">
+                @if (quote() && !quote()!.momoEnabled) { Thanh toán MoMo đang tắt } @else { Quét QR bằng app MoMo hoặc thẻ ATM/Visa trên trang MoMo — thanh toán trong 15 phút }
+              </div></div></div>
+          </mat-radio-button>
+        </mat-radio-group>
+      </section>
+    </div>
+
+    <!-- Tong ket -->
+    <aside>
+      <div class="card">
+        <h3>Chi tiết thanh toán</h3>
+        @if (quote(); as q) {
+          <div class="sum-row"><span>Tạm tính</span><span>{{ q.subtotal | vnd }}</span></div>
+          @if (q.discount > 0) { <div class="sum-row"><span>Giảm giá voucher</span><span class="discount">-{{ q.discount | vnd }}</span></div> }
+          @if (q.pointsDiscount > 0) { <div class="sum-row"><span>Dùng {{ q.pointsUsed }} điểm thưởng</span><span class="discount">-{{ q.pointsDiscount | vnd }}</span></div> }
+          <div class="sum-row"><span>Phí vận chuyển @if (q.shippingProvider) { <span class="small muted">({{ q.shippingProvider }})</span> }</span><span>{{ q.shippingFee | vnd }}</span></div>
+          @if (q.shippingDiscount > 0) { <div class="sum-row"><span>Giảm phí vận chuyển</span><span class="discount">-{{ q.shippingDiscount | vnd }}</span></div> }
+          @if (q.giftWrapFee > 0) { <div class="sum-row"><span>Gói quà</span><span>{{ q.giftWrapFee | vnd }}</span></div> }
+          <div class="sum-row total"><span>Tổng thanh toán</span><span class="v">{{ q.total | vnd }}</span></div>
+          @if (q.shippingMessage) { <div class="small muted mt-8"><mat-icon class="i">info</mat-icon>{{ q.shippingMessage }}</div> }
+          @for (i of q.issues; track i) { <div class="warn mt-8"><mat-icon class="i">error</mat-icon>{{ i }}</div> }
+          @if (auth.needsEmailVerification()) {
+            <div class="verify-box mt-8">
+              <mat-icon>mark_email_unread</mat-icon>
+              <div><b>Xác nhận email để đặt hàng</b>
+                <div class="small">Mở liên kết chúng tôi đã gửi tới {{ auth.user()?.email }}. Giỏ hàng của bạn vẫn được giữ nguyên.</div>
+                <a routerLink="/verify-email" [queryParams]="{ returnUrl: '/checkout' }" class="link small bold">Gửi lại email xác nhận →</a></div>
+            </div>
+          }
+          <button mat-flat-button class="full place" [disabled]="placing() || !q.canPlaceOrder || !addressId() || auth.needsEmailVerification()" (click)="place()">
+            {{ placing() ? 'Đang xử lý…' : payment() === 'MOMO' ? 'Thanh toán qua MoMo' : 'Đặt hàng' }}
+          </button>
+          <p class="small muted center">Bằng việc đặt hàng, bạn đồng ý với <a routerLink="/policy/terms" class="link">Điều khoản sử dụng</a> của ToyLand.</p>
+        }
+      </div>
+    </aside>
+  </div>
+</div>
