@@ -17,7 +17,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.toyland.common.exception.ApiException;
 
-/** Luu anh upload vao thu muc uploads/ tren server, tra ve URL cong khai /uploads/... */
+/**
+ * Luu anh upload: neu da cau hinh Cloudinary thi day len Cloudinary (giu vinh vien khi chay tren cloud),
+ * nguoc lai luu vao thu muc uploads/ tren server va tra ve URL cong khai /uploads/...
+ */
 @Service
 public class FileStorageService {
 
@@ -25,9 +28,11 @@ public class FileStorageService {
 
 	private final Path root;
 	private final String publicBaseUrl;
+	private final CloudinaryUploader cloudinary;
 
-	public FileStorageService(@Value("${app.upload-dir}") String uploadDir, @Value("${app.public-base-url}") String publicBaseUrl)
-			throws IOException {
+	public FileStorageService(@Value("${app.upload-dir}") String uploadDir, @Value("${app.public-base-url}") String publicBaseUrl,
+			CloudinaryUploader cloudinary) throws IOException {
+		this.cloudinary = cloudinary;
 		this.root = Paths.get(uploadDir).toAbsolutePath().normalize();
 		Files.createDirectories(root);
 		this.publicBaseUrl = publicBaseUrl.replaceAll("/+$", "");
@@ -45,6 +50,13 @@ public class FileStorageService {
 		String ext = name.contains(".") ? name.substring(name.lastIndexOf('.') + 1).toLowerCase(Locale.ROOT) : "";
 		if (!ALLOWED_EXT.contains(ext)) {
 			throw ApiException.badRequest("Định dạng ảnh không hỗ trợ (jpg, png, webp, gif)");
+		}
+		if (cloudinary.isEnabled()) {
+			try {
+				return cloudinary.upload(file.getBytes(), "anh." + ext, folder);
+			} catch (IOException e) {
+				throw ApiException.badRequest("Không đọc được file: " + e.getMessage());
+			}
 		}
 		LocalDate d = LocalDate.now();
 		String rel = folder + "/" + d.getYear() + "/" + String.format("%02d", d.getMonthValue()) + "/"
