@@ -10,7 +10,8 @@ import { LoadingService } from './loading.service';
  */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
-  const isAuthCall = req.url.includes('/auth/');
+  // Chi cac API xac thuc CONG KHAI moi khong gan token; /auth/me, /auth/resend-verification... can token cua nguoi dung
+  const isAuthCall = /\/auth\/(login|register|refresh|logout|forgot-password|reset-password|verify-email)(\?|$)/.test(req.url);
   const token = auth.accessToken;
   const withToken = token && !isAuthCall ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req;
 

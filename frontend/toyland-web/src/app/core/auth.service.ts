@@ -35,7 +35,13 @@ export class AuthService {
   constructor() {
     // Dong bo giua cac tab: xac nhan email / dang xuat o tab khac -> tab nay cap nhat theo
     window.addEventListener('storage', (e) => {
-      if (e.key === KEY) this.session.set(this.load());
+      if (e.key !== KEY) return;
+      this.session.set(this.load());
+      // Tab dang mo trang quan tri nhung tab khac vua dang nhap bang tai khoan khong du quyen (hoac dang xuat):
+      // dua ve trang phu hop thay vi de lai giao dien cu
+      const url = this.router.url;
+      if (url.startsWith('/admin') && !this.isStaff()) this.router.navigate([this.isLoggedIn() ? '/' : '/login']);
+      else if (!this.isLoggedIn() && (url.startsWith('/account') || url.startsWith('/checkout'))) this.router.navigate(['/login']);
     });
   }
 
