@@ -5,7 +5,7 @@ import { toParams } from './api.service';
 import {
   AdminProduct, AdminProductRow, AdminReturnRow, AdminReview, AdminUser, AuditLog, Banner, BannedKeyword, Brand, Campaign, CategoryNode,
   CodRow, CustomerReportRow, Dashboard, OrderLedger, PaymentSummary, PaymentTxn, RefundQueueRow, Franchise, InventoryReport, LoyaltySummary, MessageResponse, Movement, Order, OrderStatus, OrderSummary,
-  Page, PointTx, ProductReportRow, ProductStatus, Receipt, SalesReport, StockRow, Supplier, SupplierOption, Voucher,
+  Page, PartnerCreated, PartnerRow, PointTx, ProductReportRow, ProductStatus, Receipt, SalesReport, StockRow, Supplier, SupplierOption, Voucher,
 } from './models';
 
 type Q = Record<string, unknown>;
@@ -17,6 +17,11 @@ export class AdminApi {
   private api = `${environment.apiUrl}/admin`;
 
   dashboard(q: Q) { return this.http.get<Dashboard>(`${this.api}/dashboard`, { params: toParams(q) }); }
+
+  // ---- doi tac (provider API)
+  partners() { return this.http.get<PartnerRow[]>(`${this.api}/partners`); }
+  createPartner(body: unknown) { return this.http.post<PartnerCreated>(`${this.api}/partners`, body); }
+  setPartnerActive(id: number, active: boolean) { return this.http.patch<PartnerRow>(`${this.api}/partners/${id}/active`, { active }); }
 
   // ---- danh muc / thuong hieu / nhan vat
   categories() { return this.http.get<CategoryNode[]>(`${this.api}/categories`); }

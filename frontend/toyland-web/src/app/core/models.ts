@@ -300,3 +300,6 @@ export interface OrderLedger {
   orderId: number; orderCode: string; paymentMethod: PaymentMethod; paymentStatus: PaymentStatus; total: number; paid: number;
   refunded: number; refundRemaining: number; canCollect: boolean; canRefund: boolean; transactions: PaymentTxn[];
 }
+
+export interface PartnerRow { id: number; name: string; apiKey: string; active: boolean; rateLimitPerMin: number; lastUsedAt: string | null; }
+export interface PartnerCreated { id: number; name: string; apiKey: string; secret: string; note: string; }

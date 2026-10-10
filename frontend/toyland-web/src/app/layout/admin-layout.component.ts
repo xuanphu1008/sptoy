@@ -34,6 +34,7 @@ const NAV: NavItem[] = [
   { path: '/admin/campaigns', label: 'Chương trình KM', icon: 'campaign', adminOnly: true, group: 'Marketing' },
   { path: '/admin/banners', label: 'Banner trang chủ', icon: 'view_carousel', adminOnly: true, group: 'Marketing' },
   { path: '/admin/users', label: 'Người dùng & Điểm thưởng', icon: 'group', adminOnly: true, group: 'Hệ thống' },
+  { path: '/admin/partners', label: 'Đối tác & API', icon: 'hub', adminOnly: true, group: 'Hệ thống' },
   { path: '/admin/audit-logs', label: 'Nhật ký hoạt động', icon: 'history', adminOnly: true, group: 'Hệ thống' },
 ];
 

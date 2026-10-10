@@ -22,5 +22,6 @@ export const ADMIN_ROUTES: Routes = [
   { path: 'suppliers', title: 'Nhà cung cấp - Admin', loadComponent: () => import('./suppliers.component').then((m) => m.SuppliersComponent) },
   { path: 'reports', title: 'Báo cáo - Admin', canActivate: [adminGuard], loadComponent: () => import('./reports.component').then((m) => m.ReportsComponent) },
   { path: 'audit-logs', title: 'Nhật ký hoạt động - Admin', canActivate: [adminGuard], loadComponent: () => import('./audit-logs.component').then((m) => m.AuditLogsComponent) },
+  { path: 'partners', title: 'Đối tác & API - Admin', canActivate: [adminGuard], loadComponent: () => import('./partners.component').then((m) => m.PartnersComponent) },
   { path: 'users', title: 'Người dùng - Admin', canActivate: [adminGuard], loadComponent: () => import('./users.component').then((m) => m.UsersComponent) },
 ];
