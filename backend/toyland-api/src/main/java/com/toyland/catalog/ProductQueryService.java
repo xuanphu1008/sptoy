@@ -29,7 +29,7 @@ import com.toyland.common.util.TextUtils;
 import com.toyland.promotion.Campaign;
 import com.toyland.promotion.CampaignScope;
 import com.toyland.promotion.PricingService;
-import com.toyland.review.ReviewRepository;
+import com.toyland.review.ReviewStatsApi;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -45,16 +45,16 @@ public class ProductQueryService {
 
 	private final ProductRepository productRepository;
 	private final CategoryRepository categoryRepository;
-	private final ReviewRepository reviewRepository;
+	private final ReviewStatsApi reviewStats;
 	private final PricingService pricingService;
 	private final ProductMapper mapper;
 	private final EntityManager em;
 
 	public ProductQueryService(ProductRepository productRepository, CategoryRepository categoryRepository,
-			ReviewRepository reviewRepository, PricingService pricingService, ProductMapper mapper, EntityManager em) {
+			ReviewStatsApi reviewStats, PricingService pricingService, ProductMapper mapper, EntityManager em) {
 		this.productRepository = productRepository;
 		this.categoryRepository = categoryRepository;
-		this.reviewRepository = reviewRepository;
+		this.reviewStats = reviewStats;
 		this.pricingService = pricingService;
 		this.mapper = mapper;
 		this.em = em;
@@ -286,7 +286,7 @@ public class ProductQueryService {
 		}
 		long total = 0;
 		long sum = 0;
-		for (Object[] r : reviewRepository.countByRating(productId)) {
+		for (Object[] r : reviewStats.countByRating(productId)) {
 			int rating = ((Number) r[0]).intValue();
 			long c = ((Number) r[1]).longValue();
 			counts.put(rating, c);
@@ -295,7 +295,7 @@ public class ProductQueryService {
 		}
 		BigDecimal avg = total == 0 ? BigDecimal.ZERO
 				: BigDecimal.valueOf(sum).divide(BigDecimal.valueOf(total), 1, RoundingMode.HALF_UP);
-		return new RatingSummary(avg, total, counts, reviewRepository.countWithImages(productId));
+		return new RatingSummary(avg, total, counts, reviewStats.countWithImages(productId));
 	}
 
 	/** Pham vi cac chuong trinh giam gia dang chay, danh muc da mo rong ca danh muc con. */

@@ -14,7 +14,7 @@ import com.toyland.auth.RefreshTokenRepository;
 import com.toyland.common.dto.PageResponse;
 import com.toyland.common.exception.ApiException;
 import com.toyland.common.util.TextUtils;
-import com.toyland.order.OrderRepository;
+import com.toyland.order.OrderQueryApi;
 import com.toyland.user.dto.UserDtos.AdminUserDto;
 import com.toyland.user.dto.UserDtos.AdminUserRequest;
 
@@ -23,16 +23,16 @@ import com.toyland.user.dto.UserDtos.AdminUserRequest;
 public class AdminUserService {
 
 	private final UserRepository userRepository;
-	private final OrderRepository orderRepository;
+	private final OrderQueryApi orders;
 	private final RefreshTokenRepository refreshTokenRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final CurrentUserService currentUser;
 	private final AuditService audit;
 
-	public AdminUserService(UserRepository userRepository, OrderRepository orderRepository,
+	public AdminUserService(UserRepository userRepository, OrderQueryApi orders,
 			RefreshTokenRepository refreshTokenRepository, PasswordEncoder passwordEncoder, CurrentUserService currentUser, AuditService audit) {
 		this.userRepository = userRepository;
-		this.orderRepository = orderRepository;
+		this.orders = orders;
 		this.refreshTokenRepository = refreshTokenRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.currentUser = currentUser;
@@ -42,7 +42,7 @@ public class AdminUserService {
 	private AdminUserDto toDto(User u) {
 		boolean locked = u.getLockedUntil() != null && u.getLockedUntil().isAfter(LocalDateTime.now());
 		return new AdminUserDto(u.getId(), u.getUsername(), u.getFullName(), u.getEmail(), u.getPhone(), u.getRole(),
-				u.isEnabled(), locked, u.getLockedUntil(), orderRepository.countOfUser(u.getId()), u.getCreatedAt(), u.getPoints(),
+				u.isEnabled(), locked, u.getLockedUntil(), orders.countOrdersOfUser(u.getId()), u.getCreatedAt(), u.getPoints(),
 				u.getLifetimePoints(), com.toyland.loyalty.LoyaltyRules.tierOf(u.getLifetimePoints()).label(), u.isEmailVerified());
 	}
 
@@ -119,7 +119,7 @@ public class AdminUserService {
 		if (u.getId().equals(currentUser.requireId())) {
 			throw ApiException.badRequest("Không thể xoá tài khoản đang đăng nhập");
 		}
-		if (orderRepository.countOfUser(id) > 0) {
+		if (orders.countOrdersOfUser(id) > 0) {
 			throw ApiException.conflict("Tài khoản đã có đơn hàng, hãy khoá tài khoản thay vì xoá");
 		}
 		userRepository.delete(u);

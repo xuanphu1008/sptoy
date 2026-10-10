@@ -7955,7 +7955,7 @@
 							]
 						},
 						{
-							"name": "Hình thức hoàn không hợp lệ → 400",
+							"name": "Hình thức hoàn không hợp lệ (PAYPAL) → 400",
 							"request": {
 								"method": "POST",
 								"header": [
@@ -7989,7 +7989,7 @@
 								},
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"amount\": 10000,\n  \"method\": \"MOMO\"\n}",
+									"raw": "{\n  \"amount\": 10000,\n  \"method\": \"PAYPAL\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"

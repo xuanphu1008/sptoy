@@ -3,6 +3,7 @@
 Claude outputs/
 .github/modernize/
 backend/toyland-backend/
+m2/
 
 # Build & thu vien tai ve
 **/node_modules/
@@ -27,3 +28,5 @@ backend/toyland-backend/
 .DS_Store
 Thumbs.db
 ~$*
+
+

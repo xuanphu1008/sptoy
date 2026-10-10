@@ -1,5 +1,7 @@
 package com.toyland.user;
 
+import org.springframework.context.ApplicationEventPublisher;
+
 import java.util.List;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -9,16 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 import com.toyland.auth.CurrentUserService;
 import com.toyland.auth.EmailVerificationService;
 import com.toyland.auth.RefreshTokenRepository;
-import com.toyland.cart.CartItemRepository;
 import com.toyland.common.exception.ApiException;
 import com.toyland.common.util.TextUtils;
-import com.toyland.order.OrderRepository;
+import com.toyland.order.OrderQueryApi;
 import com.toyland.user.dto.UserDtos.AddressDto;
 import com.toyland.user.dto.UserDtos.AddressRequest;
 import com.toyland.user.dto.UserDtos.ChangePasswordRequest;
 import com.toyland.user.dto.UserDtos.ProfileDto;
 import com.toyland.user.dto.UserDtos.ProfileRequest;
-import com.toyland.wishlist.WishlistRepository;
 
 /** Khach hang tu quan ly tai khoan: ho so, mat khau, so dia chi, xoa tai khoan. */
 @Service
@@ -31,23 +31,21 @@ public class AccountService {
 	private final UserRepository userRepository;
 	private final AddressRepository addressRepository;
 	private final RefreshTokenRepository refreshTokenRepository;
-	private final OrderRepository orderRepository;
-	private final CartItemRepository cartItemRepository;
-	private final WishlistRepository wishlistRepository;
+	private final OrderQueryApi orders;
+	private final ApplicationEventPublisher events;
 	private final PasswordEncoder passwordEncoder;
 	private final EmailVerificationService emailVerification;
 
 	public AccountService(CurrentUserService currentUser, UserRepository userRepository, AddressRepository addressRepository,
-			RefreshTokenRepository refreshTokenRepository, OrderRepository orderRepository,
-			CartItemRepository cartItemRepository, WishlistRepository wishlistRepository, PasswordEncoder passwordEncoder,
+			RefreshTokenRepository refreshTokenRepository, OrderQueryApi orders,
+			ApplicationEventPublisher events, PasswordEncoder passwordEncoder,
 			EmailVerificationService emailVerification) {
 		this.currentUser = currentUser;
 		this.userRepository = userRepository;
 		this.addressRepository = addressRepository;
 		this.refreshTokenRepository = refreshTokenRepository;
-		this.orderRepository = orderRepository;
-		this.cartItemRepository = cartItemRepository;
-		this.wishlistRepository = wishlistRepository;
+		this.orders = orders;
+		this.events = events;
 		this.passwordEncoder = passwordEncoder;
 		this.emailVerification = emailVerification;
 	}
@@ -112,10 +110,10 @@ public class AccountService {
 			throw ApiException.badRequest("WRONG_PASSWORD", "Mật khẩu không đúng");
 		}
 		refreshTokenRepository.revokeAllOfUser(u.getId());
-		cartItemRepository.deleteAllOfUser(u.getId());
 		addressRepository.deleteAllOfUser(u.getId());
-		wishlistRepository.deleteAll(wishlistRepository.findAllOfUser(u.getId()));
-		if (orderRepository.countOfUser(u.getId()) > 0) {
+		// gio hang, yeu thich thuoc mien khac: phat su kien de cac mien do tu don du lieu cua minh
+		events.publishEvent(new UserAccountDeletedEvent(u.getId()));
+		if (orders.countOrdersOfUser(u.getId()) > 0) {
 			u.setUsername("deleted_" + u.getId());
 			u.setFullName("Người dùng đã xoá");
 			u.setEmail("deleted_" + u.getId() + "@toyland.local");

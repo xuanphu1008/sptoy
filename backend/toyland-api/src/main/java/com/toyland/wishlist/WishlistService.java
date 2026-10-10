@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.toyland.auth.CurrentUserService;
 import com.toyland.catalog.Product;
 import com.toyland.catalog.ProductMapper;
-import com.toyland.catalog.ProductRepository;
+import com.toyland.catalog.CatalogApi;
 import com.toyland.catalog.dto.CatalogDtos.ProductCard;
 import com.toyland.common.exception.ApiException;
 import com.toyland.promotion.PricingService;
@@ -19,15 +19,15 @@ import com.toyland.user.User;
 public class WishlistService {
 
 	private final WishlistRepository repo;
-	private final ProductRepository productRepository;
+	private final CatalogApi catalog;
 	private final CurrentUserService currentUser;
 	private final ProductMapper mapper;
 	private final PricingService pricingService;
 
-	public WishlistService(WishlistRepository repo, ProductRepository productRepository, CurrentUserService currentUser,
+	public WishlistService(WishlistRepository repo, CatalogApi catalog, CurrentUserService currentUser,
 			ProductMapper mapper, PricingService pricingService) {
 		this.repo = repo;
-		this.productRepository = productRepository;
+		this.catalog = catalog;
 		this.currentUser = currentUser;
 		this.mapper = mapper;
 		this.pricingService = pricingService;
@@ -49,7 +49,7 @@ public class WishlistService {
 		if (repo.findOne(u.getId(), productId).isPresent()) {
 			return;
 		}
-		Product p = productRepository.findByIdAndDeletedFalse(productId).orElseThrow(() -> ApiException.notFound("sản phẩm", productId));
+		Product p = catalog.findProduct(productId).orElseThrow(() -> ApiException.notFound("sản phẩm", productId));
 		WishlistItem w = new WishlistItem();
 		w.setUser(u);
 		w.setProduct(p);

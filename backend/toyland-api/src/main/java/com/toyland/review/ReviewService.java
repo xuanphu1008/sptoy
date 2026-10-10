@@ -20,7 +20,7 @@ import com.toyland.common.exception.ApiException;
 import com.toyland.common.util.TextUtils;
 import com.toyland.notification.NotificationService;
 import com.toyland.order.OrderItem;
-import com.toyland.order.OrderItemRepository;
+import com.toyland.order.OrderQueryApi;
 import com.toyland.order.OrderStatus;
 import com.toyland.review.dto.ReviewDtos.AdminReviewDto;
 import com.toyland.review.dto.ReviewDtos.ReviewCreateRequest;
@@ -33,16 +33,16 @@ import com.toyland.user.User;
 public class ReviewService {
 
 	private final ReviewRepository repo;
-	private final OrderItemRepository orderItemRepository;
+	private final OrderQueryApi orders;
 	private final CurrentUserService currentUser;
 	private final KeywordService keywordService;
 	private final NotificationService notificationService;
 	private final AuditService audit;
 
-	public ReviewService(ReviewRepository repo, OrderItemRepository orderItemRepository, CurrentUserService currentUser,
+	public ReviewService(ReviewRepository repo, OrderQueryApi orders, CurrentUserService currentUser,
 			KeywordService keywordService, NotificationService notificationService, AuditService audit) {
 		this.repo = repo;
-		this.orderItemRepository = orderItemRepository;
+		this.orders = orders;
 		this.currentUser = currentUser;
 		this.keywordService = keywordService;
 		this.notificationService = notificationService;
@@ -59,7 +59,7 @@ public class ReviewService {
 	public ReviewDto create(ReviewCreateRequest req) {
 		User u = currentUser.require();
 		EmailVerificationService.requireVerified(u, "viết đánh giá");
-		OrderItem item = orderItemRepository.findOwn(req.orderItemId(), u.getId())
+		OrderItem item = orders.findOwnItem(req.orderItemId(), u.getId())
 				.orElseThrow(() -> ApiException.notFound("sản phẩm đã mua", req.orderItemId()));
 		OrderStatus st = item.getOrder().getStatus();
 		if (st != OrderStatus.DELIVERED && st != OrderStatus.COMPLETED) {

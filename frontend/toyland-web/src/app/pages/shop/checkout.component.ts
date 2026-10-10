@@ -45,6 +45,8 @@ export class CheckoutComponent implements OnInit {
   note = '';
   payment = signal<PaymentMethod>('COD');
   placing = signal(false);
+  /** Khóa chống đặt trùng: giữ nguyên khi mạng lỗi (retry an toàn), đổi khi server đã trả lời lỗi rõ ràng */
+  private idemKey = crypto.randomUUID();
   ph = PLACEHOLDER_IMG;
 
   ngOnInit(): void {
@@ -140,7 +142,7 @@ export class CheckoutComponent implements OnInit {
     this.api.placeOrder({
       addressId, voucherCode: this.appliedVoucher(), paymentMethod: this.payment(), note: this.note || null,
       giftWrap: this.giftWrap(), giftMessage: this.giftWrap() ? this.giftMessage || null : null, usePoints: this.usePoints(),
-    }).subscribe({
+    }, this.idemKey).subscribe({
       next: (r) => {
         this.cart.reload();
         if (r.paymentUrl) {
@@ -152,6 +154,7 @@ export class CheckoutComponent implements OnInit {
       },
       error: (e) => {
         this.placing.set(false);
+        if (e?.status >= 400 && e?.status < 500 && e?.status !== 409) this.idemKey = crypto.randomUUID();
         this.notify.error(e);
         this.refresh();
       },

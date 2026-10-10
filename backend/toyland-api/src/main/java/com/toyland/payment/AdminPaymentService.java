@@ -21,12 +21,11 @@ import com.toyland.common.exception.ApiException;
 import com.toyland.common.util.TextUtils;
 import com.toyland.notification.NotificationService;
 import com.toyland.order.Order;
-import com.toyland.order.OrderRepository;
+import com.toyland.order.OrderQueryApi;
 import com.toyland.order.OrderStatus;
 import com.toyland.order.PaymentMethod;
 import com.toyland.order.PaymentStatus;
 import com.toyland.order.ReturnRequest;
-import com.toyland.order.ReturnRequestRepository;
 import com.toyland.order.ReturnStatus;
 import com.toyland.payment.dto.PaymentDtos.CodRow;
 import com.toyland.payment.dto.PaymentDtos.CollectRequest;
@@ -51,20 +50,18 @@ public class AdminPaymentService {
 
 	private final PaymentTransactionRepository txnRepository;
 	private final PaymentLedgerService ledger;
-	private final OrderRepository orderRepository;
-	private final ReturnRequestRepository returnRepository;
+	private final OrderQueryApi orders;
 	private final CurrentUserService currentUser;
 	private final NotificationService notificationService;
 	private final AuditService audit;
 	private final MomoService momoService;
 
-	public AdminPaymentService(PaymentTransactionRepository txnRepository, PaymentLedgerService ledger, OrderRepository orderRepository,
-			ReturnRequestRepository returnRepository, CurrentUserService currentUser, NotificationService notificationService,
+	public AdminPaymentService(PaymentTransactionRepository txnRepository, PaymentLedgerService ledger, OrderQueryApi orders,
+			CurrentUserService currentUser, NotificationService notificationService,
 			AuditService audit, MomoService momoService) {
 		this.txnRepository = txnRepository;
 		this.ledger = ledger;
-		this.orderRepository = orderRepository;
-		this.returnRepository = returnRepository;
+		this.orders = orders;
 		this.currentUser = currentUser;
 		this.notificationService = notificationService;
 		this.audit = audit;
@@ -157,7 +154,7 @@ public class AdminPaymentService {
 
 		List<RefundQueueRow> queue = refundQueue();
 		BigDecimal pendingAmount = queue.stream().map(RefundQueueRow::remaining).reduce(BigDecimal.ZERO, BigDecimal::add);
-		Object[] codTotals = orderRepository.codOutstandingTotals(COD_OPEN).get(0);
+		Object[] codTotals = orders.codOutstandingTotals(COD_OPEN);
 		List<DailyFlow> daily = new ArrayList<>();
 		days.forEach((d, v) -> daily.add(new DailyFlow(d, v[0], v[1])));
 		return new PaymentSummary(p.from(), p.to(), momo, cod, other, totalIn, refunded, totalIn.subtract(refunded), success, momoFailed,
@@ -167,7 +164,7 @@ public class AdminPaymentService {
 	@Transactional(readOnly = true)
 	public List<RefundQueueRow> refundQueue() {
 		List<RefundQueueRow> rows = new ArrayList<>();
-		for (Order o : orderRepository.findRefundPending()) {
+		for (Order o : orders.findRefundPending()) {
 			BigDecimal[] a = amounts(o);
 			String reason = switch (o.getStatus()) {
 			case RETURNED -> "Khách trả hàng";
@@ -183,7 +180,7 @@ public class AdminPaymentService {
 
 	@Transactional(readOnly = true)
 	public PageResponse<CodRow> codOutstanding(int page, int size) {
-		Page<Order> r = orderRepository.findCodOutstanding(COD_OPEN, PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100)));
+		Page<Order> r = orders.findCodOutstanding(COD_OPEN, PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100)));
 		return PageResponse.of(r, o -> new CodRow(o.getId(), o.getOrderCode(), o.getReceiverName(), o.getPhone(), o.getStatus(),
 				o.getTotalAmount(), o.getCreatedAt()));
 	}
@@ -255,7 +252,7 @@ public class AdminPaymentService {
 
 	// ------------------------------------------------------------ tien ich
 	private Order find(Long id) {
-		return orderRepository.findById(id).orElseThrow(() -> ApiException.notFound("đơn hàng", id));
+		return orders.findById(id).orElseThrow(() -> ApiException.notFound("đơn hàng", id));
 	}
 
 	private boolean canCollect(Order o) {
@@ -273,7 +270,7 @@ public class AdminPaymentService {
 		BigDecimal refunded = ledger.refunded(o.getId());
 		BigDecimal target = paid;
 		if (o.getStatus() == OrderStatus.RETURNED) {
-			ReturnRequest rr = returnRepository.findByOrderId(o.getId()).orElse(null);
+			ReturnRequest rr = orders.findReturnOfOrder(o.getId()).orElse(null);
 			if (rr != null && rr.getStatus() == ReturnStatus.APPROVED && rr.getRefundAmount() != null) {
 				target = rr.getRefundAmount().min(paid);
 			}

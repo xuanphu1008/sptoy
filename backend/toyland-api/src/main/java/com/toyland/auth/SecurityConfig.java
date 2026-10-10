@@ -36,11 +36,14 @@ public class SecurityConfig {
 
 	private final JwtAuthFilter jwtAuthFilter;
 	private final RateLimitFilter rateLimitFilter;
+	private final com.toyland.partner.PartnerAuthFilter partnerAuthFilter;
 
 	@Value("${app.cors.allowed-origins}")
 	private String allowedOrigins;
 
-	public SecurityConfig(JwtAuthFilter jwtAuthFilter, RateLimitFilter rateLimitFilter) {
+	public SecurityConfig(JwtAuthFilter jwtAuthFilter, RateLimitFilter rateLimitFilter,
+			com.toyland.partner.PartnerAuthFilter partnerAuthFilter) {
+		this.partnerAuthFilter = partnerAuthFilter;
 		this.jwtAuthFilter = jwtAuthFilter;
 		this.rateLimitFilter = rateLimitFilter;
 	}
@@ -55,6 +58,8 @@ public class SecurityConfig {
 				// WebSocket handshake: xac thuc bang JWT o khung STOMP CONNECT (StompAuthInterceptor)
 				.requestMatchers("/ws", "/ws/**").permitAll()
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+				// API doi tac: tu xac thuc bang khoa API + chu ky HMAC (PartnerAuthFilter), khong dung JWT
+				.requestMatchers("/api/partner/**").permitAll()
 				// Xac thuc
 				.requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/refresh",
 						"/api/v1/auth/logout", "/api/v1/auth/forgot-password", "/api/v1/auth/reset-password",
@@ -72,7 +77,7 @@ public class SecurityConfig {
 				.requestMatchers("/api/v1/admin/users/**", "/api/v1/admin/vouchers/**", "/api/v1/admin/campaigns/**",
 						"/api/v1/admin/banners/**", "/api/v1/admin/categories/**", "/api/v1/admin/brands/**",
 						"/api/v1/admin/franchises/**", "/api/v1/admin/reports/**", "/api/v1/admin/audit-logs/**",
-						"/api/v1/admin/banned-keywords/**", "/api/v1/admin/loyalty/**").hasRole("ADMIN")
+						"/api/v1/admin/banned-keywords/**", "/api/v1/admin/loyalty/**", "/api/v1/admin/partners/**").hasRole("ADMIN")
 				// ADMIN + STAFF
 				.requestMatchers("/api/v1/admin/**").hasAnyRole("ADMIN", "STAFF")
 				.anyRequest().authenticated())
@@ -82,6 +87,7 @@ public class SecurityConfig {
 				.accessDeniedHandler((req, res, e) -> writeError(res, 403, "FORBIDDEN",
 						"Bạn không có quyền truy cập chức năng này", req.getRequestURI())))
 			// Gioi han tan suat theo IP chay truoc JWT (sau CorsFilter nen phan hoi 429 van co header CORS)
+			.addFilterBefore(partnerAuthFilter, UsernamePasswordAuthenticationFilter.class)
 			.addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
 			.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 		return http.build();
@@ -134,5 +140,13 @@ public class SecurityConfig {
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
 		return config.getAuthenticationManager();
+	}
+
+	/** PartnerAuthFilter chi chay trong chuoi bao mat. */
+	@Bean
+	public FilterRegistrationBean<com.toyland.partner.PartnerAuthFilter> partnerFilterRegistration(com.toyland.partner.PartnerAuthFilter filter) {
+		FilterRegistrationBean<com.toyland.partner.PartnerAuthFilter> reg = new FilterRegistrationBean<>(filter);
+		reg.setEnabled(false);
+		return reg;
 	}
 }

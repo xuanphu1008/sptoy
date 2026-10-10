@@ -8,10 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.toyland.audit.AuditService;
-import com.toyland.catalog.BrandRepository;
-import com.toyland.catalog.CategoryRepository;
-import com.toyland.catalog.FranchiseRepository;
-import com.toyland.catalog.ProductRepository;
+import com.toyland.catalog.CatalogApi;
 import com.toyland.common.exception.ApiException;
 import com.toyland.common.util.TextUtils;
 import com.toyland.promotion.dto.PromotionDtos.CampaignDto;
@@ -22,19 +19,12 @@ import com.toyland.promotion.dto.PromotionDtos.CampaignRequest;
 public class CampaignService {
 
 	private final CampaignRepository repo;
-	private final CategoryRepository categoryRepository;
-	private final BrandRepository brandRepository;
-	private final FranchiseRepository franchiseRepository;
-	private final ProductRepository productRepository;
+	private final CatalogApi catalog;
 	private final AuditService audit;
 
-	public CampaignService(CampaignRepository repo, CategoryRepository categoryRepository, BrandRepository brandRepository,
-			FranchiseRepository franchiseRepository, ProductRepository productRepository, AuditService audit) {
+	public CampaignService(CampaignRepository repo, CatalogApi catalog, AuditService audit) {
 		this.repo = repo;
-		this.categoryRepository = categoryRepository;
-		this.brandRepository = brandRepository;
-		this.franchiseRepository = franchiseRepository;
-		this.productRepository = productRepository;
+		this.catalog = catalog;
 		this.audit = audit;
 	}
 
@@ -85,10 +75,10 @@ public class CampaignService {
 		Long id = c.getScopeId();
 		Optional<String> name = switch (c.getScopeType()) {
 		case ALL -> Optional.of("Toàn bộ sản phẩm");
-		case CATEGORY -> categoryRepository.findById(id).map(x -> x.getName());
-		case BRAND -> brandRepository.findById(id).map(x -> x.getName());
-		case FRANCHISE -> franchiseRepository.findById(id).map(x -> x.getName());
-		case PRODUCT -> productRepository.findById(id).map(x -> x.getName());
+		case CATEGORY -> catalog.categoryName(id);
+		case BRAND -> catalog.brandName(id);
+		case FRANCHISE -> catalog.franchiseName(id);
+		case PRODUCT -> catalog.productName(id);
 		};
 		if (name.isEmpty() && strict) {
 			throw ApiException.notFound("đối tượng áp dụng", id);

@@ -10,7 +10,6 @@ import com.toyland.catalog.dto.CatalogDtos.BrandDto;
 import com.toyland.catalog.dto.CatalogDtos.CategoryNode;
 import com.toyland.catalog.dto.CatalogDtos.FranchiseDto;
 import com.toyland.catalog.dto.CatalogDtos.ProductCard;
-import com.toyland.promotion.BannerRepository;
 import com.toyland.promotion.BannerService;
 import com.toyland.promotion.Campaign;
 import com.toyland.promotion.PricingService;
@@ -23,15 +22,15 @@ public class HomeService {
 
 	private final ProductQueryService queryService;
 	private final PricingService pricingService;
-	private final BannerRepository bannerRepository;
+	private final BannerService bannerService;
 	private final BrandRepository brandRepository;
 	private final FranchiseRepository franchiseRepository;
 
-	public HomeService(ProductQueryService queryService, PricingService pricingService, BannerRepository bannerRepository,
+	public HomeService(ProductQueryService queryService, PricingService pricingService, BannerService bannerService,
 			BrandRepository brandRepository, FranchiseRepository franchiseRepository) {
 		this.queryService = queryService;
 		this.pricingService = pricingService;
-		this.bannerRepository = bannerRepository;
+		this.bannerService = bannerService;
 		this.brandRepository = brandRepository;
 		this.franchiseRepository = franchiseRepository;
 	}
@@ -52,7 +51,7 @@ public class HomeService {
 		ProductFilter featured = new ProductFilter(null, null, null, null, null, null, null, null, null, null, true, null, true, scope);
 		ProductFilter sale = new ProductFilter(null, null, null, null, null, null, null, null, true, true, null, null, true, scope);
 		return new HomeData(
-				bannerRepository.findVisible(LocalDateTime.now()).stream().map(BannerService::toDto).toList(),
+				bannerService.visible(),
 				tree.toNodes(true),
 				queryService.list(featured, "bestseller", 8, campaigns),
 				queryService.list(base, "bestseller", 8, campaigns),
@@ -61,5 +60,15 @@ public class HomeService {
 				campaigns.stream().map(c -> new CampaignInfo(c.getId(), c.getName(), c.getBadgeLabel(), c.getDiscountPercent(), c.getEndAt())).toList(),
 				franchiseRepository.findAllByOrderByNameAsc().stream().map(ProductMapper::franchise).toList(),
 				brandRepository.findAllByOrderByNameAsc().stream().map(ProductMapper::brand).toList());
+	}
+
+	@Transactional(readOnly = true)
+	public List<BrandDto> brands() {
+		return brandRepository.findAllByOrderByNameAsc().stream().map(ProductMapper::brand).toList();
+	}
+
+	@Transactional(readOnly = true)
+	public List<FranchiseDto> franchises() {
+		return franchiseRepository.findAllByOrderByNameAsc().stream().map(ProductMapper::franchise).toList();
 	}
 }

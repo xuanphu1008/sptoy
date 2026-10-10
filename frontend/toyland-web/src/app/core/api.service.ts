@@ -68,7 +68,11 @@ export class ShopApi {
   placeOrder(body: {
     addressId: number; voucherCode?: string | null; paymentMethod: string; note?: string | null; giftWrap: boolean; giftMessage?: string | null;
     usePoints: boolean;
-  }) { return this.http.post<PlaceOrderResponse>(`${this.api}/orders`, body); }
+  }, idempotencyKey?: string) {
+    // Idempotency-Key: gửi lại cùng khóa (bấm đúp, mạng chập chờn) chỉ tạo 1 đơn
+    const headers = idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : undefined;
+    return this.http.post<PlaceOrderResponse>(`${this.api}/orders`, body, { headers });
+  }
   myOrders(q: Record<string, unknown>) { return this.http.get<Page<OrderSummary>>(`${this.api}/orders`, { params: toParams(q) }); }
   order(id: number) { return this.http.get<Order>(`${this.api}/orders/${id}`); }
   cancelOrder(id: number, reason: string) { return this.http.post<Order>(`${this.api}/orders/${id}/cancel`, { reason }); }

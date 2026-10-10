@@ -16,9 +16,8 @@ import com.toyland.auth.CurrentUserService;
 import com.toyland.common.dto.PageResponse;
 import com.toyland.common.exception.ApiException;
 import com.toyland.common.util.AfterCommit;
-import com.toyland.user.Role;
 import com.toyland.user.User;
-import com.toyland.user.UserRepository;
+import com.toyland.user.UserApi;
 
 /**
  * Thong bao trong ung dung.
@@ -33,14 +32,14 @@ public class NotificationService {
 	public static final String USER_QUEUE = "/queue/notifications";
 
 	private final NotificationRepository repo;
-	private final UserRepository userRepository;
+	private final UserApi users;
 	private final CurrentUserService currentUser;
 	private final SimpMessagingTemplate broker;
 
-	public NotificationService(NotificationRepository repo, UserRepository userRepository, CurrentUserService currentUser,
+	public NotificationService(NotificationRepository repo, UserApi users, CurrentUserService currentUser,
 			SimpMessagingTemplate broker) {
 		this.repo = repo;
-		this.userRepository = userRepository;
+		this.users = users;
 		this.currentUser = currentUser;
 		this.broker = broker;
 	}
@@ -51,7 +50,7 @@ public class NotificationService {
 
 	/** Goi toi toan bo nhan vien + quan tri (don moi, tra hang, danh gia vi pham, sap het hang...). */
 	public void notifyStaff(String type, String title, String message, String link) {
-		List<User> staff = userRepository.findByRoleInAndEnabledTrueAndDeletedFalse(List.of(Role.ADMIN, Role.STAFF));
+		List<User> staff = users.activeStaff();
 		for (User u : staff) {
 			notifyUser(u, type, title, message, link);
 		}

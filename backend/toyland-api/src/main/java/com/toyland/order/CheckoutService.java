@@ -38,13 +38,12 @@ import com.toyland.promotion.PricingService;
 import com.toyland.promotion.VoucherService;
 import com.toyland.promotion.VoucherService.VoucherResult;
 import com.toyland.promotion.VoucherType;
-import com.toyland.promotion.VoucherUsage;
-import com.toyland.promotion.VoucherUsageRepository;
+import com.toyland.promotion.VoucherUsageApi;
 import com.toyland.shipping.ShippingService;
 import com.toyland.shipping.ShippingService.FeeResult;
 import com.toyland.shipping.ShippingService.Parcel;
 import com.toyland.user.Address;
-import com.toyland.user.AddressRepository;
+import com.toyland.user.UserApi;
 import com.toyland.user.User;
 
 /**
@@ -59,10 +58,10 @@ public class CheckoutService {
 	private final CurrentUserService currentUser;
 	private final CartItemRepository cartRepository;
 	private final CartService cartService;
-	private final AddressRepository addressRepository;
+	private final UserApi users;
 	private final ShippingService shippingService;
 	private final VoucherService voucherService;
-	private final VoucherUsageRepository voucherUsageRepository;
+	private final VoucherUsageApi voucherUsages;
 	private final PricingService pricingService;
 	private final InventoryService inventoryService;
 	private final OrderRepository orderRepository;
@@ -70,23 +69,22 @@ public class CheckoutService {
 	private final OrderWorkflow workflow;
 	private final MailService mailService;
 	private final LoyaltyService loyaltyService;
-	private final com.toyland.user.UserRepository userRepository;
 
 	@Value("${app.order.payment-timeout-minutes}")
 	private int paymentTimeout;
 
 	public CheckoutService(CurrentUserService currentUser, CartItemRepository cartRepository, CartService cartService,
-			AddressRepository addressRepository, ShippingService shippingService, VoucherService voucherService,
-			VoucherUsageRepository voucherUsageRepository, PricingService pricingService, InventoryService inventoryService,
+			UserApi users, ShippingService shippingService, VoucherService voucherService,
+			VoucherUsageApi voucherUsages, PricingService pricingService, InventoryService inventoryService,
 			OrderRepository orderRepository, MomoService momoService, OrderWorkflow workflow, MailService mailService,
-			LoyaltyService loyaltyService, com.toyland.user.UserRepository userRepository) {
+			LoyaltyService loyaltyService) {
 		this.currentUser = currentUser;
 		this.cartRepository = cartRepository;
 		this.cartService = cartService;
-		this.addressRepository = addressRepository;
+		this.users = users;
 		this.shippingService = shippingService;
 		this.voucherService = voucherService;
-		this.voucherUsageRepository = voucherUsageRepository;
+		this.voucherUsages = voucherUsages;
 		this.pricingService = pricingService;
 		this.inventoryService = inventoryService;
 		this.orderRepository = orderRepository;
@@ -94,7 +92,6 @@ public class CheckoutService {
 		this.workflow = workflow;
 		this.mailService = mailService;
 		this.loyaltyService = loyaltyService;
-		this.userRepository = userRepository;
 	}
 
 	/** Ket qua tinh toan noi bo (giu lai entity de dat hang). */
@@ -138,7 +135,7 @@ public class CheckoutService {
 		String provider = null;
 		String shipMsg = "Chọn địa chỉ để tính phí vận chuyển";
 		if (addressId != null) {
-			address = addressRepository.findOwn(addressId, user.getId()).orElseThrow(() -> ApiException.notFound("địa chỉ", addressId));
+			address = users.findOwnAddress(addressId, user.getId()).orElseThrow(() -> ApiException.notFound("địa chỉ", addressId));
 			FeeResult fr = shippingService.fee(address.getDistrictId(), address.getWardCode(),
 					new Parcel(Math.max(weight, 100), maxL, maxW, Math.min(Math.max(sumH, 1), 200), subtotal));
 			fee = fr.fee();
@@ -180,7 +177,7 @@ public class CheckoutService {
 		// diem thuong: toi da X% gia tri hang sau voucher
 		LoyaltyRules rules = loyaltyService.rules();
 		BigDecimal goods = subtotal.subtract(discount).max(BigDecimal.ZERO);
-		int balance = userRepository.pointsOf(user.getId());
+		int balance = users.pointsOf(user.getId());
 		int pointsMax = rules.maxRedeemable(balance, goods);
 		int pointsUsed = usePoints ? pointsMax : 0;
 		BigDecimal pointsDiscount = rules.valueOf(pointsUsed);
@@ -267,13 +264,9 @@ public class CheckoutService {
 		if (calc.voucher() != null) {
 			var voucher = calc.voucher().voucher();
 			voucherService.consume(voucher);
-			VoucherUsage u = new VoucherUsage();
-			u.setVoucher(voucher);
-			u.setUser(user);
-			u.setOrder(o);
 			// chi tinh phan giam do voucher (khong gom freeship theo nguong 500k)
-			u.setDiscountAmount(calc.voucher().discount().add(Money.min(q.shippingFee(), calc.voucher().shippingDiscount())));
-			voucherUsageRepository.save(u);
+			voucherUsages.recordUsage(voucher, user, o,
+					calc.voucher().discount().add(Money.min(q.shippingFee(), calc.voucher().shippingDiscount())));
 		}
 		loyaltyService.redeem(user, o, calc.pointsUsed());
 		cartRepository.deleteAll(calc.items());

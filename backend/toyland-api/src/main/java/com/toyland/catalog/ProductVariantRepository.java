@@ -38,4 +38,15 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
 	@Query("SELECT v FROM ProductVariant v JOIN FETCH v.product p WHERE v.active = true AND p.deleted = false "
 			+ "AND p.status = com.toyland.catalog.ProductStatus.ACTIVE AND v.stockQuantity <= :threshold ORDER BY v.stockQuantity ASC")
 	List<ProductVariant> findLowStock(@Param("threshold") int threshold, Pageable pageable);
+
+	/** Bien the dang ban (san pham ACTIVE, chua xoa) cho API doi tac. */
+	@Query(value = "SELECT v FROM ProductVariant v JOIN FETCH v.product p WHERE v.active = true AND p.deleted = false "
+			+ "AND p.status = com.toyland.catalog.ProductStatus.ACTIVE",
+			countQuery = "SELECT COUNT(v) FROM ProductVariant v JOIN v.product p WHERE v.active = true AND p.deleted = false "
+			+ "AND p.status = com.toyland.catalog.ProductStatus.ACTIVE")
+	Page<ProductVariant> findSellable(Pageable pageable);
+
+	@Query("SELECT v FROM ProductVariant v JOIN FETCH v.product p WHERE v.sku = :sku AND v.active = true AND p.deleted = false "
+			+ "AND p.status = com.toyland.catalog.ProductStatus.ACTIVE")
+	Optional<ProductVariant> findSellableBySku(@Param("sku") String sku);
 }

@@ -16,7 +16,7 @@ import com.toyland.cart.dto.CartDtos.GuestLine;
 import com.toyland.catalog.Product;
 import com.toyland.catalog.ProductStatus;
 import com.toyland.catalog.ProductVariant;
-import com.toyland.catalog.ProductVariantRepository;
+import com.toyland.catalog.CatalogApi;
 import com.toyland.common.exception.ApiException;
 import com.toyland.promotion.Campaign;
 import com.toyland.promotion.PricingService;
@@ -30,14 +30,14 @@ public class CartService {
 	public static final int MAX_QTY = 99;
 
 	private final CartItemRepository repo;
-	private final ProductVariantRepository variantRepository;
+	private final CatalogApi catalog;
 	private final CurrentUserService currentUser;
 	private final PricingService pricingService;
 
-	public CartService(CartItemRepository repo, ProductVariantRepository variantRepository, CurrentUserService currentUser,
+	public CartService(CartItemRepository repo, CatalogApi catalog, CurrentUserService currentUser,
 			PricingService pricingService) {
 		this.repo = repo;
-		this.variantRepository = variantRepository;
+		this.catalog = catalog;
 		this.currentUser = currentUser;
 		this.pricingService = pricingService;
 	}
@@ -103,7 +103,7 @@ public class CartService {
 	@Transactional(noRollbackFor = ApiException.class)
 	public CartView add(Long variantId, int quantity) {
 		User u = currentUser.require();
-		ProductVariant v = variantRepository.findWithProduct(variantId).orElseThrow(() -> ApiException.notFound("sản phẩm", variantId));
+		ProductVariant v = catalog.findVariantWithProduct(variantId).orElseThrow(() -> ApiException.notFound("sản phẩm", variantId));
 		CartItem item = repo.findOne(u.getId(), variantId).orElse(null);
 		int newQty = (item == null ? 0 : item.getQuantity()) + quantity;
 		String reason = unavailableReason(v, Math.min(newQty, MAX_QTY));
@@ -152,7 +152,7 @@ public class CartService {
 				if (g == null || g.variantId() == null || g.quantity() == null || g.quantity() < 1) {
 					continue;
 				}
-				ProductVariant v = variantRepository.findWithProduct(g.variantId()).orElse(null);
+				ProductVariant v = catalog.findVariantWithProduct(g.variantId()).orElse(null);
 				if (v == null) {
 					continue;
 				}
@@ -184,7 +184,7 @@ public class CartService {
 		}
 		List<CartLine> lines = new ArrayList<>();
 		if (!qty.isEmpty()) {
-			for (ProductVariant v : variantRepository.findAllWithProduct(qty.keySet())) {
+			for (ProductVariant v : catalog.findVariantsWithProduct(qty.keySet())) {
 				lines.add(line(null, v, Math.min(qty.get(v.getId()), MAX_QTY), campaigns));
 			}
 		}

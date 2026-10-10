@@ -31,15 +31,10 @@ public class CatalogController {
 
 	private final ProductQueryService queryService;
 	private final HomeService homeService;
-	private final BrandRepository brandRepository;
-	private final FranchiseRepository franchiseRepository;
 
-	public CatalogController(ProductQueryService queryService, HomeService homeService, BrandRepository brandRepository,
-			FranchiseRepository franchiseRepository) {
+	public CatalogController(ProductQueryService queryService, HomeService homeService) {
 		this.queryService = queryService;
 		this.homeService = homeService;
-		this.brandRepository = brandRepository;
-		this.franchiseRepository = franchiseRepository;
 	}
 
 	@Operation(summary = "Dữ liệu trang chủ (banner, danh mục, sản phẩm nổi bật/bán chạy/mới/giảm giá...)")
@@ -56,15 +51,13 @@ public class CatalogController {
 	}
 
 	@GetMapping("/brands")
-	@Transactional(readOnly = true)
 	public List<BrandDto> brands() {
-		return brandRepository.findAllByOrderByNameAsc().stream().map(ProductMapper::brand).toList();
+		return homeService.brands();
 	}
 
 	@GetMapping("/franchises")
-	@Transactional(readOnly = true)
 	public List<FranchiseDto> franchises() {
-		return franchiseRepository.findAllByOrderByNameAsc().stream().map(ProductMapper::franchise).toList();
+		return homeService.franchises();
 	}
 
 	@Operation(summary = "Tìm kiếm / lọc / sắp xếp sản phẩm",

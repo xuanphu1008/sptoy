@@ -9,23 +9,18 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.toyland.catalog.ProductRepository;
+import com.toyland.catalog.CatalogApi;
 import com.toyland.catalog.ProductVariant;
-import com.toyland.catalog.ProductVariantRepository;
 import com.toyland.inventory.InventoryService;
 import com.toyland.order.OrderMapper;
-import com.toyland.order.OrderRepository;
+import com.toyland.order.OrderQueryApi;
 import com.toyland.order.OrderStatus;
-import com.toyland.order.ReturnRequestRepository;
 import com.toyland.order.ReturnStatus;
 import com.toyland.order.dto.OrderDtos.OrderSummary;
-import com.toyland.user.Role;
-import com.toyland.user.UserRepository;
+import com.toyland.user.UserApi;
 
 import jakarta.persistence.EntityManager;
 
@@ -37,21 +32,15 @@ public class DashboardService {
 	private static final String DONE = "('DELIVERED','COMPLETED')";
 
 	private final EntityManager em;
-	private final OrderRepository orderRepository;
-	private final UserRepository userRepository;
-	private final ProductRepository productRepository;
-	private final ProductVariantRepository variantRepository;
-	private final ReturnRequestRepository returnRepository;
+	private final OrderQueryApi orders;
+	private final UserApi users;
+	private final CatalogApi catalog;
 
-	public DashboardService(EntityManager em, OrderRepository orderRepository, UserRepository userRepository,
-			ProductRepository productRepository, ProductVariantRepository variantRepository,
-			ReturnRequestRepository returnRepository) {
+	public DashboardService(EntityManager em, OrderQueryApi orders, UserApi users, CatalogApi catalog) {
 		this.em = em;
-		this.orderRepository = orderRepository;
-		this.userRepository = userRepository;
-		this.productRepository = productRepository;
-		this.variantRepository = variantRepository;
-		this.returnRepository = returnRepository;
+		this.orders = orders;
+		this.users = users;
+		this.catalog = catalog;
 	}
 
 	public record Summary(BigDecimal revenue, long orders, long completedOrders, long cancelledOrders, double cancelRate,
@@ -141,18 +130,17 @@ public class DashboardService {
 		BigDecimal aov = done == 0 ? BigDecimal.ZERO : revenue.divide(BigDecimal.valueOf(done), 0, RoundingMode.HALF_UP);
 		double cancelRate = totalOrders == 0 ? 0 : Math.round(cancelled * 1000.0 / totalOrders) / 10.0;
 		Summary summary = new Summary(revenue, totalOrders, done, cancelled, cancelRate, aov,
-				userRepository.countByRoleAndCreatedAtBetween(Role.CUSTOMER, start, end), productRepository.countActive(),
-				variantRepository.countLowStock(InventoryService.LOW_STOCK),
-				orderRepository.countByStatusIn(List.of(OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.PACKING)),
-				returnRepository.countByStatus(ReturnStatus.REQUESTED));
+				users.countCustomersCreatedBetween(start, end), catalog.countActiveProducts(),
+				catalog.countLowStock(InventoryService.LOW_STOCK),
+				orders.countByStatusIn(List.of(OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.PACKING)),
+				orders.countReturnsByStatus(ReturnStatus.REQUESTED));
 
 		List<LowStockItem> low = new ArrayList<>();
-		for (ProductVariant v : variantRepository.findLowStock(InventoryService.LOW_STOCK, PageRequest.of(0, 8))) {
+		for (ProductVariant v : catalog.findLowStock(InventoryService.LOW_STOCK, 8)) {
 			low.add(new LowStockItem(v.getId(), v.getProduct().getId(), v.getProduct().getName(), v.getDisplayName(), v.getSku(),
 					v.getStockQuantity()));
 		}
-		List<OrderSummary> recent = orderRepository.findAll(PageRequest.of(0, 6, Sort.by(Sort.Direction.DESC, "createdAt")))
-				.getContent().stream().map(OrderMapper::summary).toList();
+		List<OrderSummary> recent = orders.latest(6).stream().map(OrderMapper::summary).toList();
 		return new Dashboard(from, to, summary, series, top, byCategory, statusCounts, payment, low, recent);
 	}
 

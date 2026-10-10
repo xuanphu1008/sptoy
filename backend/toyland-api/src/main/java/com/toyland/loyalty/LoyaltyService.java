@@ -16,29 +16,29 @@ import com.toyland.loyalty.LoyaltyRules.Tier;
 import com.toyland.notification.NotificationService;
 import com.toyland.order.Order;
 import com.toyland.user.User;
-import com.toyland.user.UserRepository;
+import com.toyland.user.UserApi;
 
 /**
  * Khach hang than thiet: tich diem khi don HOAN TAT, dung diem khi dat hang, hoan diem khi huy/tra,
- * quan tri dieu chinh thu cong. So du diem cap nhat bang cau lenh nguyen tu (UserRepository.deductPoints/addPoints).
+ * quan tri dieu chinh thu cong. So du diem cap nhat bang cau lenh nguyen tu (UserApi.deductPoints/addPoints).
  */
 @Service
 @Transactional
 public class LoyaltyService {
 
-	private final UserRepository userRepository;
+	private final UserApi users;
 	private final PointTransactionRepository txRepository;
 	private final CurrentUserService currentUser;
 	private final NotificationService notificationService;
 	private final AuditService audit;
 	private final LoyaltyRules rules;
 
-	public LoyaltyService(UserRepository userRepository, PointTransactionRepository txRepository, CurrentUserService currentUser,
+	public LoyaltyService(UserApi users, PointTransactionRepository txRepository, CurrentUserService currentUser,
 			NotificationService notificationService, AuditService audit,
 			@Value("${app.loyalty.earn-per-amount:10000}") int earnPerAmount,
 			@Value("${app.loyalty.point-value:100}") int pointValue,
 			@Value("${app.loyalty.max-redeem-percent:50}") int maxRedeemPercent) {
-		this.userRepository = userRepository;
+		this.users = users;
 		this.txRepository = txRepository;
 		this.currentUser = currentUser;
 		this.notificationService = notificationService;
@@ -69,8 +69,8 @@ public class LoyaltyService {
 
 	@Transactional(readOnly = true)
 	public Summary summary(Long userId) {
-		User u = userRepository.findById(userId).orElseThrow(() -> ApiException.notFound("người dùng", userId));
-		int points = userRepository.pointsOf(userId);
+		User u = users.findById(userId).orElseThrow(() -> ApiException.notFound("người dùng", userId));
+		int points = users.pointsOf(userId);
 		Tier t = LoyaltyRules.tierOf(u.getLifetimePoints());
 		Tier next = LoyaltyRules.nextTier(u.getLifetimePoints());
 		return new Summary(points, u.getLifetimePoints(), dto(t), next == null ? null : dto(next),
@@ -100,7 +100,7 @@ public class LoyaltyService {
 		if (points <= 0) {
 			return;
 		}
-		if (userRepository.deductPoints(u.getId(), points) == 0) {
+		if (!users.deductPoints(u.getId(), points)) {
 			throw ApiException.conflict("Số điểm thưởng không đủ, vui lòng tải lại trang thanh toán");
 		}
 		record(u.getId(), o.getId(), PointType.REDEEM, -points, "Dùng điểm cho đơn " + o.getOrderCode(), u.getUsername());
@@ -112,7 +112,7 @@ public class LoyaltyService {
 			return;
 		}
 		Long uid = o.getUser().getId();
-		userRepository.addPoints(uid, o.getPointsUsed(), 0);
+		users.addPoints(uid, o.getPointsUsed(), 0);
 		record(uid, o.getId(), PointType.REFUND, o.getPointsUsed(), reason + " " + o.getOrderCode(), currentUser.actorName());
 	}
 
@@ -127,7 +127,7 @@ public class LoyaltyService {
 		if (pts <= 0) {
 			return;
 		}
-		userRepository.addPoints(u.getId(), pts, pts);
+		users.addPoints(u.getId(), pts, pts);
 		o.setPointsEarned(pts);
 		record(u.getId(), o.getId(), PointType.EARN, pts, "Tích điểm đơn " + o.getOrderCode(), "system");
 		notificationService.notifyUser(u, "POINTS_EARNED", "Bạn vừa nhận " + pts + " điểm thưởng",
@@ -139,13 +139,13 @@ public class LoyaltyService {
 		if (delta == 0) {
 			throw ApiException.badRequest("Số điểm điều chỉnh phải khác 0");
 		}
-		User u = userRepository.findById(userId).orElseThrow(() -> ApiException.notFound("người dùng", userId));
+		User u = users.findById(userId).orElseThrow(() -> ApiException.notFound("người dùng", userId));
 		if (delta < 0) {
-			if (userRepository.deductPoints(userId, -delta) == 0) {
-				throw ApiException.badRequest("Khách chỉ còn " + userRepository.pointsOf(userId) + " điểm");
+			if (!users.deductPoints(userId, -delta)) {
+				throw ApiException.badRequest("Khách chỉ còn " + users.pointsOf(userId) + " điểm");
 			}
 		} else {
-			userRepository.addPoints(userId, delta, 0);
+			users.addPoints(userId, delta, 0);
 		}
 		String n = note == null || note.isBlank() ? "Điều chỉnh bởi quản trị" : note.trim();
 		record(userId, null, PointType.ADJUST, delta, n, currentUser.actorName());
@@ -162,7 +162,7 @@ public class LoyaltyService {
 		t.setOrderId(orderId);
 		t.setType(type);
 		t.setPoints(points);
-		t.setBalanceAfter(userRepository.pointsOf(userId));
+		t.setBalanceAfter(users.pointsOf(userId));
 		t.setNote(note != null && note.length() > 300 ? note.substring(0, 300) : note);
 		t.setCreatedBy(by);
 		txRepository.save(t);

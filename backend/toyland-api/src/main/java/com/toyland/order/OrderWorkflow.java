@@ -12,8 +12,7 @@ import com.toyland.inventory.InventoryService;
 import com.toyland.inventory.MovementType;
 import com.toyland.notification.MailService;
 import com.toyland.notification.MailService.OrderMail;
-import com.toyland.promotion.Voucher;
-import com.toyland.promotion.VoucherUsageRepository;
+import com.toyland.promotion.VoucherUsageApi;
 
 /**
  * Trung tam xu ly chuyen trang thai don hang va cac tac dong kem theo
@@ -24,17 +23,17 @@ import com.toyland.promotion.VoucherUsageRepository;
 public class OrderWorkflow {
 
 	private final InventoryService inventoryService;
-	private final VoucherUsageRepository voucherUsageRepository;
+	private final VoucherUsageApi voucherUsages;
 	private final MailService mailService;
 	private final com.toyland.loyalty.LoyaltyService loyaltyService;
 	private final com.toyland.notification.NotificationService notificationService;
 	private final com.toyland.payment.PaymentLedgerService ledger;
 
-	public OrderWorkflow(InventoryService inventoryService, VoucherUsageRepository voucherUsageRepository,
+	public OrderWorkflow(InventoryService inventoryService, VoucherUsageApi voucherUsages,
 			MailService mailService, com.toyland.loyalty.LoyaltyService loyaltyService,
 			com.toyland.notification.NotificationService notificationService, com.toyland.payment.PaymentLedgerService ledger) {
 		this.inventoryService = inventoryService;
-		this.voucherUsageRepository = voucherUsageRepository;
+		this.voucherUsages = voucherUsages;
 		this.mailService = mailService;
 		this.loyaltyService = loyaltyService;
 		this.notificationService = notificationService;
@@ -82,11 +81,7 @@ public class OrderWorkflow {
 				inventoryService.change(v, i.getQuantity(), MovementType.CANCEL, o.getOrderCode(), "Hoàn kho do huỷ đơn");
 			}
 		}
-		voucherUsageRepository.findByOrder(o.getId()).ifPresent(u -> {
-			Voucher v = u.getVoucher();
-			v.setUsedCount(Math.max(0, v.getUsedCount() - 1));
-			voucherUsageRepository.delete(u);
-		});
+		voucherUsages.releaseUsageOfOrder(o.getId());
 		markRefundPending(o, "đơn bị huỷ");
 		loyaltyService.refundRedeemed(o, "Hoàn điểm do huỷ đơn");
 	}
