@@ -1,5 +1,6 @@
 // Kich ban demo SOA cho ToyLand: dong vai ben thu ba goi dich vu cua cua hang.
 // Chay:  node tools/soa-demo.mjs partner   (API doi tac ky HMAC)
+//        node tools/soa-demo.mjs soap      (dich vu SOAP/WSDL cho doi tac)
 //        node tools/soa-demo.mjs idem      (chong dat hang trung)
 // Bien moi truong: BASE (mac dinh http://localhost:8080), API_KEY, SECRET (cho "partner"),
 //                  USER, PASS (khach hang, cho "idem"; mac dinh khachhang / 123456)
@@ -70,7 +71,33 @@ async function idem() {
   console.log(`    ${C.r(diff.status)}  ${diff.body.code}`);
 }
 
+async function soap() {
+  if (!process.env.API_KEY || !process.env.SECRET) { console.log(C.r('Thieu API_KEY / SECRET')); process.exit(1); }
+  const call = async (label, op, sku, { secret = process.env.SECRET, ts = Math.floor(Date.now() / 1000), header = true } = {}) => {
+    const sig = crypto.createHmac('sha256', secret).update(`${ts}\n${op}\n${sku}`).digest('hex');
+    const hdr = header ? `<soapenv:Header><t:Auth><t:apiKey>${process.env.API_KEY}</t:apiKey><t:timestamp>${ts}</t:timestamp><t:signature>${sig}</t:signature></t:Auth></soapenv:Header>` : '<soapenv:Header/>';
+    const env = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:t="http://toyland.vn/soap/partner">${hdr}<soapenv:Body><t:${op}><t:sku>${sku}</t:sku></t:${op}></soapenv:Body></soapenv:Envelope>`;
+    const r = await fetch(BASE + '/soap/partner', { method: 'POST', headers: { 'Content-Type': 'text/xml; charset=utf-8' }, body: env });
+    const x = await r.text();
+    const fault = x.match(/<faultstring[^>]*>([^<]*)</);
+    console.log(`${fault ? C.r('FAULT') : C.g(r.status)}  ${C.b(label)}`);
+    console.log('    ' + (fault ? fault[1] : x.slice(x.indexOf('<ns2:Get'), x.indexOf('</SOAP-ENV:Body>')).slice(0, 260)));
+  };
+  console.log(C.y('\n[0] WSDL (hop dong dich vu): ' + BASE + '/soap/partner/partner.wsdl'));
+  const w = await (await fetch(BASE + '/soap/partner/partner.wsdl')).text();
+  console.log('    cac thao tac: ' + [...w.matchAll(/<wsdl:operation name="(\w+)"/g)].map(m => m[1]).filter((v, i, a) => a.indexOf(v) === i).join(', '));
+  console.log(C.y('\n[1] GetStock / GetProduct hop le'));
+  await call('GetStock LEG-0001', 'GetStockRequest', 'LEG-0001');
+  await call('GetProduct LEG-0001', 'GetProductRequest', 'LEG-0001');
+  console.log(C.y('\n[2] Cac truong hop loi tra ve SOAP Fault'));
+  await call('chu ky sai', 'GetStockRequest', 'LEG-0001', { secret: 'sai' });
+  await call('timestamp het han', 'GetStockRequest', 'LEG-0001', { ts: Math.floor(Date.now() / 1000) - 900 });
+  await call('thieu header Auth', 'GetStockRequest', 'LEG-0001', { header: false });
+  await call('SKU khong ton tai', 'GetStockRequest', 'KHONG-CO');
+}
+
 const cmd = process.argv[2];
 if (cmd === 'partner') await partner();
+else if (cmd === 'soap') await soap();
 else if (cmd === 'idem') await idem();
-else console.log('Dung: node tools/soa-demo.mjs partner|idem');
+else console.log('Dung: node tools/soa-demo.mjs partner|soap|idem');

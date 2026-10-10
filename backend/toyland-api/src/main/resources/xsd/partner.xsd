@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Hop dong dich vu SOAP cho doi tac ToyLand (contract-first): WSDL duoc sinh tu luoc do nay.
+  Dich vu chi doc: tra cuu hang dang ban va ton kho theo ma SKU.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:tns="http://toyland.vn/soap/partner"
+           targetNamespace="http://toyland.vn/soap/partner"
+           elementFormDefault="qualified">
+
+  <!-- Tieu de SOAP xac thuc: apiKey + timestamp (giay Unix) + signature = hex(HMAC-SHA256(secret, timestamp \n tenThaoTac \n sku)) -->
+  <xs:element name="Auth">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="apiKey" type="xs:string"/>
+        <xs:element name="timestamp" type="xs:long"/>
+        <xs:element name="signature" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="GetStockRequest">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="sku" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="GetStockResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="sku" type="xs:string"/>
+        <xs:element name="available" type="xs:int"/>
+        <xs:element name="inStock" type="xs:boolean"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="GetProductRequest">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="sku" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="GetProductResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="sku" type="xs:string"/>
+        <xs:element name="productName" type="xs:string"/>
+        <xs:element name="category" type="xs:string" minOccurs="0"/>
+        <xs:element name="brand" type="xs:string" minOccurs="0"/>
+        <xs:element name="price" type="xs:decimal"/>
+        <xs:element name="stock" type="xs:int"/>
+        <xs:element name="imageUrl" type="xs:string" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

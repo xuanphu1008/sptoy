@@ -60,6 +60,8 @@ public class SecurityConfig {
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 				// API doi tac: tu xac thuc bang khoa API + chu ky HMAC (PartnerAuthFilter), khong dung JWT
 				.requestMatchers("/api/partner/**").permitAll()
+				// SOAP cho doi tac: xac thuc bang tieu de SOAP (PartnerSoapAuthInterceptor)
+				.requestMatchers("/soap/**").permitAll()
 				// Xac thuc
 				.requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/refresh",
 						"/api/v1/auth/logout", "/api/v1/auth/forgot-password", "/api/v1/auth/reset-password",
