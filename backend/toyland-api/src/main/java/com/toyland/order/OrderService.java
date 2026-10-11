@@ -46,7 +46,7 @@ public class OrderService {
 
 	@Transactional(readOnly = true)
 	public PageResponse<OrderSummary> myOrders(OrderStatus status, int page, int size) {
-		return PageResponse.of(orderRepository.findOfUser(currentUser.requireId(), status, PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 500))),
+		return PageResponse.of(orderRepository.findOfUser(currentUser.requireId(), status, PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100))),
 				OrderMapper::summary);
 	}
 

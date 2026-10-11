@@ -5,7 +5,7 @@ import { toParams } from './api.service';
 import {
   AdminProduct, AdminProductRow, AdminReturnRow, AdminReview, AdminUser, AuditLog, Banner, BannedKeyword, Brand, Campaign, CategoryNode,
   CodRow, CustomerReportRow, Dashboard, OrderLedger, PaymentSummary, PaymentTxn, RefundQueueRow, Franchise, InventoryReport, LoyaltySummary, MessageResponse, Movement, Order, OrderStatus, OrderSummary,
-  Page, PartnerCreated, PartnerRow, PointTx, ProductReportRow, ProductStatus, Receipt, SalesReport, StockRow, Supplier, SupplierOption, Voucher,
+  Page, OutboxSummary, PartnerCreated, PartnerRow, PointTx, ProductReportRow, ProductStatus, Receipt, SalesReport, StockRow, Supplier, SupplierOption, Voucher,
 } from './models';
 
 type Q = Record<string, unknown>;
@@ -21,6 +21,9 @@ export class AdminApi {
   // ---- doi tac (provider API)
   partners() { return this.http.get<PartnerRow[]>(`${this.api}/partners`); }
   createPartner(body: unknown) { return this.http.post<PartnerCreated>(`${this.api}/partners`, body); }
+  setPartnerWebhook(id: number, webhookUrl: string) { return this.http.patch<PartnerRow>(`${this.api}/partners/${id}/webhook`, { webhookUrl }); }
+  outbox() { return this.http.get<OutboxSummary>(`${this.api}/outbox`); }
+  retryOutbox(id: number) { return this.http.post<{ message: string }>(`${this.api}/outbox/${id}/retry`, {}); }
   setPartnerActive(id: number, active: boolean) { return this.http.patch<PartnerRow>(`${this.api}/partners/${id}/active`, { active }); }
 
   // ---- danh muc / thuong hieu / nhan vat

@@ -98,7 +98,7 @@ public class InventoryService {
 	public PageResponse<StockRow> list(String keyword, boolean lowOnly, int page, int size) {
 		String kw = TextUtils.isBlank(keyword) ? null : TextUtils.normalize(keyword);
 		return PageResponse.of(variantRepository.searchInventory(kw, lowOnly ? LOW_STOCK : null,
-				PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 500), Sort.by(Sort.Direction.ASC, "stockQuantity").and(Sort.by("id")))), v -> {
+				PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100), Sort.by(Sort.Direction.ASC, "stockQuantity").and(Sort.by("id")))), v -> {
 					Product p = v.getProduct();
 					String img = v.getImageUrl() != null ? v.getImageUrl() : (p.getImages().isEmpty() ? null : p.getImages().get(0).getUrl());
 					return new StockRow(v.getId(), p.getId(), p.getName(), p.getSlug(), v.getSku(), v.getDisplayName(), img,
@@ -121,7 +121,7 @@ public class InventoryService {
 	@Transactional(readOnly = true)
 	public PageResponse<MovementDto> movements(Long variantId, MovementType type, String keyword, int page, int size) {
 		String kw = TextUtils.isBlank(keyword) ? null : keyword.trim().toLowerCase();
-		return PageResponse.of(movementRepository.search(variantId, type, kw, PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 500))), m -> new MovementDto(
+		return PageResponse.of(movementRepository.search(variantId, type, kw, PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100))), m -> new MovementDto(
 				m.getId(), m.getVariant() == null ? null : m.getVariant().getId(), m.getSku(), m.getType(), m.getQuantityChange(),
 				m.getBalanceAfter(), m.getRefCode(), m.getNote(), m.getCreatedBy(), m.getCreatedAt()));
 	}
@@ -171,7 +171,7 @@ public class InventoryService {
 
 	@Transactional(readOnly = true)
 	public PageResponse<ReceiptDto> receipts(Long supplierId, int page, int size) {
-		PageRequest pr = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 500));
+		PageRequest pr = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100));
 		return PageResponse.of(supplierId == null ? receiptRepository.findAllByOrderByIdDesc(pr)
 				: receiptRepository.findBySupplierRefIdOrderByIdDesc(supplierId, pr), this::toDto);
 	}

@@ -1,0 +1,487 @@
+openapi: 3.0.1
+info:
+  title: ToyLand Partner API
+  version: 1.0.0
+  description: 'Hợp đồng dịch vụ ToyLand cung cấp cho đối tác bên thứ ba (đại lý, sàn, ứng dụng khác).
+
+
+    **Xác thực.** Mỗi yêu cầu gửi 3 header: `X-Api-Key`, `X-Timestamp` (giây Unix), `X-Signature`.
+
+    Chữ ký = hex(HMAC-SHA256(secret, canonical)) với canonical gồm 4 dòng nối bằng ký tự xuống dòng: `timestamp`, `METHOD`,
+    `đường dẫn kèm query`, `SHA-256 (hex) của thân yêu cầu` (thân rỗng thì băm chuỗi rỗng). Secret không bao giờ gửi qua mạng.
+    Timestamp lệch quá 5 phút bị từ chối.
+
+
+    **Idempotency.** `POST /orders` bắt buộc có header `Idempotency-Key` (chữ, số, `. _ : -`, tối đa 80 ký tự). Cùng khóa
+    và cùng nội dung: nhận lại đơn đã tạo. Cùng khóa khác nội dung: 409 `IDEMPOTENCY_KEY_REUSED`.
+
+
+    **Phiên bản.** Thêm trường hoặc thao tác mới không đổi phiên bản. Xoá hoặc đổi nghĩa trường phải lên `/v2`; `/v1` được
+    giữ thêm 6 tháng sau khi công bố `/v2`, kèm header `Deprecation` và `Sunset`.
+
+
+    Dịch vụ SOAP tương đương (tra cứu hàng, tồn kho, trạng thái đơn) có WSDL tại `/soap/partner/partner.wsdl`.'
+servers:
+- url: https://sptoy-api.onrender.com
+  description: Bản triển khai
+- url: http://localhost:8080
+  description: Chạy trên máy
+paths:
+  /api/partner/v1/orders:
+    post:
+      tags:
+      - 13. API đối tác (Partner v1) - ký HMAC
+      summary: Đặt đơn hàng (trừ kho ngay)
+      description: 'Bắt buộc gửi header Idempotency-Key. Gửi lại cùng khóa và cùng nội dung sẽ nhận lại đơn đã tạo. externalRef
+        là mã đơn bên đối tác, không được trùng: trùng thì 409 PARTNER_REF_DUPLICATE. Hết hàng: 400 OUT_OF_STOCK. SKU không
+        bán: 422 SKU_NOT_SELLABLE.'
+      operationId: createOrder
+      parameters:
+      - $ref: '#/components/parameters/ApiKey'
+      - $ref: '#/components/parameters/Timestamp'
+      - $ref: '#/components/parameters/Signature'
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrder'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PartnerOrder'
+        '401':
+          description: Khóa/chữ ký sai, timestamp lệch quá 5 phút (PARTNER_AUTH_FAILED, PARTNER_TIMESTAMP_EXPIRED)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Vượt hạn mức yêu cầu mỗi phút của đối tác
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - partnerHmac: []
+  /api/partner/v1/orders/{orderCode}/cancel:
+    post:
+      tags:
+      - 13. API đối tác (Partner v1) - ký HMAC
+      summary: Huỷ đơn khi chưa được xác nhận, hoàn lại kho
+      operationId: cancelOrder
+      parameters:
+      - $ref: '#/components/parameters/ApiKey'
+      - $ref: '#/components/parameters/Timestamp'
+      - $ref: '#/components/parameters/Signature'
+      - name: orderCode
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelOrder'
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PartnerOrder'
+        '401':
+          description: Khóa/chữ ký sai, timestamp lệch quá 5 phút (PARTNER_AUTH_FAILED, PARTNER_TIMESTAMP_EXPIRED)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Vượt hạn mức yêu cầu mỗi phút của đối tác
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - partnerHmac: []
+  /api/partner/v1/stock/{sku}:
+    get:
+      tags:
+      - 13. API đối tác (Partner v1) - ký HMAC
+      summary: Tồn kho theo SKU
+      operationId: getStock
+      parameters:
+      - $ref: '#/components/parameters/ApiKey'
+      - $ref: '#/components/parameters/Timestamp'
+      - $ref: '#/components/parameters/Signature'
+      - name: sku
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/StockView'
+        '401':
+          description: Khóa/chữ ký sai, timestamp lệch quá 5 phút (PARTNER_AUTH_FAILED, PARTNER_TIMESTAMP_EXPIRED)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Vượt hạn mức yêu cầu mỗi phút của đối tác
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - partnerHmac: []
+  /api/partner/v1/products:
+    get:
+      tags:
+      - 13. API đối tác (Partner v1) - ký HMAC
+      summary: Danh sách hàng đang bán (phân trang, tối đa 100/trang)
+      operationId: listProducts
+      parameters:
+      - $ref: '#/components/parameters/ApiKey'
+      - $ref: '#/components/parameters/Timestamp'
+      - $ref: '#/components/parameters/Signature'
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SellablePage'
+        '401':
+          description: Khóa/chữ ký sai, timestamp lệch quá 5 phút (PARTNER_AUTH_FAILED, PARTNER_TIMESTAMP_EXPIRED)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Vượt hạn mức yêu cầu mỗi phút của đối tác
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - partnerHmac: []
+  /api/partner/v1/products/{sku}:
+    get:
+      tags:
+      - 13. API đối tác (Partner v1) - ký HMAC
+      summary: Chi tiết một mã hàng (SKU)
+      operationId: getProduct
+      parameters:
+      - $ref: '#/components/parameters/ApiKey'
+      - $ref: '#/components/parameters/Timestamp'
+      - $ref: '#/components/parameters/Signature'
+      - name: sku
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SellableItem'
+        '401':
+          description: Khóa/chữ ký sai, timestamp lệch quá 5 phút (PARTNER_AUTH_FAILED, PARTNER_TIMESTAMP_EXPIRED)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Vượt hạn mức yêu cầu mỗi phút của đối tác
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - partnerHmac: []
+  /api/partner/v1/orders/{orderCode}:
+    get:
+      tags:
+      - 13. API đối tác (Partner v1) - ký HMAC
+      summary: Xem đơn theo mã ToyLand (chỉ đơn của chính đối tác)
+      operationId: getOrder
+      parameters:
+      - $ref: '#/components/parameters/ApiKey'
+      - $ref: '#/components/parameters/Timestamp'
+      - $ref: '#/components/parameters/Signature'
+      - name: orderCode
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PartnerOrder'
+        '401':
+          description: Khóa/chữ ký sai, timestamp lệch quá 5 phút (PARTNER_AUTH_FAILED, PARTNER_TIMESTAMP_EXPIRED)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Vượt hạn mức yêu cầu mỗi phút của đối tác
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - partnerHmac: []
+components:
+  securitySchemes:
+    partnerHmac:
+      type: apiKey
+      in: header
+      name: X-Signature
+      description: Kèm X-Api-Key và X-Timestamp; xem mô tả ở đầu tài liệu
+  parameters:
+    ApiKey:
+      name: X-Api-Key
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Khóa định danh đối tác (dạng tlp_...)
+    Timestamp:
+      name: X-Timestamp
+      in: header
+      required: true
+      schema:
+        type: integer
+        format: int64
+      description: Giây Unix hiện tại
+    Signature:
+      name: X-Signature
+      in: header
+      required: true
+      schema:
+        type: string
+      description: HMAC-SHA256 hex của chuỗi canonical
+  schemas:
+    CancelOrder:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 300
+          minLength: 0
+    CreateOrder:
+      type: object
+      properties:
+        externalRef:
+          type: string
+          maxLength: 64
+          minLength: 0
+        receiverName:
+          type: string
+          maxLength: 100
+          minLength: 0
+        phone:
+          type: string
+          maxLength: 20
+          minLength: 0
+        province:
+          type: string
+          maxLength: 100
+          minLength: 0
+        district:
+          type: string
+          maxLength: 100
+          minLength: 0
+        ward:
+          type: string
+          maxLength: 100
+          minLength: 0
+        addressDetail:
+          type: string
+          maxLength: 255
+          minLength: 0
+        note:
+          type: string
+          maxLength: 500
+          minLength: 0
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderLine'
+          maxItems: 50
+          minItems: 0
+      required:
+      - addressDetail
+      - district
+      - externalRef
+      - items
+      - phone
+      - province
+      - receiverName
+      - ward
+    LineView:
+      type: object
+      properties:
+        sku:
+          type: string
+        productName:
+          type: string
+        variantName:
+          type: string
+        unitPrice:
+          type: number
+        quantity:
+          type: integer
+          format: int32
+        lineTotal:
+          type: number
+    OrderLine:
+      type: object
+      properties:
+        sku:
+          type: string
+          maxLength: 60
+          minLength: 0
+        quantity:
+          type: integer
+          format: int32
+          maximum: 99
+          minimum: 1
+      required:
+      - sku
+    PartnerOrder:
+      type: object
+      properties:
+        orderCode:
+          type: string
+        externalRef:
+          type: string
+        status:
+          type: string
+        statusLabel:
+          type: string
+        paymentStatus:
+          type: string
+        subtotal:
+          type: number
+        shippingFee:
+          type: number
+        total:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/LineView'
+    SellableItem:
+      type: object
+      properties:
+        sku:
+          type: string
+        productId:
+          type: integer
+          format: int64
+        productName:
+          type: string
+        variantName:
+          type: string
+        category:
+          type: string
+        brand:
+          type: string
+        price:
+          type: number
+        compareAtPrice:
+          type: number
+        stock:
+          type: integer
+          format: int32
+        imageUrl:
+          type: string
+    SellablePage:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SellableItem'
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    StockView:
+      type: object
+      properties:
+        sku:
+          type: string
+        available:
+          type: integer
+          format: int32
+        inStock:
+          type: boolean
+    ErrorResponse:
+      type: object
+      description: Dạng lỗi chung của mọi API ToyLand
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        code:
+          type: string
+          description: Mã lỗi ổn định để máy xử lý, ví dụ OUT_OF_STOCK
+        message:
+          type: string
+        path:
+          type: string
+        details:
+          type: object
+          additionalProperties:
+            type: string
+          nullable: true

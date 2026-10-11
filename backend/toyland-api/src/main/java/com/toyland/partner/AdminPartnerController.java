@@ -36,13 +36,18 @@ public class AdminPartnerController {
 	}
 
 	public record PartnerView(Long id, String name, String apiKey, boolean active, int rateLimitPerMin,
-			java.time.LocalDateTime lastUsedAt) {
+			java.time.LocalDateTime lastUsedAt, String webhookUrl) {
 	}
 
 	public record CreatedPartner(Long id, String name, String apiKey, String secret, String note) {
 	}
 
 	public record ActiveRequest(boolean active) {
+	}
+
+	public record WebhookRequest(@Size(max = 300) @jakarta.validation.constraints.Pattern(
+			regexp = "^$|^https://[^\\s]+$|^http://(localhost|127\\.0\\.0\\.1)(:\\d+)?(/[^\\s]*)?$",
+			message = "Webhook phải là địa chỉ https:// (hoặc http://localhost khi chạy thử)") String webhookUrl) {
 	}
 
 	@Operation(summary = "Danh sách đối tác (không trả secret)")
@@ -56,6 +61,12 @@ public class AdminPartnerController {
 	@ResponseStatus(HttpStatus.CREATED)
 	public CreatedPartner create(@Valid @RequestBody CreatePartner r) {
 		return service.create(r);
+	}
+
+	@Operation(summary = "Đặt địa chỉ nhận webhook của đối tác (để trống để tắt)")
+	@PatchMapping("/{id}/webhook")
+	public PartnerView setWebhook(@PathVariable Long id, @Valid @RequestBody WebhookRequest r) {
+		return service.setWebhook(id, r.webhookUrl());
 	}
 
 	@Operation(summary = "Bật/tắt đối tác")

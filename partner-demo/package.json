@@ -1,0 +1,10 @@
+{
+  "name": "toyland-partner-demo",
+  "version": "1.0.0",
+  "description": "Ung dung dai ly gia dinh (Node.js) dung dich vu doi tac cua ToyLand: REST + SOAP + webhook",
+  "type": "module",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "dependencies": { "soap": "^1.1.5" }
+}

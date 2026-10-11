@@ -31,7 +31,7 @@ class ArchitectureTest {
 			Map.entry("promotion", "promotion"), Map.entry("loyalty", "promotion"),
 			Map.entry("review", "engagement"), Map.entry("notification", "engagement"),
 			Map.entry("report", "reporting"), Map.entry("audit", "reporting"),
-			Map.entry("partner", "partner"),
+			Map.entry("partner", "partner"), Map.entry("outbox", "integration"),
 			Map.entry("shipping", "integration"), Map.entry("media", "integration"));
 
 	static final JavaClasses CLASSES = new ClassFileImporter()

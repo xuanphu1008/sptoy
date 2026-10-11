@@ -19,10 +19,24 @@
     </xs:complexType>
   </xs:element>
 
+  <!-- Kieu co rang buoc: may chu tu choi yeu cau sai dinh dang truoc khi vao nghiep vu -->
+  <xs:simpleType name="Sku">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1"/>
+      <xs:maxLength value="60"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="OrderCode">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="TL[0-9]{10,20}"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:element name="GetStockRequest">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="sku" type="xs:string"/>
+        <xs:element name="sku" type="tns:Sku"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -40,7 +54,7 @@
   <xs:element name="GetProductRequest">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="sku" type="xs:string"/>
+        <xs:element name="sku" type="tns:Sku"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -55,6 +69,28 @@
         <xs:element name="price" type="xs:decimal"/>
         <xs:element name="stock" type="xs:int"/>
         <xs:element name="imageUrl" type="xs:string" minOccurs="0"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- Tra trang thai don hang do chinh doi tac dat (don cua doi tac khac coi nhu khong ton tai) -->
+  <xs:element name="GetOrderStatusRequest">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="orderCode" type="tns:OrderCode"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="GetOrderStatusResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="orderCode" type="xs:string"/>
+        <xs:element name="externalRef" type="xs:string" minOccurs="0"/>
+        <xs:element name="status" type="xs:string"/>
+        <xs:element name="statusLabel" type="xs:string"/>
+        <xs:element name="paymentStatus" type="xs:string"/>
+        <xs:element name="total" type="xs:decimal"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>

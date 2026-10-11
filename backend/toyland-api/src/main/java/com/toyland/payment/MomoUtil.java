@@ -21,6 +21,9 @@ public final class MomoUtil {
 	public static final String[] RESULT_FIELDS = { "accessKey", "amount", "extraData", "message", "orderId", "orderInfo", "orderType",
 			"partnerCode", "payType", "requestId", "responseTime", "resultCode", "transId" };
 
+	/** Thu tu truong khi ky yeu cau truy van trang thai giao dich. */
+	public static final String[] QUERY_FIELDS = { "accessKey", "orderId", "partnerCode", "requestId" };
+
 	/** Thu tu truong khi ky yeu cau hoan tien. */
 	public static final String[] REFUND_FIELDS = { "accessKey", "amount", "description", "orderId", "partnerCode", "requestId", "transId" };
 

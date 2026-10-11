@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:sch="http://toyland.vn/soap/partner" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://toyland.vn/soap/partner" targetNamespace="http://toyland.vn/soap/partner">
+  <wsdl:types>
+    <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://toyland.vn/soap/partner">
+
+  <!-- Tieu de SOAP xac thuc: apiKey + timestamp (giay Unix) + signature = hex(HMAC-SHA256(secret, timestamp \n tenThaoTac \n sku)) -->
+  <xs:element name="Auth">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="apiKey" type="xs:string"/>
+        <xs:element name="timestamp" type="xs:long"/>
+        <xs:element name="signature" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- Kieu co rang buoc: may chu tu choi yeu cau sai dinh dang truoc khi vao nghiep vu -->
+  <xs:simpleType name="Sku">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1"/>
+      <xs:maxLength value="60"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="OrderCode">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="TL[0-9]{10,20}"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:element name="GetStockRequest">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="sku" type="tns:Sku"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="GetStockResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="sku" type="xs:string"/>
+        <xs:element name="available" type="xs:int"/>
+        <xs:element name="inStock" type="xs:boolean"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="GetProductRequest">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="sku" type="tns:Sku"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="GetProductResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="sku" type="xs:string"/>
+        <xs:element name="productName" type="xs:string"/>
+        <xs:element minOccurs="0" name="category" type="xs:string"/>
+        <xs:element minOccurs="0" name="brand" type="xs:string"/>
+        <xs:element name="price" type="xs:decimal"/>
+        <xs:element name="stock" type="xs:int"/>
+        <xs:element minOccurs="0" name="imageUrl" type="xs:string"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- Tra trang thai don hang do chinh doi tac dat (don cua doi tac khac coi nhu khong ton tai) -->
+  <xs:element name="GetOrderStatusRequest">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="orderCode" type="tns:OrderCode"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="GetOrderStatusResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="orderCode" type="xs:string"/>
+        <xs:element minOccurs="0" name="externalRef" type="xs:string"/>
+        <xs:element name="status" type="xs:string"/>
+        <xs:element name="statusLabel" type="xs:string"/>
+        <xs:element name="paymentStatus" type="xs:string"/>
+        <xs:element name="total" type="xs:decimal"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
+  </wsdl:types>
+  <wsdl:message name="GetStockResponse">
+    <wsdl:part element="tns:GetStockResponse" name="GetStockResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="GetStockRequest">
+    <wsdl:part element="tns:GetStockRequest" name="GetStockRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="GetOrderStatusResponse">
+    <wsdl:part element="tns:GetOrderStatusResponse" name="GetOrderStatusResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="GetProductRequest">
+    <wsdl:part element="tns:GetProductRequest" name="GetProductRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="GetProductResponse">
+    <wsdl:part element="tns:GetProductResponse" name="GetProductResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="GetOrderStatusRequest">
+    <wsdl:part element="tns:GetOrderStatusRequest" name="GetOrderStatusRequest">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="PartnerPort">
+    <wsdl:operation name="GetStock">
+      <wsdl:input message="tns:GetStockRequest" name="GetStockRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:GetStockResponse" name="GetStockResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOrderStatus">
+      <wsdl:input message="tns:GetOrderStatusRequest" name="GetOrderStatusRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:GetOrderStatusResponse" name="GetOrderStatusResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetProduct">
+      <wsdl:input message="tns:GetProductRequest" name="GetProductRequest">
+    </wsdl:input>
+      <wsdl:output message="tns:GetProductResponse" name="GetProductResponse">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="PartnerPortSoap11" type="tns:PartnerPort">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="GetStock">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="GetStockRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="GetStockResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOrderStatus">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="GetOrderStatusRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="GetOrderStatusResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetProduct">
+      <soap:operation soapAction=""/>
+      <wsdl:input name="GetProductRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="GetProductResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="PartnerPortService">
+    <wsdl:port binding="tns:PartnerPortSoap11" name="PartnerPortSoap11">
+      <soap:address location="https://sptoy-api.onrender.com/soap/partner"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

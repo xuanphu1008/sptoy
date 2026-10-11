@@ -23,6 +23,9 @@ import org.springframework.web.client.RestClientResponseException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.toyland.common.exception.ApiException;
 import com.toyland.common.util.TextUtils;
+
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import com.toyland.order.Order;
 import com.toyland.order.OrderStatus;
 import com.toyland.order.OrderWorkflow;
@@ -175,6 +178,15 @@ public class MomoService {
 				|| !MomoUtil.sameSignature(received, MomoUtil.hmacSHA256(secretKey, MomoUtil.rawSignature(MomoUtil.RESULT_FIELDS, v)))) {
 			return new CallbackResult(false, false, null, null, "Chữ ký không hợp lệ", "SIGNATURE");
 		}
+		return applyResult(params);
+	}
+
+	/**
+	 * Ap dung ket qua giao dich da duoc xac thuc (chu ky IPN/redirect, hoac phan hoi truc tiep tu API truy van
+	 * qua HTTPS do chinh ToyLand khoi tao). Idempotent: goi lai voi giao dich da SUCCESS khong doi gi.
+	 */
+	@Transactional
+	public CallbackResult applyResult(Map<String, String> params) {
 		if (!partnerCode.equals(params.get("partnerCode"))) {
 			return new CallbackResult(true, false, null, null, "Sai mã đối tác", "PARTNER");
 		}
@@ -219,7 +231,7 @@ public class MomoService {
 			log.info("MoMo thanh cong: don {} giao dich {}", order.getOrderCode(), t.getTxnRef());
 			return new CallbackResult(true, true, order.getId(), order.getOrderCode(), "Thanh toán thành công", resultCode);
 		}
-		if ("9000".equals(resultCode) || "7000".equals(resultCode) || "7002".equals(resultCode)) {
+		if ("1000".equals(resultCode) || "9000".equals(resultCode) || "7000".equals(resultCode) || "7002".equals(resultCode)) {
 			// giao dich dang xu ly: cho IPN / lan kiem tra sau, khong danh dau that bai
 			return new CallbackResult(true, false, order.getId(), order.getOrderCode(),
 					"Giao dịch đang được MoMo xử lý, vui lòng kiểm tra lại sau ít phút", resultCode);
@@ -242,6 +254,49 @@ public class MomoService {
 			body.properties().forEach(e -> m.put(e.getKey(), e.getValue().isNull() ? "" : e.getValue().asText()));
 		}
 		return handleResult(m);
+	}
+
+	/**
+	 * Doi soat chu dong mot giao dich: hoi MoMo "giao dich nay ket thuc the nao?" qua API /query roi ap dung ket qua.
+	 * Dung khi IPN den cham hoac that lac (nguoi dung da tra tien nhung don van cho thanh toan). API nay chi doc
+	 * nen retry an toan; cau dao "momo-query" ngat khi MoMo lien tuc loi.
+	 *
+	 * @return ket qua ap dung, hoac {@code null} neu giao dich khong con o trang thai cho
+	 */
+	@Retry(name = "momo-query")
+	@CircuitBreaker(name = "momo-query")
+	public CallbackResult reconcile(String txnRef) {
+		if (!enabled) {
+			throw ApiException.badRequest("MOMO_DISABLED", "Thanh toán MoMo đang tắt");
+		}
+		PaymentTransaction t = txnRepository.findByTxnRef(txnRef).orElse(null);
+		if (t == null || !"MOMO".equals(t.getProvider()) || !"PENDING".equals(t.getStatus())) {
+			return null;
+		}
+		Map<String, String> sign = new HashMap<>();
+		sign.put("accessKey", accessKey);
+		sign.put("orderId", txnRef);
+		sign.put("partnerCode", partnerCode);
+		sign.put("requestId", txnRef);
+		Map<String, Object> body = new LinkedHashMap<>();
+		body.put("partnerCode", partnerCode);
+		body.put("requestId", txnRef);
+		body.put("orderId", txnRef);
+		body.put("lang", "vi");
+		body.put("signature", MomoUtil.hmacSHA256(secretKey, MomoUtil.rawSignature(MomoUtil.QUERY_FIELDS, sign)));
+		JsonNode res = post("/v2/gateway/api/query", body);
+
+		Map<String, String> m = new HashMap<>();
+		res.properties().forEach(e -> m.put(e.getKey(), e.getValue().isNull() ? "" : e.getValue().asText()));
+		m.put("partnerCode", partnerCode);
+		m.put("orderId", txnRef);
+		// phan hoi truy van khong luon kem amount: lay so tien da luu khi thieu
+		m.putIfAbsent("amount", String.valueOf(t.getAmount().longValue()));
+		if (TextUtils.isBlank(m.get("amount"))) {
+			m.put("amount", String.valueOf(t.getAmount().longValue()));
+		}
+		log.info("Doi soat MoMo {} -> resultCode {}", txnRef, m.get("resultCode"));
+		return applyResult(m);
 	}
 
 	/**

@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cổng đại lý - đối tác ToyLand</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb; --accent:#2563eb; --ok:#047857; --bad:#b91c1c; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f1115; --card:#181b21; --ink:#e5e7eb; --muted:#9ca3af; --line:#2a2f38; --accent:#60a5fa; --ok:#34d399; --bad:#f87171; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  header { padding:20px 16px 8px; max-width:1100px; margin:auto; }
+  h1 { margin:0; font-size:22px; letter-spacing:-.01em; }
+  .sub { color:var(--muted); font-size:13px; margin-top:4px; }
+  main { max-width:1100px; margin:auto; padding:8px 16px 48px; display:grid; gap:16px; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
+  h2 { margin:0 0 12px; font-size:16px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px; }
+  .item { border:1px solid var(--line); border-radius:8px; padding:12px; display:flex; flex-direction:column; gap:6px; }
+  .item b { font-size:14px; } .price { font-variant-numeric:tabular-nums; font-weight:600; }
+  .muted { color:var(--muted); font-size:12px; }
+  button { font:inherit; border:1px solid var(--line); background:transparent; color:var(--ink); padding:6px 12px; border-radius:6px; cursor:pointer; }
+  button.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  form { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; margin-top:8px; }
+  label { display:flex; flex-direction:column; gap:3px; font-size:12px; color:var(--muted); }
+  input { font:inherit; padding:7px 9px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--ink); }
+  .actions { grid-column:1/-1; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th, td { text-align:left; padding:8px 6px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { font-size:12px; color:var(--muted); font-weight:600; }
+  .num { font-variant-numeric:tabular-nums; text-align:right; }
+  .tag { display:inline-block; padding:1px 8px; border-radius:99px; font-size:12px; border:1px solid var(--line); }
+  .ok { color:var(--ok); } .bad { color:var(--bad); }
+  #msg { min-height:20px; font-size:13px; }
+  code { font-size:12px; background:var(--bg); padding:1px 5px; border-radius:4px; word-break:break-all; }
+  .cfg { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:6px; }
+  @media (max-width:600px) { table, thead, tbody, tr, th, td { display:block; } thead { display:none; } td { border:0; padding:2px 0; } tr { border-bottom:1px solid var(--line); padding:8px 0; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Cổng đại lý</h1>
+  <div class="sub">Ứng dụng Node.js độc lập, đóng vai một đại lý dùng dịch vụ của ToyLand qua REST, SOAP và webhook.</div>
+  <div class="cfg" id="cfg"></div>
+</header>
+<main>
+  <section>
+    <h2>1. Danh mục hàng (REST có ký HMAC)</h2>
+    <div class="grid" id="catalog"><span class="muted">Đang tải…</span></div>
+  </section>
+
+  <section id="orderBox" hidden>
+    <h2>2. Đặt hàng cho khách</h2>
+    <div class="muted">Mã chống trùng của lần mở biểu mẫu này: <code id="token"></code>. Bấm đặt hai lần vẫn chỉ ra một đơn.</div>
+    <form id="form">
+      <label>Mã hàng (SKU)<input name="sku" readonly></label>
+      <label>Số lượng<input name="quantity" type="number" min="1" max="99" value="1" required></label>
+      <label>Người nhận<input name="receiverName" value="Nguyễn Văn Khách" required></label>
+      <label>Điện thoại<input name="phone" value="0900000002" required></label>
+      <label>Tỉnh/Thành<input name="province" value="Hà Nội" required></label>
+      <label>Quận/Huyện<input name="district" value="Cầu Giấy" required></label>
+      <label>Phường/Xã<input name="ward" value="Dịch Vọng" required></label>
+      <label>Địa chỉ chi tiết<input name="addressDetail" value="12 Phố Demo" required></label>
+      <div class="actions">
+        <button class="primary" type="submit">Đặt hàng</button>
+        <button type="button" id="double">Bấm hai lần liên tiếp (thử chống trùng)</button>
+        <button type="button" id="newform">Làm đơn mới</button>
+      </div>
+    </form>
+  </section>
+
+  <section>
+    <h2>3. Đơn đã đặt</h2>
+    <div id="msg"></div>
+    <table>
+      <thead><tr><th>Mã đơn ToyLand</th><th>Mã đơn đại lý</th><th>Trạng thái</th><th class="num">Tổng</th><th></th></tr></thead>
+      <tbody id="orders"><tr><td colspan="5" class="muted">Chưa có đơn.</td></tr></tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>4. Webhook đã nhận (kiểm tra chữ ký, bỏ qua nếu trùng)</h2>
+    <table>
+      <thead><tr><th>Lúc</th><th>Sự kiện</th><th>Đơn</th><th>Trạng thái</th><th>Kết quả</th></tr></thead>
+      <tbody id="hooks"><tr><td colspan="5" class="muted">Chưa nhận webhook nào.</td></tr></tbody>
+    </table>
+  </section>
+</main>
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const vnd = (n) => new Intl.NumberFormat('vi-VN').format(n) + ' ₫';
+let token = crypto.randomUUID();
+
+async function api(path, opt) {
+  const r = await fetch(path, opt);
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw Object.assign(new Error(j.message || r.statusText), { status: r.status, code: j.code });
+  return j;
+}
+const say = (t, bad) => { $('#msg').innerHTML = `<span class="${bad ? 'bad' : 'ok'}">${esc(t)}</span>`; };
+
+async function loadConfig() {
+  const c = await api('/api/config');
+  $('#cfg').innerHTML = `<span class="tag ${c.configured ? 'ok' : 'bad'}">${c.configured ? 'Đã có khóa API' : 'Chưa cấu hình khóa API'}</span>
+    <span class="muted">ToyLand: <code>${esc(c.toylandBase)}</code></span>
+    <span class="muted">Địa chỉ webhook để dán vào trang Quản trị đối tác: <code>${esc(c.webhookUrl)}</code></span>`;
+}
+
+async function loadCatalog() {
+  try {
+    const p = await api('/api/catalog');
+    $('#catalog').innerHTML = p.items.map((i) => `<div class="item"><b>${esc(i.productName)}</b>
+      <span class="muted">${esc(i.sku)} · ${esc(i.brand || '')}</span>
+      <span class="price">${vnd(i.price)}</span>
+      <span class="muted">${i.stock > 0 ? 'Còn ' + i.stock : '<span class="bad">Hết hàng</span>'}</span>
+      <button data-sku="${esc(i.sku)}" ${i.stock > 0 ? '' : 'disabled'}>Đặt cho khách</button></div>`).join('') || '<span class="muted">Không có hàng.</span>';
+  } catch (e) { $('#catalog').innerHTML = `<span class="bad">${esc(e.message)}</span>`; }
+}
+
+$('#catalog').addEventListener('click', (e) => {
+  const sku = e.target.dataset?.sku; if (!sku) return;
+  $('#orderBox').hidden = false; $('#form').sku.value = sku; newToken(); $('#orderBox').scrollIntoView({ behavior: 'smooth' });
+});
+function newToken() { token = crypto.randomUUID(); $('#token').textContent = token; }
+$('#newform').onclick = newToken;
+
+function payload() { const f = Object.fromEntries(new FormData($('#form'))); return { ...f, clientToken: token }; }
+const place = () => api('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload()) });
+
+$('#form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try { const o = await place(); say(`Đã đặt đơn ${o.orderCode} (${vnd(o.total)}).`); loadOrders(); loadCatalog(); }
+  catch (er) { say(`${er.message}${er.code ? ' [' + er.code + ']' : ''}`, true); }
+});
+$('#double').onclick = async () => {
+  if (!$('#form').reportValidity()) return;
+  const rs = await Promise.allSettled([place(), place()]);
+  const codes = rs.map((r) => r.status === 'fulfilled' ? r.value.orderCode : 'lỗi: ' + (r.reason.code || r.reason.message));
+  say(`Gửi 2 yêu cầu cùng mã chống trùng → ${codes.join(' | ')}`, codes[0] === codes[1] && !codes.some((c) => c.startsWith('lỗi')));
+  loadOrders(); loadCatalog();
+};
+
+async function loadOrders() {
+  const list = await api('/api/orders');
+  $('#orders').innerHTML = list.length ? list.map((o) => `<tr>
+    <td><code>${esc(o.orderCode)}</code></td><td>${esc(o.externalRef)}</td>
+    <td><span class="tag">${esc(o.statusLabel)}</span> <span class="muted" id="s-${esc(o.orderCode)}"></span></td>
+    <td class="num">${vnd(o.total)}</td>
+    <td><button data-soap="${esc(o.orderCode)}">Tra qua SOAP</button> <button data-cancel="${esc(o.orderCode)}" ${o.status === 'PENDING' ? '' : 'disabled'}>Huỷ</button></td></tr>`).join('')
+    : '<tr><td colspan="5" class="muted">Chưa có đơn.</td></tr>';
+}
+$('#orders').addEventListener('click', async (e) => {
+  const soap = e.target.dataset?.soap, cancel = e.target.dataset?.cancel;
+  try {
+    if (soap) { const r = await api(`/api/orders/${soap}/soap-status`); $('#s-' + soap).textContent = `SOAP: ${r.statusLabel} · ${r.paymentStatus}`; }
+    if (cancel) { await api(`/api/orders/${cancel}/cancel`, { method: 'POST' }); say(`Đã huỷ ${cancel}, kho được hoàn lại.`); loadOrders(); loadCatalog(); }
+  } catch (er) { say(er.message, true); }
+});
+
+async function loadHooks() {
+  const list = await api('/api/webhooks');
+  $('#hooks').innerHTML = list.length ? list.map((h) => `<tr><td>${esc(new Date(h.at).toLocaleTimeString('vi-VN'))}</td><td>${esc(h.type)}</td>
+    <td><code>${esc(h.orderCode)}</code></td><td>${esc(h.status)}</td><td class="${h.outcome.startsWith('DA') ? 'ok' : 'bad'}">${esc(h.outcome)}</td></tr>`).join('')
+    : '<tr><td colspan="5" class="muted">Chưa nhận webhook nào.</td></tr>';
+}
+
+newToken(); loadConfig(); loadCatalog(); loadOrders(); loadHooks();
+setInterval(() => { loadOrders(); loadHooks(); }, 3000);
+</script>
+</body>
+</html>

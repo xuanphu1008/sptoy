@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -46,10 +47,12 @@ public class AdminPaymentController {
 
 	private final AdminPaymentService service;
 	private final AuditService audit;
+	private final MomoService momo;
 
-	public AdminPaymentController(AdminPaymentService service, AuditService audit) {
+	public AdminPaymentController(AdminPaymentService service, AuditService audit, MomoService momo) {
 		this.service = service;
 		this.audit = audit;
+		this.momo = momo;
 	}
 
 	@GetMapping("/summary")
@@ -112,6 +115,16 @@ public class AdminPaymentController {
 	@GetMapping("/orders/{orderId}")
 	public OrderLedger orderLedger(@PathVariable Long orderId) {
 		return service.orderLedger(orderId);
+	}
+
+	@Operation(summary = "Hỏi MoMo kết quả một giao dịch đang chờ (đối soát chủ động)")
+	@PostMapping("/transactions/{txnRef}/reconcile")
+	public java.util.Map<String, Object> reconcile(@PathVariable String txnRef) {
+		var r = momo.reconcile(txnRef);
+		if (r == null) {
+			return java.util.Map.of("changed", false, "message", "Giao dịch không còn ở trạng thái chờ");
+		}
+		return java.util.Map.of("changed", true, "success", r.success(), "message", r.message());
 	}
 
 	@PostMapping("/orders/{orderId}/collect")

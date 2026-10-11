@@ -20,14 +20,12 @@ import com.toyland.cart.dto.CartDtos.CartLine;
 import com.toyland.catalog.Product;
 import com.toyland.catalog.ProductVariant;
 import com.toyland.common.exception.ApiException;
-import com.toyland.common.util.AfterCommit;
 import com.toyland.common.util.Money;
 import com.toyland.common.util.TextUtils;
 import com.toyland.inventory.InventoryService;
 import com.toyland.inventory.MovementType;
 import com.toyland.loyalty.LoyaltyRules;
 import com.toyland.loyalty.LoyaltyService;
-import com.toyland.notification.MailService;
 import com.toyland.order.dto.OrderDtos.PlaceOrderRequest;
 import com.toyland.order.dto.OrderDtos.PlaceOrderResponse;
 import com.toyland.order.dto.OrderDtos.Quote;
@@ -67,7 +65,6 @@ public class CheckoutService {
 	private final OrderRepository orderRepository;
 	private final MomoService momoService;
 	private final OrderWorkflow workflow;
-	private final MailService mailService;
 	private final LoyaltyService loyaltyService;
 
 	@Value("${app.order.payment-timeout-minutes}")
@@ -76,7 +73,7 @@ public class CheckoutService {
 	public CheckoutService(CurrentUserService currentUser, CartItemRepository cartRepository, CartService cartService,
 			UserApi users, ShippingService shippingService, VoucherService voucherService,
 			VoucherUsageApi voucherUsages, PricingService pricingService, InventoryService inventoryService,
-			OrderRepository orderRepository, MomoService momoService, OrderWorkflow workflow, MailService mailService,
+			OrderRepository orderRepository, MomoService momoService, OrderWorkflow workflow,
 			LoyaltyService loyaltyService) {
 		this.currentUser = currentUser;
 		this.cartRepository = cartRepository;
@@ -90,7 +87,6 @@ public class CheckoutService {
 		this.orderRepository = orderRepository;
 		this.momoService = momoService;
 		this.workflow = workflow;
-		this.mailService = mailService;
 		this.loyaltyService = loyaltyService;
 	}
 
@@ -279,8 +275,7 @@ public class CheckoutService {
 			// goi API MoMo; MoMo tu choi -> nem loi -> rollback toan bo don (hoan kho, voucher, diem)
 			paymentUrl = momoService.createPayment(o);
 		}
-		var mail = workflow.mail(o, null);
-		AfterCommit.run(() -> mailService.sendOrderPlaced(mail));
+		workflow.publishOrderEvent(o, "order.placed", null, null);
 		return new PlaceOrderResponse(o.getId(), o.getOrderCode(), o.getTotalAmount(), o.getPaymentMethod(), paymentUrl);
 	}
 

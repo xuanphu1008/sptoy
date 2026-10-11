@@ -73,7 +73,7 @@ public class AdminOrderService {
 			}
 			return cb.and(ps.toArray(new Predicate[0]));
 		};
-		return PageResponse.of(orderRepository.findAll(spec, PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 500), Sort.by(Sort.Direction.DESC, "createdAt"))),
+		return PageResponse.of(orderRepository.findAll(spec, PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100), Sort.by(Sort.Direction.DESC, "createdAt"))),
 				OrderMapper::summary);
 	}
 
@@ -126,7 +126,7 @@ public class AdminOrderService {
 	// ------------------------------------------------ tra hang
 	@Transactional(readOnly = true)
 	public PageResponse<AdminReturnRow> returns(ReturnStatus status, int page, int size) {
-		return PageResponse.of(returnRepository.search(status, PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 500))), r -> new AdminReturnRow(r.getId(),
+		return PageResponse.of(returnRepository.search(status, PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100))), r -> new AdminReturnRow(r.getId(),
 				r.getOrder().getId(), r.getOrder().getOrderCode(), r.getUser().getFullName(), r.getReason(), r.getStatus(),
 				r.getOrder().getTotalAmount(), r.getRefundAmount(), r.getCreatedAt()));
 	}

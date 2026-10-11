@@ -23,6 +23,11 @@ public interface PaymentTransactionRepository extends JpaRepository<PaymentTrans
 	@Query("SELECT COALESCE(SUM(t.amount), 0) FROM PaymentTransaction t WHERE t.order.id = :orderId AND t.kind = :kind AND t.status = 'SUCCESS'")
 	BigDecimal sumSuccess(@Param("orderId") Long orderId, @Param("kind") PaymentKind kind);
 
+	/** Giao dich MoMo van o PENDING trong khoang [from, to): ung vien de doi soat chu dong khi IPN bi thieu. */
+	@Query("SELECT t.txnRef FROM PaymentTransaction t WHERE t.provider = 'MOMO' AND t.kind = com.toyland.payment.PaymentKind.PAYMENT"
+			+ " AND t.status = 'PENDING' AND t.createdAt >= :from AND t.createdAt < :to ORDER BY t.id")
+	List<String> pendingMomoRefs(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to, Pageable pageable);
+
 	long countByOrderIdAndKind(Long orderId, PaymentKind kind);
 
 	boolean existsByTxnRef(String txnRef);

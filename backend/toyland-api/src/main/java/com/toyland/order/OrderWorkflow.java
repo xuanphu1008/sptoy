@@ -12,6 +12,7 @@ import com.toyland.inventory.InventoryService;
 import com.toyland.inventory.MovementType;
 import com.toyland.notification.MailService;
 import com.toyland.notification.MailService.OrderMail;
+import com.toyland.outbox.OutboxService;
 import com.toyland.promotion.VoucherUsageApi;
 
 /**
@@ -28,10 +29,13 @@ public class OrderWorkflow {
 	private final com.toyland.loyalty.LoyaltyService loyaltyService;
 	private final com.toyland.notification.NotificationService notificationService;
 	private final com.toyland.payment.PaymentLedgerService ledger;
+	private final OutboxService outbox;
 
 	public OrderWorkflow(InventoryService inventoryService, VoucherUsageApi voucherUsages,
 			MailService mailService, com.toyland.loyalty.LoyaltyService loyaltyService,
-			com.toyland.notification.NotificationService notificationService, com.toyland.payment.PaymentLedgerService ledger) {
+			com.toyland.notification.NotificationService notificationService, com.toyland.payment.PaymentLedgerService ledger,
+			OutboxService outbox) {
+		this.outbox = outbox;
 		this.inventoryService = inventoryService;
 		this.voucherUsages = voucherUsages;
 		this.mailService = mailService;
@@ -65,9 +69,9 @@ public class OrderWorkflow {
 			notificationService.notifyUser(o.getUser(), "ORDER_STATUS", "Đơn " + o.getOrderCode() + ": " + to.getLabel(),
 					note != null ? note : "Trạng thái đơn hàng vừa được cập nhật", "/account/orders/" + o.getId());
 		}
-		if (o.getUser() != null && (to != OrderStatus.PENDING || from != OrderStatus.PENDING_PAYMENT)) {
-			OrderMail m = mail(o, note);
-			AfterCommit.run(() -> mailService.sendOrderStatusChanged(m)); // gui sau khi commit
+		// Thong bao ra ngoai (email khach, webhook doi tac) di qua outbox cung giao dich: khong mat, khong gui khi rollback
+		if (to != OrderStatus.PENDING || from != OrderStatus.PENDING_PAYMENT) {
+			publishOrderEvent(o, "order.status_changed", from, note);
 		}
 	}
 
@@ -128,6 +132,33 @@ public class OrderWorkflow {
 		notificationService.notifyStaff("REFUND_PENDING", "Cần hoàn tiền đơn " + o.getOrderCode(),
 				o.getReceiverName() + " · " + com.toyland.notification.NotificationService.vnd(o.getTotalAmount()) + " · " + why,
 				"/admin/payments?tab=refunds");
+	}
+
+	/**
+	 * Ghi su kien don hang vao outbox (cung giao dich): email cho khach neu don co tai khoan,
+	 * du lieu webhook cho doi tac neu don do doi tac dat.
+	 */
+	public void publishOrderEvent(Order o, String type, OrderStatus previous, String note) {
+		OrderMail m = mail(o, note);
+		com.toyland.notification.MailService.Email email = null;
+		if (m != null) {
+			email = "order.placed".equals(type) ? mailService.renderOrderPlaced(m) : mailService.renderOrderStatusChanged(m);
+		}
+		java.util.Map<String, Object> partner = null;
+		if (o.getPartnerId() != null) {
+			partner = new java.util.LinkedHashMap<>();
+			partner.put("orderCode", o.getOrderCode());
+			partner.put("externalRef", o.getPartnerRef());
+			partner.put("previousStatus", previous == null ? null : previous.name());
+			partner.put("status", o.getStatus().name());
+			partner.put("statusLabel", o.getStatus().getLabel());
+			partner.put("paymentStatus", o.getPaymentStatus().name());
+			partner.put("total", o.getTotalAmount());
+			partner.put("note", note);
+		}
+		if (email != null || partner != null) {
+			outbox.publish(type, o.getOrderCode(), o.getPartnerId(), email, partner);
+		}
 	}
 
 	/** Bao nhan vien co don moi can xac nhan (COD: luc dat; MoMo: khi da thanh toan). */

@@ -24,13 +24,14 @@ import com.toyland.partner.PartnerSigner;
 
 /**
  * Xac thuc SOAP cho doi tac bang tieu de (header) {@code Auth}: apiKey + timestamp + signature.
- * signature = hex(HMAC-SHA256(secret, timestamp + "\n" + tenThaoTac + "\n" + sku)); lech gio qua 5 phut bi tu choi.
+ * signature = hex(HMAC-SHA256(secret, timestamp + "\n" + tenThaoTac + "\n" + (sku | orderCode))); lech gio qua 5 phut bi tu choi.
  * Loi tra ve la SOAP Fault, khong lo ly do cu the khi sai khoa/chu ky.
  */
 @Component
 public class PartnerSoapAuthInterceptor implements EndpointInterceptor {
 
 	static final String NS = "http://toyland.vn/soap/partner";
+	static final String PROP_PARTNER = "toyland.partner";
 	private static final long MAX_SKEW_SECONDS = 300;
 
 	private final PartnerRepository partners;
@@ -75,11 +76,16 @@ public class PartnerSoapAuthInterceptor implements EndpointInterceptor {
 		}
 		Element payload = toElement(((org.springframework.ws.soap.SoapBody) msg.getSoapBody()).getPayloadSource());
 		String op = payload.getLocalName();
-		String sku = text(payload, "sku");
-		String expected = PartnerSigner.sign(partner.getSecret(), ts.trim() + "\n" + op + "\n" + (sku == null ? "" : sku.trim()));
+		// doi tuong duoc ky: ma hang (GetStock/GetProduct) hoac ma don (GetOrderStatus)
+		String subject = text(payload, "sku");
+		if (subject == null) {
+			subject = text(payload, "orderCode");
+		}
+		String expected = PartnerSigner.sign(partner.getSecret(), ts.trim() + "\n" + op + "\n" + (subject == null ? "" : subject.trim()));
 		if (!PartnerSigner.constantTimeEquals(expected, sig.trim().toLowerCase())) {
 			throw new PartnerSoapException("Khóa API hoặc chữ ký không hợp lệ");
 		}
+		ctx.setProperty(PROP_PARTNER, partner);
 		partner.setLastUsedAt(LocalDateTime.now());
 		partners.save(partner);
 		return true;

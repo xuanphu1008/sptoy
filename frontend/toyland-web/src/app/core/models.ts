@@ -301,5 +301,8 @@ export interface OrderLedger {
   refunded: number; refundRemaining: number; canCollect: boolean; canRefund: boolean; transactions: PaymentTxn[];
 }
 
-export interface PartnerRow { id: number; name: string; apiKey: string; active: boolean; rateLimitPerMin: number; lastUsedAt: string | null; }
+export interface PartnerRow { id: number; name: string; apiKey: string; active: boolean; rateLimitPerMin: number; lastUsedAt: string | null; webhookUrl: string | null; }
 export interface PartnerCreated { id: number; name: string; apiKey: string; secret: string; note: string; }
+
+export interface OutboxRow { id: number; eventId: string; type: string; aggregateId: string; partnerId: number | null; status: 'NEW' | 'SENT' | 'DEAD'; attempts: number; createdAt: string; sentAt: string | null; lastError: string | null; }
+export interface OutboxSummary { newCount: number; sentCount: number; deadCount: number; recent: OutboxRow[]; }

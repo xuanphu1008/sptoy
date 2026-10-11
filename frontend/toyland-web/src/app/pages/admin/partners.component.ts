@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AdminApi } from '../../core/admin-api.service';
-import { PartnerCreated, PartnerRow } from '../../core/models';
+import { OutboxRow, OutboxSummary, PartnerCreated, PartnerRow } from '../../core/models';
 import { NotifyService } from '../../core/notify.service';
 import { openForm } from '../../shared/form-dialog.component';
 import { environment } from '../../../environments/environment';
@@ -52,7 +52,7 @@ export class PartnerSecretDialogComponent {
       <a [href]="swagger" target="_blank" rel="noopener">Swagger UI</a>, hợp đồng SOAP ở <a [href]="wsdl" target="_blank" rel="noopener">WSDL</a>.</p>
     <div class="card">
       <table class="tbl">
-        <thead><tr><th>Đối tác</th><th>API key</th><th>Hạn mức</th><th>Lần gọi gần nhất</th><th>Hoạt động</th></tr></thead>
+        <thead><tr><th>Đối tác</th><th>API key</th><th>Hạn mức</th><th>Lần gọi gần nhất</th><th>Webhook</th><th>Hoạt động</th></tr></thead>
         <tbody>
           @for (p of list(); track p.id) {
             <tr [class.off]="!p.active">
@@ -60,16 +60,55 @@ export class PartnerSecretDialogComponent {
               <td><code>{{ p.apiKey }}</code></td>
               <td>{{ p.rateLimitPerMin }} yêu cầu/phút</td>
               <td>{{ p.lastUsedAt ? (p.lastUsedAt | date: 'dd/MM/yyyy HH:mm') : 'Chưa dùng' }}</td>
+              <td class="hook">
+                @if (p.webhookUrl) { <code>{{ p.webhookUrl }}</code> } @else { <span class="muted">Chưa đặt</span> }
+                <button mat-icon-button (click)="editWebhook(p)" [attr.aria-label]="'Sửa webhook của ' + p.name" matTooltip="Sửa địa chỉ webhook"><mat-icon>edit</mat-icon></button>
+              </td>
               <td><mat-slide-toggle [checked]="p.active" (change)="toggle(p, $event.checked)" [attr.aria-label]="'Bật tắt ' + p.name" /></td>
             </tr>
           } @empty {
-            <tr><td colspan="5" class="muted center">Chưa có đối tác nào.</td></tr>
+            <tr><td colspan="6" class="muted center">Chưa có đối tác nào.</td></tr>
           }
         </tbody>
       </table>
     </div>
+
+    <div class="page-title sub"><h2>Hàng đợi sự kiện</h2><span class="spacer"></span>
+      <button mat-stroked-button (click)="loadOutbox()"><mat-icon>refresh</mat-icon>Làm mới</button></div>
+    <p class="muted">Mỗi sự kiện đơn hàng được ghi cùng giao dịch với đơn, rồi gửi sang dịch vụ thông báo. Sự kiện thất bại sẽ thử lại giãn dần, quá số lần cho phép thì chuyển sang "Lỗi hẳn" để quản trị gửi lại.</p>
+    @if (outbox(); as o) {
+      <div class="stats">
+        <span class="chip">Đang chờ: <b>{{ o.newCount }}</b></span>
+        <span class="chip">Đã gửi: <b>{{ o.sentCount }}</b></span>
+        <span class="chip" [class.bad]="o.deadCount > 0">Lỗi hẳn: <b>{{ o.deadCount }}</b></span>
+      </div>
+      <div class="card">
+        <table class="tbl">
+          <thead><tr><th>Sự kiện</th><th>Đơn</th><th>Trạng thái</th><th>Số lần thử</th><th>Tạo lúc</th><th>Lỗi gần nhất</th><th></th></tr></thead>
+          <tbody>
+            @for (r of o.recent; track r.id) {
+              <tr>
+                <td><code>{{ r.type }}</code></td>
+                <td>{{ r.aggregateId }}</td>
+                <td>{{ statusLabel(r.status) }}</td>
+                <td>{{ r.attempts }}</td>
+                <td>{{ r.createdAt | date: 'dd/MM HH:mm:ss' }}</td>
+                <td class="err">{{ r.lastError || '' }}</td>
+                <td>@if (r.status === 'DEAD') { <button mat-stroked-button (click)="retry(r)">Gửi lại</button> }</td>
+              </tr>
+            } @empty {
+              <tr><td colspan="7" class="muted center">Chưa có sự kiện nào.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   `,
   styles: `
+    .sub { margin-top: 28px; } .stats { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 12px; }
+    .chip { padding: 4px 12px; border-radius: 999px; background: var(--tl-surface-2, #f2f2f2); font-size: 13px; }
+    .chip.bad { background: #fde8e8; color: #9b1c1c; }
+    .hook { max-width: 280px; } .hook code { word-break: break-all; } .err { max-width: 240px; font-size: 12px; color: #9b1c1c; word-break: break-word; }
     .tbl { width: 100%; border-collapse: collapse; }
     .tbl th, .tbl td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--tl-border, #eee); }
     .tbl th { font-size: 12px; text-transform: uppercase; color: var(--tl-muted, #666); }
@@ -81,13 +120,34 @@ export class PartnersComponent implements OnInit {
   private dialog = inject(MatDialog);
   private notify = inject(NotifyService);
   list = signal<PartnerRow[]>([]);
+  outbox = signal<OutboxSummary | null>(null);
   private root = environment.apiUrl.replace(/\/api\/v1\/?$/, '');
   swagger = `${this.root}/swagger-ui.html`;
   wsdl = `${this.root}/soap/partner/partner.wsdl`;
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void { this.load(); this.loadOutbox(); }
 
   load(): void { this.api.partners().subscribe((l) => this.list.set(l)); }
+
+  loadOutbox(): void { this.api.outbox().subscribe((o) => this.outbox.set(o)); }
+
+  statusLabel(s: string): string { return s === 'SENT' ? 'Đã gửi' : s === 'DEAD' ? 'Lỗi hẳn' : 'Đang chờ'; }
+
+  retry(r: OutboxRow): void {
+    this.api.retryOutbox(r.id).subscribe({
+      next: () => { this.notify.success('Đã đưa vào hàng đợi gửi lại'); this.loadOutbox(); },
+      error: (e) => this.notify.error(e),
+    });
+  }
+
+  editWebhook(p: PartnerRow): void {
+    openForm(this.dialog, {
+      title: `Webhook của ${p.name}`,
+      value: { webhookUrl: p.webhookUrl ?? '' },
+      fields: [{ key: 'webhookUrl', label: 'Địa chỉ nhận webhook', wide: true, hint: 'Bắt đầu bằng https://. Để trống để tắt. Mỗi lần gửi có chữ ký X-Toyland-Signature.' }],
+      save: (x) => this.api.setPartnerWebhook(p.id, String(x['webhookUrl'] ?? '').trim()),
+    }).subscribe(() => this.load());
+  }
 
   create(): void {
     openForm(this.dialog, {

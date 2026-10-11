@@ -50,8 +50,16 @@ public class PartnerAdminService {
 		return view(p);
 	}
 
+	@Transactional
+	public PartnerView setWebhook(Long id, String url) {
+		Partner p = repository.findById(id).orElseThrow(() -> ApiException.notFound("đối tác", id));
+		p.setWebhookUrl(url == null || url.isBlank() ? null : url.trim());
+		return view(p);
+	}
+
 	private static PartnerView view(Partner p) {
-		return new PartnerView(p.getId(), p.getName(), p.getApiKey(), p.isActive(), p.getRateLimitPerMin(), p.getLastUsedAt());
+		return new PartnerView(p.getId(), p.getName(), p.getApiKey(), p.isActive(), p.getRateLimitPerMin(), p.getLastUsedAt(),
+				p.getWebhookUrl());
 	}
 
 	private static String randomHex(int bytes) {

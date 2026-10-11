@@ -13,9 +13,17 @@ import org.springframework.web.client.RestClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.toyland.common.util.TextUtils;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
+
 /**
  * Goi REST API cua Giao Hang Nhanh (GHN) - vi du ve tich hop dich vu ben thu 3 (SOA).
  * Tai lieu: https://api.ghn.vn/home/docs
+ *
+ * <p>Moi ham o day chi DOC du lieu (tra cuu danh muc, tinh phi), khong tao van don, nen goi lai nhieu lan
+ * khong gay tac dung phu va duoc phep retry. Resilience4j: thu lai toi da 3 lan voi do tre tang dan, va
+ * cau dao ("ghn") ngat khi ti le loi vuot nguong de khong don yeu cau vao mot ben dang hong. Khi cau dao
+ * mo, {@code CallNotPermittedException} duoc ShippingService bat va chuyen sang phi co dinh.</p>
  */
 @Component
 public class GhnClient {
@@ -47,20 +55,28 @@ public class GhnClient {
 		return enabled;
 	}
 
+	@Retry(name = "ghn")
+	@CircuitBreaker(name = "ghn")
 	public JsonNode provinces() {
 		return client.get().uri("/master-data/province").retrieve().body(JsonNode.class);
 	}
 
+	@Retry(name = "ghn")
+	@CircuitBreaker(name = "ghn")
 	public JsonNode districts(int provinceId) {
 		return client.post().uri("/master-data/district").body(Map.of("province_id", provinceId)).retrieve().body(JsonNode.class);
 	}
 
+	@Retry(name = "ghn")
+	@CircuitBreaker(name = "ghn")
 	public JsonNode wards(int districtId) {
 		return client.post().uri("/master-data/ward?district_id=" + districtId).body(Map.of("district_id", districtId))
 				.retrieve().body(JsonNode.class);
 	}
 
 	/** Tinh phi van chuyen: POST /v2/shipping-order/fee */
+	@Retry(name = "ghn")
+	@CircuitBreaker(name = "ghn")
 	public JsonNode fee(int toDistrictId, String toWardCode, int weightGram, int length, int width, int height, long insuranceValue) {
 		Map<String, Object> body = Map.of(
 				"service_type_id", serviceTypeId,

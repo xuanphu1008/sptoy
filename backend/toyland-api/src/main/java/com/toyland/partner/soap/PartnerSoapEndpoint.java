@@ -6,6 +6,9 @@ import org.springframework.ws.server.endpoint.annotation.RequestPayload;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 
 import com.toyland.catalog.CatalogApi;
+import com.toyland.order.PartnerOrderApi;
+import com.toyland.partner.Partner;
+import org.springframework.ws.context.MessageContext;
 import com.toyland.catalog.CatalogApi.SellableItem;
 
 /** Dich vu SOAP cua doi tac: cung nghiep vu voi REST /api/partner/v1 (dung chung CatalogApi), khac giao thuc. */
@@ -15,9 +18,11 @@ public class PartnerSoapEndpoint {
 	private static final String NS = "http://toyland.vn/soap/partner";
 
 	private final CatalogApi catalog;
+	private final PartnerOrderApi orders;
 
-	public PartnerSoapEndpoint(CatalogApi catalog) {
+	public PartnerSoapEndpoint(CatalogApi catalog, PartnerOrderApi orders) {
 		this.catalog = catalog;
+		this.orders = orders;
 	}
 
 	@PayloadRoot(namespace = NS, localPart = "GetStockRequest")
@@ -43,6 +48,22 @@ public class PartnerSoapEndpoint {
 		r.setPrice(i.price());
 		r.setStock(i.stock());
 		r.setImageUrl(i.imageUrl());
+		return r;
+	}
+
+	@PayloadRoot(namespace = NS, localPart = "GetOrderStatusRequest")
+	@ResponsePayload
+	public GetOrderStatusResponse getOrderStatus(@RequestPayload GetOrderStatusRequest req, MessageContext ctx) {
+		Partner partner = (Partner) ctx.getProperty(PartnerSoapAuthInterceptor.PROP_PARTNER);
+		PartnerOrderApi.PartnerOrder o = orders.find(partner.getId(), req.getOrderCode().trim())
+				.orElseThrow(() -> new PartnerSoapException("Không tìm thấy đơn " + req.getOrderCode().trim()));
+		GetOrderStatusResponse r = new GetOrderStatusResponse();
+		r.setOrderCode(o.orderCode());
+		r.setExternalRef(o.externalRef());
+		r.setStatus(o.status());
+		r.setStatusLabel(o.statusLabel());
+		r.setPaymentStatus(o.paymentStatus());
+		r.setTotal(o.total());
 		return r;
 	}
 

@@ -72,18 +72,24 @@ async function idem() {
   console.log(`    ${C.r(diff.status)}  ${diff.body.code}`);
 }
 
+// Goi mot thao tac SOAP co tieu de Auth. field: 'sku' hoac 'orderCode' (doi tuong duoc ky).
+async function soapCall(label, op, value, { field = 'sku', secret = process.env.SECRET, ts = Math.floor(Date.now() / 1000), header = true, quiet = false } = {}) {
+  const sig = crypto.createHmac('sha256', secret).update(`${ts}\n${op}\n${value}`).digest('hex');
+  const hdr = header ? `<soapenv:Header><t:Auth><t:apiKey>${process.env.API_KEY}</t:apiKey><t:timestamp>${ts}</t:timestamp><t:signature>${sig}</t:signature></t:Auth></soapenv:Header>` : '<soapenv:Header/>';
+  const env = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:t="http://toyland.vn/soap/partner">${hdr}<soapenv:Body><t:${op}><t:${field}>${value}</t:${field}></t:${op}></soapenv:Body></soapenv:Envelope>`;
+  const r = await fetch(BASE + '/soap/partner', { method: 'POST', headers: { 'Content-Type': 'text/xml; charset=utf-8' }, body: env });
+  const x = await r.text();
+  const fault = x.match(/<faultstring[^>]*>([^<]*)</);
+  if (!quiet) {
+    console.log(`${fault ? C.r('FAULT') : C.g(r.status)}  ${C.b(label)}`);
+    console.log('    ' + (fault ? fault[1] : x.slice(x.indexOf('<ns2:Get'), x.indexOf('</SOAP-ENV:Body>')).slice(0, 300)));
+  }
+  return { fault: fault ? fault[1] : null, xml: x };
+}
+
 async function soap() {
   if (!process.env.API_KEY || !process.env.SECRET) { console.log(C.r('Thieu API_KEY / SECRET')); process.exit(1); }
-  const call = async (label, op, sku, { secret = process.env.SECRET, ts = Math.floor(Date.now() / 1000), header = true } = {}) => {
-    const sig = crypto.createHmac('sha256', secret).update(`${ts}\n${op}\n${sku}`).digest('hex');
-    const hdr = header ? `<soapenv:Header><t:Auth><t:apiKey>${process.env.API_KEY}</t:apiKey><t:timestamp>${ts}</t:timestamp><t:signature>${sig}</t:signature></t:Auth></soapenv:Header>` : '<soapenv:Header/>';
-    const env = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:t="http://toyland.vn/soap/partner">${hdr}<soapenv:Body><t:${op}><t:sku>${sku}</t:sku></t:${op}></soapenv:Body></soapenv:Envelope>`;
-    const r = await fetch(BASE + '/soap/partner', { method: 'POST', headers: { 'Content-Type': 'text/xml; charset=utf-8' }, body: env });
-    const x = await r.text();
-    const fault = x.match(/<faultstring[^>]*>([^<]*)</);
-    console.log(`${fault ? C.r('FAULT') : C.g(r.status)}  ${C.b(label)}`);
-    console.log('    ' + (fault ? fault[1] : x.slice(x.indexOf('<ns2:Get'), x.indexOf('</SOAP-ENV:Body>')).slice(0, 260)));
-  };
+  const call = (label, op, sku, o) => soapCall(label, op, sku, o);
   console.log(C.y('\n[0] WSDL (hop dong dich vu): ' + BASE + '/soap/partner/partner.wsdl'));
   const w = await (await fetch(BASE + '/soap/partner/partner.wsdl')).text();
   console.log('    cac thao tac: ' + [...w.matchAll(/<wsdl:operation name="(\w+)"/g)].map(m => m[1]).filter((v, i, a) => a.indexOf(v) === i).join(', '));
@@ -95,6 +101,9 @@ async function soap() {
   await call('timestamp het han', 'GetStockRequest', 'LEG-0001', { ts: Math.floor(Date.now() / 1000) - 900 });
   await call('thieu header Auth', 'GetStockRequest', 'LEG-0001', { header: false });
   await call('SKU khong ton tai', 'GetStockRequest', 'KHONG-CO');
+  console.log(C.y('\n[3] GetOrderStatus: sai dinh dang ma don bi XSD chan; ma hop le nhung khong co don -> Fault'));
+  await call('ma don sai dinh dang (XSD)', 'GetOrderStatusRequest', 'ABC', { field: 'orderCode' });
+  await call('ma don khong ton tai', 'GetOrderStatusRequest', 'TL000000000000', { field: 'orderCode' });
 }
 
 async function partnerPost(label, path, body, { idemKey, secret = process.env.SECRET, expect } = {}) {
@@ -139,8 +148,9 @@ async function order() {
   console.log(C.y('\n[8] Ton kho sau khi dat: phai giam dung 2'));
   const mid = await stockOf();
   console.log('    ' + (before - mid === 2 ? C.g(`${before} -> ${mid}`) : C.r(`${before} -> ${mid}`)));
-  console.log(C.y('\n[9] Xem don'));
+  console.log(C.y('\n[9] Xem don qua REST, roi tra trang thai cung don do qua SOAP'));
   await partnerCall('GET /orders/' + code, '/api/partner/v1/orders/' + code);
+  await soapCall('SOAP GetOrderStatus ' + code, 'GetOrderStatusRequest', code, { field: 'orderCode' });
   console.log(C.y('\n[10] Huy don -> hoan kho'));
   await partnerPost('POST /orders/' + code + '/cancel', `/api/partner/v1/orders/${code}/cancel`, { reason: 'Doi tac doi y' }, { expect: 200 });
   const after = await stockOf();

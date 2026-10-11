@@ -49,7 +49,7 @@ public class AdminUserService {
 	@Transactional(readOnly = true)
 	public PageResponse<AdminUserDto> list(String keyword, Role role, int page, int size) {
 		String kw = TextUtils.trimToNull(keyword);
-		return PageResponse.of(userRepository.search(kw, role, PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 500), Sort.by(Sort.Direction.DESC, "id"))), this::toDto);
+		return PageResponse.of(userRepository.search(kw, role, PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100), Sort.by(Sort.Direction.DESC, "id"))), this::toDto);
 	}
 
 	@Transactional(readOnly = true)

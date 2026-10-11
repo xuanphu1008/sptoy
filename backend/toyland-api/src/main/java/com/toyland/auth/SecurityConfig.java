@@ -57,6 +57,8 @@ public class SecurityConfig {
 				.requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/error", "/uploads/**").permitAll()
 				// WebSocket handshake: xac thuc bang JWT o khung STOMP CONNECT (StompAuthInterceptor)
 				.requestMatchers("/ws", "/ws/**").permitAll()
+				// Kiem tra suc khoe cho Render / giam sat ben ngoai (chi tra UP/DOWN, khong lo chi tiet)
+				.requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 				// API doi tac: tu xac thuc bang khoa API + chu ky HMAC (PartnerAuthFilter), khong dung JWT
 				.requestMatchers("/api/partner/**").permitAll()
@@ -79,7 +81,7 @@ public class SecurityConfig {
 				.requestMatchers("/api/v1/admin/users/**", "/api/v1/admin/vouchers/**", "/api/v1/admin/campaigns/**",
 						"/api/v1/admin/banners/**", "/api/v1/admin/categories/**", "/api/v1/admin/brands/**",
 						"/api/v1/admin/franchises/**", "/api/v1/admin/reports/**", "/api/v1/admin/audit-logs/**",
-						"/api/v1/admin/banned-keywords/**", "/api/v1/admin/loyalty/**", "/api/v1/admin/partners/**").hasRole("ADMIN")
+						"/api/v1/admin/banned-keywords/**", "/api/v1/admin/loyalty/**", "/api/v1/admin/partners/**", "/api/v1/admin/outbox/**").hasRole("ADMIN")
 				// ADMIN + STAFF
 				.requestMatchers("/api/v1/admin/**").hasAnyRole("ADMIN", "STAFF")
 				.anyRequest().authenticated())

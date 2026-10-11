@@ -111,9 +111,18 @@ public class PartnerOrderService implements PartnerOrderApi {
 		o = orders.save(o);
 		// tru kho: kiem tra lai ton, khoa lac quan tren bien the; thieu hang thi nem loi va rollback ca don
 		for (OrderItem oi : o.getItems()) {
-			inventory.change(oi.getVariant(), -oi.getQuantity(), MovementType.SALE, o.getOrderCode(), "Xuất bán cho đối tác " + partnerName);
+			try {
+				inventory.change(oi.getVariant(), -oi.getQuantity(), MovementType.SALE, o.getOrderCode(), "Xuất bán cho đối tác " + partnerName);
+			} catch (ApiException ex) {
+				// hết hàng là lỗi nghiệp vụ của đơn (đối tác hỏi lại tồn kho rồi đặt lại), không phải yêu cầu sai cú pháp
+				if ("OUT_OF_STOCK".equals(ex.getCode())) {
+					throw new ApiException(HttpStatus.UNPROCESSABLE_ENTITY, "SKU_OUT_OF_STOCK", ex.getMessage());
+				}
+				throw ex;
+			}
 		}
 		workflow.notifyNewOrder(o);
+		workflow.publishOrderEvent(o, "order.placed", null, null);
 		return view(o);
 	}
 

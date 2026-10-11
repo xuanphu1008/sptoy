@@ -46,8 +46,11 @@ public class MailService {
 			BigDecimal total, String paymentMethod, String address, List<String> lines, String note) {
 	}
 
-	@Async
-	public void sendOrderPlaced(OrderMail m) {
+	/** Thu da dung xong (nguoi nhan, tieu de, HTML day du): di qua outbox sang dich vu thong bao hoac gui noi bo. */
+	public record Email(String to, String subject, String html) {
+	}
+
+	public Email renderOrderPlaced(OrderMail m) {
 		StringBuilder rows = new StringBuilder();
 		m.lines().forEach(l -> rows.append("<li>").append(escape(l)).append("</li>"));
 		String body = "<p>Xin chào <b>" + escape(m.customerName()) + "</b>,</p>"
@@ -55,17 +58,16 @@ public class MailService {
 				+ "<ul>" + rows + "</ul>"
 				+ "<p>Tổng thanh toán: <b>" + vnd(m.total()) + "</b> (" + m.paymentMethod() + ")<br/>Giao đến: " + escape(m.address()) + "</p>"
 				+ button("Xem đơn hàng", frontendUrl + "/account/orders/" + m.orderId());
-		send(m.email(), "[ToyLand] Xác nhận đơn hàng " + m.orderCode(), body);
+		return new Email(m.email(), "[ToyLand] Xác nhận đơn hàng " + m.orderCode(), wrap(body));
 	}
 
-	@Async
-	public void sendOrderStatusChanged(OrderMail m) {
+	public Email renderOrderStatusChanged(OrderMail m) {
 		String body = "<p>Xin chào <b>" + escape(m.customerName()) + "</b>,</p>"
 				+ "<p>Đơn hàng <b>" + m.orderCode() + "</b> vừa chuyển sang trạng thái: <b style='color:#e53935'>"
 				+ escape(m.statusLabel()) + "</b>.</p>"
 				+ (m.note() != null ? "<p>Ghi chú: " + escape(m.note()) + "</p>" : "")
 				+ button("Theo dõi đơn hàng", frontendUrl + "/account/orders/" + m.orderId());
-		send(m.email(), "[ToyLand] Đơn " + m.orderCode() + ": " + m.statusLabel(), body);
+		return new Email(m.email(), "[ToyLand] Đơn " + m.orderCode() + ": " + m.statusLabel(), wrap(body));
 	}
 
 	@Async
@@ -96,10 +98,21 @@ public class MailService {
 	}
 
 	private void send(String to, String subject, String htmlBody) {
-		String html = "<div style='font-family:Arial,sans-serif;max-width:560px;margin:auto;border:1px solid #eee;border-radius:12px;overflow:hidden'>"
+		deliver(new Email(to, subject, wrap(htmlBody)));
+	}
+
+	private String wrap(String htmlBody) {
+		return "<div style='font-family:Arial,sans-serif;max-width:560px;margin:auto;border:1px solid #eee;border-radius:12px;overflow:hidden'>"
 				+ "<div style='background:#e53935;color:#fff;padding:16px 24px;font-size:20px;font-weight:bold'>🧸 ToyLand</div>"
 				+ "<div style='padding:16px 24px;color:#333;line-height:1.6'>" + htmlBody + "</div>"
 				+ "<div style='background:#fafafa;padding:12px 24px;color:#999;font-size:12px'>Email tự động từ hệ thống ToyLand – vui lòng không trả lời.</div></div>";
+	}
+
+	/** Gui ngay mot thu da dung xong bang SMTP cua chinh he thong (dong bo; goi tu luong nen). */
+	public void deliver(Email mail) {
+		String to = mail.to();
+		String subject = mail.subject();
+		String html = mail.html();
 		if (!enabled) {
 			log.info("[MAIL tắt] To: {} | Subject: {}", to, subject);
 			return;

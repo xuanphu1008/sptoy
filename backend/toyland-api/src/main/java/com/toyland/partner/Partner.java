@@ -33,6 +33,10 @@ public class Partner {
 	@Column(name = "rate_limit_per_min", nullable = false)
 	private int rateLimitPerMin = 60;
 
+	/** Dia chi nhan webhook (HTTPS) khi don cua doi tac doi trang thai. De trong = khong nhan webhook. */
+	@Column(name = "webhook_url", length = 300)
+	private String webhookUrl;
+
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
 
@@ -57,6 +61,8 @@ public class Partner {
 	public void setActive(boolean active) { this.active = active; }
 	public int getRateLimitPerMin() { return rateLimitPerMin; }
 	public void setRateLimitPerMin(int rateLimitPerMin) { this.rateLimitPerMin = rateLimitPerMin; }
+	public String getWebhookUrl() { return webhookUrl; }
+	public void setWebhookUrl(String webhookUrl) { this.webhookUrl = webhookUrl; }
 	public LocalDateTime getCreatedAt() { return createdAt; }
 	public LocalDateTime getLastUsedAt() { return lastUsedAt; }
 	public void setLastUsedAt(LocalDateTime lastUsedAt) { this.lastUsedAt = lastUsedAt; }

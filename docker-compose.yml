@@ -17,6 +17,11 @@ services:
     volumes:
       - db-data:/var/lib/mysql
       - ./database/toyland_v2.sql:/docker-entrypoint-initdb.d/01-toyland_v2.sql:ro
+      # Cac script huong dich vu chay noi tiep (chi them bang/cot): doi tac + idempotency, don cua doi tac, outbox, CSDL cua toyland-notify
+      - ./database/toyland_v2_soa.sql:/docker-entrypoint-initdb.d/02-soa.sql:ro
+      - ./database/toyland_v2_partner_orders.sql:/docker-entrypoint-initdb.d/03-partner-orders.sql:ro
+      - ./database/toyland_v2_phase2.sql:/docker-entrypoint-initdb.d/04-phase2.sql:ro
+      - ./database/toyland_notify.sql:/docker-entrypoint-initdb.d/05-notify.sql:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-ptoyland123"]
       interval: 10s
@@ -30,6 +35,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      notify:
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/toyland_v2?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh&characterEncoding=UTF-8
       SPRING_DATASOURCE_USERNAME: root
@@ -39,6 +46,9 @@ services:
       APP_CORS_ALLOWED_ORIGINS: http://localhost:4200
       APP_UPLOAD_DIR: /app/uploads
       APP_MOMO_REDIRECT_URL: http://localhost:4200/payment/momo-return
+      # Gui email va webhook qua dich vu thong bao rieng. Doi gia tri token (cung gia tri o hai ben).
+      APP_NOTIFY_URL: http://notify:8080
+      APP_NOTIFY_TOKEN: doi-chuoi-bi-mat-nay
       # Dien khi can: APP_JWT_SECRET, APP_MOMO_PARTNER_CODE, APP_MOMO_ACCESS_KEY, APP_MOMO_SECRET_KEY,
       #               APP_MOMO_IPN_URL (ngrok), APP_GHN_TOKEN, APP_GHN_SHOP_ID,
       #               APP_MAIL_ENABLED=true, SPRING_MAIL_HOST, SPRING_MAIL_USERNAME, SPRING_MAIL_PASSWORD
@@ -46,6 +56,40 @@ services:
       - "8080:8080"
     volumes:
       - uploads:/app/uploads
+
+  # Dich vu thong bao: nhan su kien tu toyland-api, gui email SMTP va webhook cho doi tac (thu lai co backoff)
+  notify:
+    build: ./backend/toyland-notify
+    container_name: toyland-notify
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/toyland_notify?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Ho_Chi_Minh&characterEncoding=UTF-8
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: toyland123
+      PORT: "8080"
+      NOTIFY_TOKEN: doi-chuoi-bi-mat-nay
+      # NOTIFY_MAIL_ENABLED=true cung SPRING_MAIL_HOST / SPRING_MAIL_USERNAME / SPRING_MAIL_PASSWORD de gui email that
+    ports:
+      - "8081:8080"
+
+  # Cong dai ly mau (Node.js) dung API doi tac. Tao doi tac o Admin truoc, roi dien khoa vao day:
+  #   docker compose --profile demo up -d partner-demo
+  partner-demo:
+    profiles: ["demo"]
+    image: node:20-alpine
+    container_name: toyland-partner-demo
+    working_dir: /app
+    volumes:
+      - ./partner-demo:/app
+    command: ["sh", "-c", "npm install --omit=dev && node server.js"]
+    environment:
+      TOYLAND_BASE_URL: http://api:8080
+      PARTNER_API_KEY: ${PARTNER_API_KEY:-}
+      PARTNER_SECRET: ${PARTNER_SECRET:-}
+    ports:
+      - "3000:3000"
 
   web:
     build: ./frontend/toyland-web

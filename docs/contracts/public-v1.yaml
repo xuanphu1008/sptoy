@@ -1,0 +1,7087 @@
+openapi: 3.1.0
+info:
+  title: ToyLand Web API
+  version: 1.0.0
+  description: API cho ứng dụng Angular và ứng dụng di động. Xác thực JWT Bearer. Đặt hàng nên gửi `Idempotency-Key`.
+servers:
+- url: https://sptoy-api.onrender.com
+- url: http://localhost:8080
+security:
+- bearerAuth: []
+paths:
+  /api/v1/notifications/{id}/read:
+    put:
+      tags:
+      - 20. Thông báo
+      operationId: read
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/NotificationDto'
+  /api/v1/notifications/read-all:
+    put:
+      tags:
+      - 20. Thông báo
+      operationId: readAll
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/me:
+    get:
+      tags:
+      - 03. Tài khoản của tôi
+      operationId: profile
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProfileDto'
+    put:
+      tags:
+      - 03. Tài khoản của tôi
+      operationId: update
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProfileDto'
+  /api/v1/me/password:
+    put:
+      tags:
+      - 03. Tài khoản của tôi
+      operationId: changePassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/me/addresses/{id}:
+    put:
+      tags:
+      - 03. Tài khoản của tôi
+      operationId: updateAddress
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AddressDto'
+    delete:
+      tags:
+      - 03. Tài khoản của tôi
+      operationId: deleteAddress
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/me/addresses/{id}/default:
+    put:
+      tags:
+      - 03. Tài khoản của tôi
+      operationId: setDefault
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/cart/{itemId}:
+    put:
+      tags:
+      - 06. Giỏ hàng
+      operationId: update_1
+      parameters:
+      - name: itemId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateQuantityRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CartView'
+    delete:
+      tags:
+      - 06. Giỏ hàng
+      operationId: remove
+      parameters:
+      - name: itemId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CartView'
+  /api/v1/admin/vouchers/{id}:
+    put:
+      tags:
+      - 07. Khuyến mãi (voucher, chương trình giảm giá, banner)
+      operationId: updateVoucher
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoucherRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/VoucherDto'
+    delete:
+      tags:
+      - 07. Khuyến mãi (voucher, chương trình giảm giá, banner)
+      operationId: deleteVoucher
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/admin/users/{id}:
+    get:
+      tags:
+      - 14. Quản trị - Tài khoản
+      operationId: get
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AdminUserDto'
+    put:
+      tags:
+      - 14. Quản trị - Tài khoản
+      operationId: update_2
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUserRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AdminUserDto'
+    delete:
+      tags:
+      - 14. Quản trị - Tài khoản
+      operationId: delete
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/admin/users/{id}/unlock:
+    put:
+      tags:
+      - 14. Quản trị - Tài khoản
+      operationId: unlock
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/admin/suppliers/{id}:
+    get:
+      tags:
+      - 17. Quản trị - Nhà cung cấp
+      operationId: get_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SupplierDto'
+    put:
+      tags:
+      - 17. Quản trị - Nhà cung cấp
+      operationId: update_3
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SupplierDto'
+    delete:
+      tags:
+      - 17. Quản trị - Nhà cung cấp
+      operationId: delete_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/admin/reviews/{id}/visibility:
+    put:
+      tags:
+      - 13. Đánh giá sản phẩm
+      operationId: visibility
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: hidden
+        in: query
+        required: true
+        schema:
+          type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AdminReviewDto'
+  /api/v1/admin/reviews/{id}/reply:
+    put:
+      tags:
+      - 13. Đánh giá sản phẩm
+      operationId: reply
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReplyRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AdminReviewDto'
+  /api/v1/admin/reviews/{id}/approve:
+    put:
+      tags:
+      - 13. Đánh giá sản phẩm
+      operationId: approve
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AdminReviewDto'
+  /api/v1/admin/returns/{id}/reject:
+    put:
+      tags:
+      - 12. Quản trị - Đơn hàng & trả hàng
+      operationId: reject
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReturnDecisionRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OrderDto'
+  /api/v1/admin/returns/{id}/approve:
+    put:
+      tags:
+      - 12. Quản trị - Đơn hàng & trả hàng
+      operationId: approve_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReturnDecisionRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OrderDto'
+  /api/v1/admin/products/{id}:
+    get:
+      tags:
+      - 10. Quản trị - Sản phẩm & danh mục
+      operationId: product
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AdminProductDto'
+    put:
+      tags:
+      - 10. Quản trị - Sản phẩm & danh mục
+      operationId: updateProduct
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductUpsertRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AdminProductDto'
+    delete:
+      tags:
+      - 10. Quản trị - Sản phẩm & danh mục
+      operationId: deleteProduct
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/admin/products/{id}/status:
+    put:
+      tags:
+      - 10. Quản trị - Sản phẩm & danh mục
+      operationId: changeStatus
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: status
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - DRAFT
+          - ACTIVE
+          - INACTIVE
+          - COMING_SOON
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/admin/orders/{id}/status:
+    put:
+      tags:
+      - 12. Quản trị - Đơn hàng & trả hàng
+      operationId: updateStatus
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatusUpdateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OrderDto'
+  /api/v1/admin/orders/{id}/note:
+    put:
+      tags:
+      - 12. Quản trị - Đơn hàng & trả hàng
+      operationId: note
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InternalNoteRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OrderDto'
+  /api/v1/admin/franchises/{id}:
+    put:
+      tags:
+      - 10. Quản trị - Sản phẩm & danh mục
+      operationId: updateFranchise
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FranchiseRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FranchiseDto'
+    delete:
+      tags:
+      - 10. Quản trị - Sản phẩm & danh mục
+      operationId: deleteFranchise
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/admin/categories/{id}:
+    put:
+      tags:
+      - 10. Quản trị - Sản phẩm & danh mục
+      operationId: updateCategory
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CategoryNode'
+    delete:
+      tags:
+      - 10. Quản trị - Sản phẩm & danh mục
+      operationId: deleteCategory
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/admin/campaigns/{id}:
+    put:
+      tags:
+      - 07. Khuyến mãi (voucher, chương trình giảm giá, banner)
+      operationId: updateCampaign
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CampaignRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CampaignDto'
+    delete:
+      tags:
+      - 07. Khuyến mãi (voucher, chương trình giảm giá, banner)
+      operationId: deleteCampaign
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/admin/brands/{id}:
+    put:
+      tags:
+      - 10. Quản trị - Sản phẩm & danh mục
+      operationId: updateBrand
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BrandRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/BrandDto'
+    delete:
+      tags:
+      - 10. Quản trị - Sản phẩm & danh mục
+      operationId: deleteBrand
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/admin/banners/{id}:
+    put:
+      tags:
+      - 07. Khuyến mãi (voucher, chương trình giảm giá, banner)
+      operationId: updateBanner
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BannerRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/BannerDto'
+    delete:
+      tags:
+      - 07. Khuyến mãi (voucher, chương trình giảm giá, banner)
+      operationId: deleteBanner
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/uploads:
+    post:
+      tags:
+      - 16. Upload ảnh
+      operationId: upload
+      parameters:
+      - name: folder
+        in: query
+        required: false
+        schema:
+          type: string
+          default: reviews
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+              - file
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+  /api/v1/reviews:
+    post:
+      tags:
+      - 13. Đánh giá sản phẩm
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewCreateRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ReviewDto'
+  /api/v1/payments/momo/ipn:
+    post:
+      tags:
+      - 09. Thanh toán MoMo
+      summary: 'IPN - MoMo gọi server-to-server (cần địa chỉ công khai: deploy hoặc ngrok). Luôn trả 204 theo yêu cầu MoMo'
+      operationId: ipn
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JsonNode'
+        required: true
+      responses:
+        '200':
+          description: OK
+  /api/v1/orders:
+    get:
+      tags:
+      - 08. Đặt hàng & Đơn hàng của tôi
+      operationId: myOrders
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - PENDING_PAYMENT
+          - PENDING
+          - CONFIRMED
+          - PACKING
+          - SHIPPING
+          - DELIVERED
+          - DELIVERY_FAILED
+          - COMPLETED
+          - CANCELLED
+          - RETURN_REQUESTED
+          - RETURNED
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageResponseOrderSummary'
+    post:
+      tags:
+      - 08. Đặt hàng & Đơn hàng của tôi
+      summary: 'Đặt hàng từ giỏ. Nếu MoMo: trả về paymentUrl để chuyển hướng'
+      description: 'Nên gửi header Idempotency-Key (chuỗi ngẫu nhiên duy nhất cho mỗi lần bấm Đặt hàng). Gửi lại cùng khóa
+        + cùng nội dung sẽ nhận lại đơn đã tạo, không tạo đơn thứ hai. Cùng khóa nhưng nội dung khác: 409 IDEMPOTENCY_KEY_REUSED.
+        Đang xử lý: 409 IDEMPOTENCY_IN_PROGRESS.'
+      operationId: place
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaceOrderRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PlaceOrderResponse'
+  /api/v1/orders/{id}/return:
+    post:
+      tags:
+      - 08. Đặt hàng & Đơn hàng của tôi
+      operationId: requestReturn
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReturnCreateRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OrderDto'
+  /api/v1/orders/{id}/reorder:
+    post:
+      tags:
+      - 08. Đặt hàng & Đơn hàng của tôi
+      operationId: reorder
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CartView'
+  /api/v1/orders/{id}/pay:
+    post:
+      tags:
+      - 08. Đặt hàng & Đơn hàng của tôi
+      summary: Tạo lại giao dịch MoMo cho đơn đang chờ thanh toán
+      operationId: pay
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+  /api/v1/orders/{id}/cancel:
+    post:
+      tags:
+      - 08. Đặt hàng & Đơn hàng của tôi
+      operationId: cancel
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OrderDto'
+  /api/v1/me/wishlist/{productId}:
+    post:
+      tags:
+      - 04. Yêu thích
+      operationId: add
+      parameters:
+      - name: productId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+    delete:
+      tags:
+      - 04. Yêu thích
+      operationId: remove_1
+      parameters:
+      - name: productId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/me/delete:
+    post:
+      tags:
+      - 03. Tài khoản của tôi
+      operationId: deleteAccount
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteAccountRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/me/addresses:
+    get:
+      tags:
+      - 03. Tài khoản của tôi
+      operationId: addresses
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AddressDto'
+    post:
+      tags:
+      - 03. Tài khoản của tôi
+      operationId: addAddress
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AddressDto'
+  /api/v1/checkout/quote:
+    post:
+      tags:
+      - 08. Đặt hàng & Đơn hàng của tôi
+      summary: 'Tính tạm đơn hàng: tạm tính, giảm giá voucher, phí ship GHN, tổng tiền'
+      operationId: quote
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuoteRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Quote'
+  /api/v1/cart:
+    get:
+      tags:
+      - 06. Giỏ hàng
+      operationId: get_2
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CartView'
+    post:
+      tags:
+      - 06. Giỏ hàng
+      operationId: add_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddToCartRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CartView'
+    delete:
+      tags:
+      - 06. Giỏ hàng
+      operationId: clear
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CartView'
+  /api/v1/cart/preview:
+    post:
+      tags:
+      - 06. Giỏ hàng
+      summary: Xem trước giỏ hàng cho khách chưa đăng nhập (không cần token)
+      operationId: preview
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/GuestLine'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CartView'
+  /api/v1/cart/merge:
+    post:
+      tags:
+      - 06. Giỏ hàng
+      summary: Gộp giỏ hàng của khách (localStorage) vào tài khoản sau khi đăng nhập
+      operationId: merge
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/GuestLine'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CartView'
+  /api/v1/auth/verify-email:
+    post:
+      tags:
+      - 01. Xác thực
+      operationId: verifyEmail
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyEmailRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/VerifyEmailResponse'
+  /api/v1/auth/reset-password:
+    post:
+      tags:
+      - 01. Xác thực
+      operationId: reset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/auth/resend-verification:
+    post:
+      tags:
+      - 01. Xác thực
+      operationId: resendVerification
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/auth/register:
+    post:
+      tags:
+      - 01. Xác thực
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+  /api/v1/auth/refresh:
+    post:
+      tags:
+      - 01. Xác thực
+      operationId: refresh
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+  /api/v1/auth/logout:
+    post:
+      tags:
+      - 01. Xác thực
+      operationId: logout
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/auth/login:
+    post:
+      tags:
+      - 01. Xác thực
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+  /api/v1/auth/forgot-password:
+    post:
+      tags:
+      - 01. Xác thực
+      operationId: forgot
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/admin/vouchers:
+    get:
+      tags:
+      - 07. Khuyến mãi (voucher, chương trình giảm giá, banner)
+      operationId: vouchers
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VoucherDto'
+    post:
+      tags:
+      - 07. Khuyến mãi (voucher, chương trình giảm giá, banner)
+      operationId: createVoucher
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoucherRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/VoucherDto'
+  /api/v1/admin/users:
+    get:
+      tags:
+      - 14. Quản trị - Tài khoản
+      operationId: list
+      parameters:
+      - name: keyword
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: role
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - ADMIN
+          - STAFF
+          - CUSTOMER
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageResponseAdminUserDto'
+    post:
+      tags:
+      - 14. Quản trị - Tài khoản
+      operationId: create_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUserRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AdminUserDto'
+  /api/v1/admin/users/{id}/points:
+    get:
+      tags:
+      - 18. Khách hàng thân thiết (điểm thưởng)
+      operationId: summary
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Summary'
+    post:
+      tags:
+      - 18. Khách hàng thân thiết (điểm thưởng)
+      operationId: adjust
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdjustPointsRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Summary'
+  /api/v1/admin/suppliers:
+    get:
+      tags:
+      - 17. Quản trị - Nhà cung cấp
+      operationId: list_1
+      parameters:
+      - name: keyword
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: active
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageResponseSupplierDto'
+    post:
+      tags:
+      - 17. Quản trị - Nhà cung cấp
+      operationId: create_2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SupplierDto'
+  /api/v1/admin/products:
+    get:
+      tags:
+      - 10. Quản trị - Sản phẩm & danh mục
+      operationId: products
+      parameters:
+      - name: keyword
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: categoryId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - DRAFT
+            - ACTIVE
+            - INACTIVE
+            - COMING_SOON
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageResponseAdminProductRow'
+    post:
+      tags:
+      - 10. Quản trị - Sản phẩm & danh mục
+      operationId: createProduct
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductUpsertRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AdminProductDto'
+  /api/v1/admin/payments/orders/{orderId}/refund:
+    post:
+      tags:
+      - Quản trị - Thanh toán & đối soát
+      operationId: refund
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OrderLedger'
+  /api/v1/admin/payments/orders/{orderId}/collect:
+    post:
+      tags:
+      - Quản trị - Thanh toán & đối soát
+      operationId: collect
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CollectRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OrderLedger'
+  /api/v1/admin/partners:
+    get:
+      tags:
+      - 14. Quản trị đối tác (ADMIN)
+      summary: Danh sách đối tác (không trả secret)
+      operationId: list_2
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PartnerView'
+    post:
+      tags:
+      - 14. Quản trị đối tác (ADMIN)
+      summary: Tạo đối tác mới; secret chỉ hiển thị một lần trong phản hồi này
+      operationId: create_3
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePartner'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CreatedPartner'
+  /api/v1/admin/orders/bulk-status:
+    post:
+      tags:
+      - 12. Quản trị - Đơn hàng & trả hàng
+      operationId: bulk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkStatusRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/admin/inventory/receipts:
+    get:
+      tags:
+      - 11. Quản trị - Kho hàng
+      operationId: receipts
+      parameters:
+      - name: supplierId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageResponseReceiptDto'
+    post:
+      tags:
+      - 11. Quản trị - Kho hàng
+      operationId: createReceipt
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReceiptRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ReceiptDto'
+  /api/v1/admin/inventory/adjust:
+    post:
+      tags:
+      - 11. Quản trị - Kho hàng
+      operationId: adjust_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdjustRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/admin/franchises:
+    post:
+      tags:
+      - 10. Quản trị - Sản phẩm & danh mục
+      operationId: createFranchise
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FranchiseRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/FranchiseDto'
+  /api/v1/admin/categories:
+    get:
+      tags:
+      - 10. Quản trị - Sản phẩm & danh mục
+      operationId: categories
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryNode'
+    post:
+      tags:
+      - 10. Quản trị - Sản phẩm & danh mục
+      operationId: createCategory
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CategoryNode'
+  /api/v1/admin/campaigns:
+    get:
+      tags:
+      - 07. Khuyến mãi (voucher, chương trình giảm giá, banner)
+      operationId: campaigns
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CampaignDto'
+    post:
+      tags:
+      - 07. Khuyến mãi (voucher, chương trình giảm giá, banner)
+      operationId: createCampaign
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CampaignRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CampaignDto'
+  /api/v1/admin/brands:
+    post:
+      tags:
+      - 10. Quản trị - Sản phẩm & danh mục
+      operationId: createBrand
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BrandRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/BrandDto'
+  /api/v1/admin/banners:
+    get:
+      tags:
+      - 07. Khuyến mãi (voucher, chương trình giảm giá, banner)
+      operationId: allBanners
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BannerDto'
+    post:
+      tags:
+      - 07. Khuyến mãi (voucher, chương trình giảm giá, banner)
+      operationId: createBanner
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BannerRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/BannerDto'
+  /api/v1/admin/banned-keywords:
+    get:
+      tags:
+      - 13. Đánh giá sản phẩm
+      operationId: all
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/KeywordDto'
+    post:
+      tags:
+      - 13. Đánh giá sản phẩm
+      operationId: add_2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KeywordRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/KeywordDto'
+  /api/v1/admin/banned-keywords/rescan:
+    post:
+      tags:
+      - 13. Đánh giá sản phẩm
+      operationId: rescan
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+  /api/v1/admin/partners/{id}/active:
+    patch:
+      tags:
+      - 14. Quản trị đối tác (ADMIN)
+      summary: Bật/tắt đối tác
+      operationId: setActive
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActiveRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PartnerView'
+  /api/v1/vouchers/available:
+    get:
+      tags:
+      - 07. Khuyến mãi (voucher, chương trình giảm giá, banner)
+      operationId: availableVouchers
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VoucherDto'
+  /api/v1/shipping/wards:
+    get:
+      tags:
+      - 05. Vận chuyển (GHN)
+      operationId: wards
+      parameters:
+      - name: districtId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Option'
+  /api/v1/shipping/provinces:
+    get:
+      tags:
+      - 05. Vận chuyển (GHN)
+      operationId: provinces
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Option'
+  /api/v1/shipping/districts:
+    get:
+      tags:
+      - 05. Vận chuyển (GHN)
+      operationId: districts
+      parameters:
+      - name: provinceId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Option'
+  /api/v1/shipping/config:
+    get:
+      tags:
+      - 05. Vận chuyển (GHN)
+      operationId: config
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ShippingConfig'
+  /api/v1/products:
+    get:
+      tags:
+      - 02. Cửa hàng - Sản phẩm
+      summary: Tìm kiếm / lọc / sắp xếp sản phẩm
+      description: 'sort: newest | price_asc | price_desc | bestseller | rating | name. age: BABY, TODDLER, PRESCHOOL, SCHOOL,
+        TEEN. gender: BOY, GIRL, UNISEX. brand/franchise: slug, nhiều giá trị cách nhau dấu phẩy'
+      operationId: search
+      parameters:
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: category
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: brand
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+      - name: franchise
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+      - name: age
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+      - name: gender
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+      - name: minPrice
+        in: query
+        required: false
+        schema:
+          type: number
+      - name: maxPrice
+        in: query
+        required: false
+        schema:
+          type: number
+      - name: inStock
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: onSale
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: featured
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 24
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+          default: newest
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageResponseProductCard'
+  /api/v1/products/{productId}/reviews:
+    get:
+      tags:
+      - 13. Đánh giá sản phẩm
+      operationId: list_3
+      parameters:
+      - name: productId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: rating
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: withImages
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 5
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageResponseReviewDto'
+  /api/v1/products/{id}:
+    get:
+      tags:
+      - 02. Cửa hàng - Sản phẩm
+      operationId: detail
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductDetail'
+  /api/v1/products/{id}/rating-summary:
+    get:
+      tags:
+      - 02. Cửa hàng - Sản phẩm
+      summary: Tổng hợp đánh giá (điểm trung bình, số lượng theo sao)
+      operationId: ratingSummary
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RatingSummary'
+  /api/v1/products/suggest:
+    get:
+      tags:
+      - 02. Cửa hàng - Sản phẩm
+      summary: Gợi ý tìm kiếm (autocomplete, không dấu)
+      operationId: suggest
+      parameters:
+      - name: q
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Suggestion'
+  /api/v1/products/slug/{slug}:
+    get:
+      tags:
+      - 02. Cửa hàng - Sản phẩm
+      summary: Chi tiết sản phẩm theo slug
+      operationId: detailBySlug
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProductDetail'
+  /api/v1/products/facets:
+    get:
+      tags:
+      - 02. Cửa hàng - Sản phẩm
+      summary: Đếm số sản phẩm theo từng lựa chọn bộ lọc (faceted search)
+      operationId: facets
+      parameters:
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: category
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: brand
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+      - name: franchise
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+      - name: age
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+      - name: gender
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+      - name: minPrice
+        in: query
+        required: false
+        schema:
+          type: number
+      - name: maxPrice
+        in: query
+        required: false
+        schema:
+          type: number
+      - name: inStock
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: onSale
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: featured
+        in: query
+        required: false
+        schema:
+          type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Facets'
+  /api/v1/products/by-ids:
+    get:
+      tags:
+      - 02. Cửa hàng - Sản phẩm
+      summary: Lấy thẻ sản phẩm theo danh sách id (đã xem gần đây)
+      operationId: byIds
+      parameters:
+      - name: ids
+        in: query
+        required: true
+        schema:
+          type: array
+          items:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductCard'
+  /api/v1/payments/momo/return:
+    get:
+      tags:
+      - 09. Thanh toán MoMo
+      summary: Frontend chuyển tiếp toàn bộ tham số MoMo trả về (redirectUrl) để backend kiểm tra chữ ký & cập nhật đơn
+      operationId: momoReturn
+      parameters:
+      - name: params
+        in: query
+        required: true
+        schema:
+          type: object
+          additionalProperties:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CallbackResult'
+  /api/v1/orders/{id}:
+    get:
+      tags:
+      - 08. Đặt hàng & Đơn hàng của tôi
+      operationId: myOrder
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OrderDto'
+  /api/v1/orders/track:
+    get:
+      tags:
+      - 08. Đặt hàng & Đơn hàng của tôi
+      summary: Tra cứu đơn hàng không cần đăng nhập (mã đơn + số điện thoại)
+      operationId: track
+      parameters:
+      - name: code
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: phone
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/TrackingDto'
+  /api/v1/notifications:
+    get:
+      tags:
+      - 20. Thông báo
+      operationId: mine
+      parameters:
+      - name: unreadOnly
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageResponseNotificationDto'
+  /api/v1/notifications/unread-count:
+    get:
+      tags:
+      - 20. Thông báo
+      operationId: unreadCount
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: integer
+                  format: int64
+  /api/v1/me/wishlist:
+    get:
+      tags:
+      - 04. Yêu thích
+      operationId: list_4
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductCard'
+  /api/v1/me/wishlist/ids:
+    get:
+      tags:
+      - 04. Yêu thích
+      operationId: ids
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: integer
+                  format: int64
+  /api/v1/home:
+    get:
+      tags:
+      - 02. Cửa hàng - Sản phẩm
+      summary: Dữ liệu trang chủ (banner, danh mục, sản phẩm nổi bật/bán chạy/mới/giảm giá...)
+      operationId: home
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/HomeData'
+  /api/v1/franchises:
+    get:
+      tags:
+      - 02. Cửa hàng - Sản phẩm
+      operationId: franchises
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FranchiseDto'
+  /api/v1/categories:
+    get:
+      tags:
+      - 02. Cửa hàng - Sản phẩm
+      summary: Cây danh mục
+      operationId: categories_1
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryNode'
+  /api/v1/brands:
+    get:
+      tags:
+      - 02. Cửa hàng - Sản phẩm
+      operationId: brands
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BrandDto'
+  /api/v1/banners:
+    get:
+      tags:
+      - 07. Khuyến mãi (voucher, chương trình giảm giá, banner)
+      operationId: banners
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BannerDto'
+  /api/v1/auth/me:
+    get:
+      tags:
+      - 01. Xác thực
+      operationId: me
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserSummary'
+  /api/v1/admin/users/{id}/points/history:
+    get:
+      tags:
+      - 18. Khách hàng thân thiết (điểm thưởng)
+      operationId: history
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageResponseTxDto'
+  /api/v1/admin/suppliers/options:
+    get:
+      tags:
+      - 17. Quản trị - Nhà cung cấp
+      operationId: options
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupplierOption'
+  /api/v1/admin/reviews:
+    get:
+      tags:
+      - 13. Đánh giá sản phẩm
+      operationId: adminList
+      parameters:
+      - name: rating
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: hidden
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: flagged
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: keyword
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageResponseAdminReviewDto'
+  /api/v1/admin/returns:
+    get:
+      tags:
+      - 12. Quản trị - Đơn hàng & trả hàng
+      operationId: returns
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - REQUESTED
+          - APPROVED
+          - REJECTED
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageResponseAdminReturnRow'
+  /api/v1/admin/reports/sales:
+    get:
+      tags:
+      - 15. Quản trị - Thống kê
+      operationId: sales
+      parameters:
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: groupBy
+        in: query
+        required: false
+        schema:
+          type: string
+          default: DAY
+          enum:
+          - DAY
+          - MONTH
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SalesReport'
+  /api/v1/admin/reports/sales/export:
+    get:
+      tags:
+      - 15. Quản trị - Thống kê
+      operationId: exportSales
+      parameters:
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: groupBy
+        in: query
+        required: false
+        schema:
+          type: string
+          default: DAY
+          enum:
+          - DAY
+          - MONTH
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: byte
+  /api/v1/admin/reports/products:
+    get:
+      tags:
+      - 15. Quản trị - Thống kê
+      operationId: products_1
+      parameters:
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+          default: revenue
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 50
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductRow'
+  /api/v1/admin/reports/products/export:
+    get:
+      tags:
+      - 15. Quản trị - Thống kê
+      operationId: exportProducts
+      parameters:
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+          default: revenue
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 200
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: byte
+  /api/v1/admin/reports/inventory:
+    get:
+      tags:
+      - 15. Quản trị - Thống kê
+      operationId: inventory
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/InventoryReport'
+  /api/v1/admin/reports/inventory/export:
+    get:
+      tags:
+      - 15. Quản trị - Thống kê
+      operationId: exportInventory
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: byte
+  /api/v1/admin/reports/customers:
+    get:
+      tags:
+      - 15. Quản trị - Thống kê
+      operationId: customers
+      parameters:
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 50
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CustomerRow'
+  /api/v1/admin/reports/customers/export:
+    get:
+      tags:
+      - 15. Quản trị - Thống kê
+      operationId: exportCustomers
+      parameters:
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 200
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: byte
+  /api/v1/admin/payments/transactions:
+    get:
+      tags:
+      - Quản trị - Thanh toán & đối soát
+      operationId: transactions
+      parameters:
+      - name: provider
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: kind
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - PAYMENT
+          - REFUND
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: keyword
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageResponseTransactionDto'
+  /api/v1/admin/payments/transactions/export:
+    get:
+      tags:
+      - Quản trị - Thanh toán & đối soát
+      operationId: export
+      parameters:
+      - name: provider
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: kind
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - PAYMENT
+          - REFUND
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: keyword
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: byte
+  /api/v1/admin/payments/summary:
+    get:
+      tags:
+      - Quản trị - Thanh toán & đối soát
+      operationId: summary_1
+      parameters:
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PaymentSummary'
+  /api/v1/admin/payments/refund-queue:
+    get:
+      tags:
+      - Quản trị - Thanh toán & đối soát
+      operationId: refundQueue
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RefundQueueRow'
+  /api/v1/admin/payments/orders/{orderId}:
+    get:
+      tags:
+      - Quản trị - Thanh toán & đối soát
+      operationId: orderLedger
+      parameters:
+      - name: orderId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OrderLedger'
+  /api/v1/admin/payments/cod-outstanding:
+    get:
+      tags:
+      - Quản trị - Thanh toán & đối soát
+      operationId: codOutstanding
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageResponseCodRow'
+  /api/v1/admin/orders:
+    get:
+      tags:
+      - 12. Quản trị - Đơn hàng & trả hàng
+      operationId: search_1
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - PENDING_PAYMENT
+            - PENDING
+            - CONFIRMED
+            - PACKING
+            - SHIPPING
+            - DELIVERED
+            - DELIVERY_FAILED
+            - COMPLETED
+            - CANCELLED
+            - RETURN_REQUESTED
+            - RETURNED
+      - name: paymentStatus
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - UNPAID
+          - PAID
+          - FAILED
+          - REFUND_PENDING
+          - REFUNDED
+      - name: paymentMethod
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - COD
+          - MOMO
+          - PARTNER
+      - name: keyword
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageResponseOrderSummary'
+  /api/v1/admin/orders/{id}:
+    get:
+      tags:
+      - 12. Quản trị - Đơn hàng & trả hàng
+      operationId: get_3
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/OrderDto'
+  /api/v1/admin/inventory:
+    get:
+      tags:
+      - 11. Quản trị - Kho hàng
+      operationId: list_5
+      parameters:
+      - name: keyword
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: lowStock
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 20
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageResponseStockRow'
+  /api/v1/admin/inventory/receipts/{id}:
+    get:
+      tags:
+      - 11. Quản trị - Kho hàng
+      operationId: receipt
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ReceiptDto'
+  /api/v1/admin/inventory/movements:
+    get:
+      tags:
+      - 11. Quản trị - Kho hàng
+      operationId: movements
+      parameters:
+      - name: variantId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: type
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - INITIAL
+          - IMPORT
+          - SALE
+          - CANCEL
+          - RETURN
+          - ADJUSTMENT
+      - name: keyword
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 30
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageResponseMovementDto'
+  /api/v1/admin/dashboard:
+    get:
+      tags:
+      - 15. Quản trị - Thống kê
+      operationId: dashboard
+      parameters:
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+  /api/v1/admin/audit-logs:
+    get:
+      tags:
+      - 19. Quản trị - Nhật ký hoạt động
+      operationId: search_2
+      parameters:
+      - name: actor
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: entityType
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: action
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: keyword
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 30
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageResponseAuditDto'
+  /api/v1/account/points:
+    get:
+      tags:
+      - 18. Khách hàng thân thiết (điểm thưởng)
+      operationId: mine_1
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Summary'
+  /api/v1/account/points/history:
+    get:
+      tags:
+      - 18. Khách hàng thân thiết (điểm thưởng)
+      operationId: myHistory
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageResponseTxDto'
+  /api/v1/admin/banned-keywords/{id}:
+    delete:
+      tags:
+      - 13. Đánh giá sản phẩm
+      operationId: delete_2
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      name: bearerAuth
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ActiveRequest:
+      type: object
+      properties:
+        active:
+          type: boolean
+    AddToCartRequest:
+      type: object
+      properties:
+        variantId:
+          type: integer
+          format: int64
+        quantity:
+          type: integer
+          format: int32
+          maximum: 99
+          minimum: 1
+      required:
+      - quantity
+      - variantId
+    AddressDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        receiverName:
+          type: string
+        phone:
+          type: string
+        provinceId:
+          type: integer
+          format: int32
+        provinceName:
+          type: string
+        districtId:
+          type: integer
+          format: int32
+        districtName:
+          type: string
+        wardCode:
+          type: string
+        wardName:
+          type: string
+        detail:
+          type: string
+        isDefault:
+          type: boolean
+        fullAddress:
+          type: string
+    AddressRequest:
+      type: object
+      properties:
+        receiverName:
+          type: string
+          maxLength: 100
+          minLength: 0
+        phone:
+          type: string
+          minLength: 1
+          pattern: ^0\d{9,10}$
+        provinceId:
+          type: integer
+          format: int32
+        provinceName:
+          type: string
+          minLength: 1
+        districtId:
+          type: integer
+          format: int32
+        districtName:
+          type: string
+          minLength: 1
+        wardCode:
+          type: string
+          maxLength: 20
+          minLength: 0
+        wardName:
+          type: string
+          minLength: 1
+        detail:
+          type: string
+          maxLength: 255
+          minLength: 0
+        isDefault:
+          type: boolean
+      required:
+      - detail
+      - districtName
+      - phone
+      - provinceName
+      - receiverName
+      - wardName
+    AdjustPointsRequest:
+      type: object
+      properties:
+        delta:
+          type: integer
+          format: int32
+          maximum: 1000000
+          minimum: -1000000
+        note:
+          type: string
+          maxLength: 300
+          minLength: 0
+      required:
+      - delta
+    AdjustRequest:
+      type: object
+      properties:
+        variantId:
+          type: integer
+          format: int64
+        newQuantity:
+          type: integer
+          format: int32
+          minimum: 0
+        note:
+          type: string
+          maxLength: 300
+          minLength: 0
+      required:
+      - newQuantity
+      - variantId
+    AdminProductDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        slug:
+          type: string
+        shortDescription:
+          type: string
+        description:
+          type: string
+        categoryId:
+          type: integer
+          format: int64
+        brandId:
+          type: integer
+          format: int64
+        franchiseIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+        ageMinMonths:
+          type: integer
+          format: int32
+        ageMaxMonths:
+          type: integer
+          format: int32
+        gender:
+          type: string
+          enum:
+          - BOY
+          - GIRL
+          - UNISEX
+        material:
+          type: string
+        brandOrigin:
+          type: string
+        madeIn:
+          type: string
+        manufactureYear:
+          type: integer
+          format: int32
+        battery:
+          type: string
+        smallPartsWarning:
+          type: boolean
+        safetyWarning:
+          type: string
+        crCertified:
+          type: boolean
+        importer:
+          type: string
+        lengthCm:
+          type: integer
+          format: int32
+        widthCm:
+          type: integer
+          format: int32
+        heightCm:
+          type: integer
+          format: int32
+        videoUrl:
+          type: string
+        status:
+          type: string
+          enum:
+          - DRAFT
+          - ACTIVE
+          - INACTIVE
+          - COMING_SOON
+        featured:
+          type: boolean
+        onlineExclusive:
+          type: boolean
+        metaTitle:
+          type: string
+        metaDescription:
+          type: string
+        option1Name:
+          type: string
+        option2Name:
+          type: string
+        specs:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpecRequest'
+        images:
+          type: array
+          items:
+            type: string
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminVariantDto'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    AdminProductRow:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        slug:
+          type: string
+        imageUrl:
+          type: string
+        categoryName:
+          type: string
+        brandName:
+          type: string
+        minPrice:
+          type: number
+        maxPrice:
+          type: number
+        totalStock:
+          type: integer
+          format: int32
+        variantCount:
+          type: integer
+          format: int32
+        soldCount:
+          type: integer
+          format: int32
+        avgRating:
+          type: number
+        status:
+          type: string
+          enum:
+          - DRAFT
+          - ACTIVE
+          - INACTIVE
+          - COMING_SOON
+        featured:
+          type: boolean
+        updatedAt:
+          type: string
+          format: date-time
+    AdminReturnRow:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        orderId:
+          type: integer
+          format: int64
+        orderCode:
+          type: string
+        customerName:
+          type: string
+        reason:
+          type: string
+        status:
+          type: string
+          enum:
+          - REQUESTED
+          - APPROVED
+          - REJECTED
+        orderTotal:
+          type: number
+        refundAmount:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+    AdminReviewDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        productId:
+          type: integer
+          format: int64
+        productName:
+          type: string
+        productSlug:
+          type: string
+        userName:
+          type: string
+        userEmail:
+          type: string
+        rating:
+          type: integer
+          format: int32
+        comment:
+          type: string
+        imageUrls:
+          type: array
+          items:
+            type: string
+        hidden:
+          type: boolean
+        adminReply:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        flagged:
+          type: boolean
+        flagReason:
+          type: string
+    AdminUserDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        fullName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+          enum:
+          - ADMIN
+          - STAFF
+          - CUSTOMER
+        enabled:
+          type: boolean
+        locked:
+          type: boolean
+        lockedUntil:
+          type: string
+          format: date-time
+        orderCount:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+        points:
+          type: integer
+          format: int32
+        lifetimePoints:
+          type: integer
+          format: int32
+        tier:
+          type: string
+        emailVerified:
+          type: boolean
+    AdminUserRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          maxLength: 50
+          minLength: 4
+          pattern: ^[a-zA-Z0-9._]+$
+        password:
+          type: string
+          maxLength: 100
+          minLength: 0
+        fullName:
+          type: string
+          maxLength: 100
+          minLength: 0
+        email:
+          type: string
+          minLength: 1
+        phone:
+          type: string
+          pattern: ^$|^0\d{9,10}$
+        role:
+          type: string
+          enum:
+          - ADMIN
+          - STAFF
+          - CUSTOMER
+        enabled:
+          type: boolean
+      required:
+      - email
+      - fullName
+      - role
+      - username
+    AdminVariantDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        sku:
+          type: string
+        barcode:
+          type: string
+        option1:
+          type: string
+        option2:
+          type: string
+        price:
+          type: number
+        compareAtPrice:
+          type: number
+        costPrice:
+          type: number
+        stock:
+          type: integer
+          format: int32
+        weightGram:
+          type: integer
+          format: int32
+        imageUrl:
+          type: string
+        active:
+          type: boolean
+    AuditDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        actor:
+          type: string
+        actorRole:
+          type: string
+        action:
+          type: string
+        entityType:
+          type: string
+        entityId:
+          type: string
+        summary:
+          type: string
+        ip:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        tokenType:
+          type: string
+        expiresIn:
+          type: integer
+          format: int64
+        user:
+          $ref: '#/components/schemas/UserSummary'
+    BannerDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        subtitle:
+          type: string
+        imageUrl:
+          type: string
+        linkUrl:
+          type: string
+        buttonText:
+          type: string
+        bgColor:
+          type: string
+        sortOrder:
+          type: integer
+          format: int32
+        active:
+          type: boolean
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+    BannerRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 150
+          minLength: 0
+        subtitle:
+          type: string
+          maxLength: 300
+          minLength: 0
+        imageUrl:
+          type: string
+          maxLength: 500
+          minLength: 0
+        linkUrl:
+          type: string
+          maxLength: 300
+          minLength: 0
+        buttonText:
+          type: string
+          maxLength: 50
+          minLength: 0
+        bgColor:
+          type: string
+          maxLength: 20
+          minLength: 0
+        sortOrder:
+          type: integer
+          format: int32
+        active:
+          type: boolean
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+      required:
+      - title
+    BrandDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        slug:
+          type: string
+        logoUrl:
+          type: string
+        country:
+          type: string
+        description:
+          type: string
+    BrandRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          minLength: 0
+        slug:
+          type: string
+          maxLength: 120
+          minLength: 0
+        logoUrl:
+          type: string
+          maxLength: 500
+          minLength: 0
+        country:
+          type: string
+          maxLength: 100
+          minLength: 0
+        description:
+          type: string
+          maxLength: 500
+          minLength: 0
+      required:
+      - name
+    BulkStatusRequest:
+      type: object
+      properties:
+        ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+        status:
+          type: string
+          enum:
+          - PENDING_PAYMENT
+          - PENDING
+          - CONFIRMED
+          - PACKING
+          - SHIPPING
+          - DELIVERED
+          - DELIVERY_FAILED
+          - COMPLETED
+          - CANCELLED
+          - RETURN_REQUESTED
+          - RETURNED
+        note:
+          type: string
+          maxLength: 500
+          minLength: 0
+      required:
+      - ids
+      - status
+    CallbackResult:
+      type: object
+      properties:
+        validSignature:
+          type: boolean
+        success:
+          type: boolean
+        orderId:
+          type: integer
+          format: int64
+        orderCode:
+          type: string
+        message:
+          type: string
+        resultCode:
+          type: string
+    CampaignDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+        discountPercent:
+          type: integer
+          format: int32
+        scopeType:
+          type: string
+          enum:
+          - ALL
+          - CATEGORY
+          - BRAND
+          - FRANCHISE
+          - PRODUCT
+        scopeId:
+          type: integer
+          format: int64
+        scopeName:
+          type: string
+        badgeLabel:
+          type: string
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        active:
+          type: boolean
+        running:
+          type: boolean
+    CampaignInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        badgeLabel:
+          type: string
+        discountPercent:
+          type: integer
+          format: int32
+        endAt:
+          type: string
+          format: date-time
+    CampaignRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 150
+          minLength: 0
+        description:
+          type: string
+          maxLength: 500
+          minLength: 0
+        discountPercent:
+          type: integer
+          format: int32
+          maximum: 90
+          minimum: 1
+        scopeType:
+          type: string
+          enum:
+          - ALL
+          - CATEGORY
+          - BRAND
+          - FRANCHISE
+          - PRODUCT
+        scopeId:
+          type: integer
+          format: int64
+        badgeLabel:
+          type: string
+          maxLength: 50
+          minLength: 0
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        active:
+          type: boolean
+      required:
+      - endAt
+      - name
+      - scopeType
+      - startAt
+    CancelRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 300
+          minLength: 0
+      required:
+      - reason
+    CartLine:
+      type: object
+      properties:
+        itemId:
+          type: integer
+          format: int64
+        variantId:
+          type: integer
+          format: int64
+        productId:
+          type: integer
+          format: int64
+        productName:
+          type: string
+        productSlug:
+          type: string
+        variantName:
+          type: string
+        imageUrl:
+          type: string
+        unitPrice:
+          type: number
+        originalPrice:
+          type: number
+        quantity:
+          type: integer
+          format: int32
+        stock:
+          type: integer
+          format: int32
+        available:
+          type: boolean
+        message:
+          type: string
+        lineTotal:
+          type: number
+        weightGram:
+          type: integer
+          format: int32
+    CartView:
+      type: object
+      properties:
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartLine'
+        totalQuantity:
+          type: integer
+          format: int32
+        subtotal:
+          type: number
+        hasIssues:
+          type: boolean
+    CategoryNode:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        slug:
+          type: string
+        icon:
+          type: string
+        imageUrl:
+          type: string
+        description:
+          type: string
+        parentId:
+          type: integer
+          format: int64
+        sortOrder:
+          type: integer
+          format: int32
+        active:
+          type: boolean
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryNode'
+    CategoryRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          minLength: 0
+        slug:
+          type: string
+          maxLength: 120
+          minLength: 0
+        parentId:
+          type: integer
+          format: int64
+        description:
+          type: string
+          maxLength: 500
+          minLength: 0
+        imageUrl:
+          type: string
+          maxLength: 500
+          minLength: 0
+        icon:
+          type: string
+          maxLength: 50
+          minLength: 0
+        sortOrder:
+          type: integer
+          format: int32
+        active:
+          type: boolean
+      required:
+      - name
+    ChangePasswordRequest:
+      type: object
+      properties:
+        currentPassword:
+          type: string
+          minLength: 1
+        newPassword:
+          type: string
+          maxLength: 100
+          minLength: 6
+      required:
+      - currentPassword
+      - newPassword
+    CodRow:
+      type: object
+      properties:
+        orderId:
+          type: integer
+          format: int64
+        orderCode:
+          type: string
+        customerName:
+          type: string
+        phone:
+          type: string
+        orderStatus:
+          type: string
+          enum:
+          - PENDING_PAYMENT
+          - PENDING
+          - CONFIRMED
+          - PACKING
+          - SHIPPING
+          - DELIVERED
+          - DELIVERY_FAILED
+          - COMPLETED
+          - CANCELLED
+          - RETURN_REQUESTED
+          - RETURNED
+        total:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+    CollectRequest:
+      type: object
+      properties:
+        method:
+          type: string
+          minLength: 1
+          pattern: CASH|BANK_TRANSFER
+        reference:
+          type: string
+          maxLength: 50
+          minLength: 0
+        note:
+          type: string
+          maxLength: 300
+          minLength: 0
+      required:
+      - method
+    CreatePartner:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+          minLength: 0
+        rateLimitPerMin:
+          type: integer
+          format: int32
+          maximum: 6000
+          minimum: 1
+      required:
+      - name
+    CreatedPartner:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        apiKey:
+          type: string
+        secret:
+          type: string
+        note:
+          type: string
+    Crumb:
+      type: object
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+    CustomerInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        fullName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+    CustomerRow:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        fullName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        orders:
+          type: integer
+          format: int64
+        spent:
+          type: number
+        lastOrderAt:
+          type: string
+          format: date-time
+        points:
+          type: integer
+          format: int32
+        tier:
+          type: string
+    DailyFlow:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        in:
+          type: number
+        out:
+          type: number
+    Dashboard:
+      type: object
+      properties:
+        from:
+          type: string
+          format: date
+        to:
+          type: string
+          format: date
+        summary:
+          $ref: '#/components/schemas/Summary'
+        revenueSeries:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeriesPoint'
+        topProducts:
+          type: array
+          items:
+            $ref: '#/components/schemas/TopProduct'
+        categoryRevenue:
+          type: array
+          items:
+            $ref: '#/components/schemas/NamedValue'
+        statusCounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/NamedValue'
+        paymentShare:
+          type: array
+          items:
+            $ref: '#/components/schemas/NamedValue'
+        lowStock:
+          type: array
+          items:
+            $ref: '#/components/schemas/LowStockItem'
+        recentOrders:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderSummary'
+    DeleteAccountRequest:
+      type: object
+      properties:
+        password:
+          type: string
+          minLength: 1
+      required:
+      - password
+    FacetItem:
+      type: object
+      properties:
+        value:
+          type: string
+        label:
+          type: string
+        count:
+          type: integer
+          format: int64
+    Facets:
+      type: object
+      properties:
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacetItem'
+        brands:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacetItem'
+        franchises:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacetItem'
+        ages:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacetItem'
+        genders:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacetItem'
+    ForgotPasswordRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          minLength: 1
+      required:
+      - email
+    FranchiseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        slug:
+          type: string
+        imageUrl:
+          type: string
+        description:
+          type: string
+    FranchiseRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          minLength: 0
+        slug:
+          type: string
+          maxLength: 120
+          minLength: 0
+        imageUrl:
+          type: string
+          maxLength: 500
+          minLength: 0
+        description:
+          type: string
+          maxLength: 500
+          minLength: 0
+      required:
+      - name
+    GuestLine:
+      type: object
+      properties:
+        variantId:
+          type: integer
+          format: int64
+        quantity:
+          type: integer
+          format: int32
+          maximum: 99
+          minimum: 1
+      required:
+      - quantity
+      - variantId
+    HistoryDto:
+      type: object
+      properties:
+        fromStatus:
+          type: string
+          enum:
+          - PENDING_PAYMENT
+          - PENDING
+          - CONFIRMED
+          - PACKING
+          - SHIPPING
+          - DELIVERED
+          - DELIVERY_FAILED
+          - COMPLETED
+          - CANCELLED
+          - RETURN_REQUESTED
+          - RETURNED
+        toStatus:
+          type: string
+          enum:
+          - PENDING_PAYMENT
+          - PENDING
+          - CONFIRMED
+          - PACKING
+          - SHIPPING
+          - DELIVERED
+          - DELIVERY_FAILED
+          - COMPLETED
+          - CANCELLED
+          - RETURN_REQUESTED
+          - RETURNED
+        label:
+          type: string
+        note:
+          type: string
+        changedBy:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    HomeData:
+      type: object
+      properties:
+        banners:
+          type: array
+          items:
+            $ref: '#/components/schemas/BannerDto'
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryNode'
+        featured:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductCard'
+        bestSellers:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductCard'
+        newArrivals:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductCard'
+        onSale:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductCard'
+        campaigns:
+          type: array
+          items:
+            $ref: '#/components/schemas/CampaignInfo'
+        franchises:
+          type: array
+          items:
+            $ref: '#/components/schemas/FranchiseDto'
+        brands:
+          type: array
+          items:
+            $ref: '#/components/schemas/BrandDto'
+    ImageDto:
+      type: object
+      properties:
+        url:
+          type: string
+        alt:
+          type: string
+    InternalNoteRequest:
+      type: object
+      properties:
+        internalNote:
+          type: string
+          maxLength: 500
+          minLength: 0
+    InventoryReport:
+      type: object
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/InventoryRow'
+        totalUnits:
+          type: integer
+          format: int64
+        totalStockValue:
+          type: number
+        totalRetailValue:
+          type: number
+        lowStockCount:
+          type: integer
+          format: int64
+        outOfStockCount:
+          type: integer
+          format: int64
+    InventoryRow:
+      type: object
+      properties:
+        variantId:
+          type: integer
+          format: int64
+        sku:
+          type: string
+        productName:
+          type: string
+        variantName:
+          type: string
+        category:
+          type: string
+        stock:
+          type: integer
+          format: int32
+        costPrice:
+          type: number
+        price:
+          type: number
+        stockValue:
+          type: number
+        retailValue:
+          type: number
+        sold30d:
+          type: integer
+          format: int64
+        lowStock:
+          type: boolean
+    JsonNode: {}
+    KeywordDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        keyword:
+          type: string
+        createdBy:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    KeywordRequest:
+      type: object
+      properties:
+        keyword:
+          type: string
+          maxLength: 100
+          minLength: 0
+      required:
+      - keyword
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+      - password
+      - username
+    LowStockItem:
+      type: object
+      properties:
+        variantId:
+          type: integer
+          format: int64
+        productId:
+          type: integer
+          format: int64
+        productName:
+          type: string
+        variantName:
+          type: string
+        sku:
+          type: string
+        stock:
+          type: integer
+          format: int32
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+    MovementDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        variantId:
+          type: integer
+          format: int64
+        sku:
+          type: string
+        type:
+          type: string
+          enum:
+          - INITIAL
+          - IMPORT
+          - SALE
+          - CANCEL
+          - RETURN
+          - ADJUSTMENT
+        quantityChange:
+          type: integer
+          format: int32
+        balanceAfter:
+          type: integer
+          format: int32
+        refCode:
+          type: string
+        note:
+          type: string
+        createdBy:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    NamedValue:
+      type: object
+      properties:
+        name:
+          type: string
+        label:
+          type: string
+        count:
+          type: integer
+          format: int64
+        amount:
+          type: number
+    NotificationDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          type: string
+        title:
+          type: string
+        message:
+          type: string
+        link:
+          type: string
+        read:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    Option:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    OrderActions:
+      type: object
+      properties:
+        canCancel:
+          type: boolean
+        canPay:
+          type: boolean
+        canReturn:
+          type: boolean
+        canReorder:
+          type: boolean
+        nextStatuses:
+          type: array
+          items:
+            type: string
+            enum:
+            - PENDING_PAYMENT
+            - PENDING
+            - CONFIRMED
+            - PACKING
+            - SHIPPING
+            - DELIVERED
+            - DELIVERY_FAILED
+            - COMPLETED
+            - CANCELLED
+            - RETURN_REQUESTED
+            - RETURNED
+    OrderDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        orderCode:
+          type: string
+        status:
+          type: string
+          enum:
+          - PENDING_PAYMENT
+          - PENDING
+          - CONFIRMED
+          - PACKING
+          - SHIPPING
+          - DELIVERED
+          - DELIVERY_FAILED
+          - COMPLETED
+          - CANCELLED
+          - RETURN_REQUESTED
+          - RETURNED
+        statusLabel:
+          type: string
+        paymentMethod:
+          type: string
+          enum:
+          - COD
+          - MOMO
+          - PARTNER
+        paymentStatus:
+          type: string
+          enum:
+          - UNPAID
+          - PAID
+          - FAILED
+          - REFUND_PENDING
+          - REFUNDED
+        receiverName:
+          type: string
+        phone:
+          type: string
+        fullAddress:
+          type: string
+        note:
+          type: string
+        giftWrap:
+          type: boolean
+        giftMessage:
+          type: string
+        subtotal:
+          type: number
+        discountAmount:
+          type: number
+        shippingFee:
+          type: number
+        shippingDiscount:
+          type: number
+        giftWrapFee:
+          type: number
+        totalAmount:
+          type: number
+        voucherCode:
+          type: string
+        pointsUsed:
+          type: integer
+          format: int32
+        pointsDiscount:
+          type: number
+        pointsEarned:
+          type: integer
+          format: int32
+        cancelReason:
+          type: string
+        internalNote:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        paidAt:
+          type: string
+          format: date-time
+        deliveredAt:
+          type: string
+          format: date-time
+        paymentDeadline:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemDto'
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoryDto'
+        returnRequest:
+          $ref: '#/components/schemas/ReturnDto'
+        customer:
+          $ref: '#/components/schemas/CustomerInfo'
+        actions:
+          $ref: '#/components/schemas/OrderActions'
+    OrderItemDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        productId:
+          type: integer
+          format: int64
+        productSlug:
+          type: string
+        variantId:
+          type: integer
+          format: int64
+        productName:
+          type: string
+        variantName:
+          type: string
+        sku:
+          type: string
+        imageUrl:
+          type: string
+        unitPrice:
+          type: number
+        originalPrice:
+          type: number
+        quantity:
+          type: integer
+          format: int32
+        lineTotal:
+          type: number
+        reviewed:
+          type: boolean
+        canReview:
+          type: boolean
+    OrderLedger:
+      type: object
+      properties:
+        orderId:
+          type: integer
+          format: int64
+        orderCode:
+          type: string
+        paymentMethod:
+          type: string
+          enum:
+          - COD
+          - MOMO
+          - PARTNER
+        paymentStatus:
+          type: string
+          enum:
+          - UNPAID
+          - PAID
+          - FAILED
+          - REFUND_PENDING
+          - REFUNDED
+        total:
+          type: number
+        paid:
+          type: number
+        refunded:
+          type: number
+        refundRemaining:
+          type: number
+        canCollect:
+          type: boolean
+        canRefund:
+          type: boolean
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionDto'
+    OrderSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        orderCode:
+          type: string
+        status:
+          type: string
+          enum:
+          - PENDING_PAYMENT
+          - PENDING
+          - CONFIRMED
+          - PACKING
+          - SHIPPING
+          - DELIVERED
+          - DELIVERY_FAILED
+          - COMPLETED
+          - CANCELLED
+          - RETURN_REQUESTED
+          - RETURNED
+        statusLabel:
+          type: string
+        paymentMethod:
+          type: string
+          enum:
+          - COD
+          - MOMO
+          - PARTNER
+        paymentStatus:
+          type: string
+          enum:
+          - UNPAID
+          - PAID
+          - FAILED
+          - REFUND_PENDING
+          - REFUNDED
+        totalAmount:
+          type: number
+        itemCount:
+          type: integer
+          format: int32
+        firstItemName:
+          type: string
+        firstItemImage:
+          type: string
+        receiverName:
+          type: string
+        phone:
+          type: string
+        customerName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    PageResponseAdminProductRow:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminProductRow'
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    PageResponseAdminReturnRow:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminReturnRow'
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    PageResponseAdminReviewDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminReviewDto'
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    PageResponseAdminUserDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminUserDto'
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    PageResponseAuditDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditDto'
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    PageResponseCodRow:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/CodRow'
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    PageResponseMovementDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/MovementDto'
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    PageResponseNotificationDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationDto'
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    PageResponseOrderSummary:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderSummary'
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    PageResponseProductCard:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductCard'
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    PageResponseReceiptDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReceiptDto'
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    PageResponseReviewDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewDto'
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    PageResponseStockRow:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/StockRow'
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    PageResponseSupplierDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupplierDto'
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    PageResponseTransactionDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionDto'
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    PageResponseTxDto:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/TxDto'
+        page:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+    PartnerView:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        apiKey:
+          type: string
+        active:
+          type: boolean
+        rateLimitPerMin:
+          type: integer
+          format: int32
+        lastUsedAt:
+          type: string
+          format: date-time
+    PaymentSummary:
+      type: object
+      properties:
+        from:
+          type: string
+          format: date
+        to:
+          type: string
+          format: date
+        momoIn:
+          type: number
+        codIn:
+          type: number
+        otherIn:
+          type: number
+        totalIn:
+          type: number
+        refunded:
+          type: number
+        net:
+          type: number
+        successCount:
+          type: integer
+          format: int64
+        momoFailed:
+          type: integer
+          format: int64
+        momoSuccessRate:
+          type: number
+          format: double
+        refundPendingCount:
+          type: integer
+          format: int64
+        refundPendingAmount:
+          type: number
+        codOutstandingCount:
+          type: integer
+          format: int64
+        codOutstandingAmount:
+          type: number
+        daily:
+          type: array
+          items:
+            $ref: '#/components/schemas/DailyFlow'
+    Period:
+      type: object
+      properties:
+        from:
+          type: string
+          format: date
+        to:
+          type: string
+          format: date
+    PlaceOrderRequest:
+      type: object
+      properties:
+        addressId:
+          type: integer
+          format: int64
+        voucherCode:
+          type: string
+        paymentMethod:
+          type: string
+          enum:
+          - COD
+          - MOMO
+          - PARTNER
+        note:
+          type: string
+          maxLength: 500
+          minLength: 0
+        giftWrap:
+          type: boolean
+        giftMessage:
+          type: string
+          maxLength: 300
+          minLength: 0
+        usePoints:
+          type: boolean
+      required:
+      - addressId
+      - paymentMethod
+    PlaceOrderResponse:
+      type: object
+      properties:
+        orderId:
+          type: integer
+          format: int64
+        orderCode:
+          type: string
+        totalAmount:
+          type: number
+        paymentMethod:
+          type: string
+          enum:
+          - COD
+          - MOMO
+          - PARTNER
+        paymentUrl:
+          type: string
+    ProductCard:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        slug:
+          type: string
+        imageUrl:
+          type: string
+        hoverImageUrl:
+          type: string
+        brandName:
+          type: string
+        ageLabel:
+          type: string
+        price:
+          type: number
+        originalPrice:
+          type: number
+        discountPercent:
+          type: integer
+          format: int32
+        badge:
+          type: string
+        avgRating:
+          type: number
+        reviewCount:
+          type: integer
+          format: int32
+        soldCount:
+          type: integer
+          format: int32
+        inStock:
+          type: boolean
+        status:
+          type: string
+          enum:
+          - DRAFT
+          - ACTIVE
+          - INACTIVE
+          - COMING_SOON
+        featured:
+          type: boolean
+        onlineExclusive:
+          type: boolean
+        isNew:
+          type: boolean
+        variantCount:
+          type: integer
+          format: int32
+        defaultVariantId:
+          type: integer
+          format: int64
+    ProductDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        slug:
+          type: string
+        shortDescription:
+          type: string
+        description:
+          type: string
+        breadcrumbs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Crumb'
+        categoryId:
+          type: integer
+          format: int64
+        brand:
+          $ref: '#/components/schemas/BrandDto'
+        franchises:
+          type: array
+          items:
+            $ref: '#/components/schemas/FranchiseDto'
+        ageMinMonths:
+          type: integer
+          format: int32
+        ageMaxMonths:
+          type: integer
+          format: int32
+        ageLabel:
+          type: string
+        gender:
+          type: string
+          enum:
+          - BOY
+          - GIRL
+          - UNISEX
+        material:
+          type: string
+        brandOrigin:
+          type: string
+        madeIn:
+          type: string
+        manufactureYear:
+          type: integer
+          format: int32
+        battery:
+          type: string
+        smallPartsWarning:
+          type: boolean
+        safetyWarning:
+          type: string
+        crCertified:
+          type: boolean
+        importer:
+          type: string
+        lengthCm:
+          type: integer
+          format: int32
+        widthCm:
+          type: integer
+          format: int32
+        heightCm:
+          type: integer
+          format: int32
+        videoUrl:
+          type: string
+        option1Name:
+          type: string
+        option2Name:
+          type: string
+        option1Values:
+          type: array
+          items:
+            type: string
+        option2Values:
+          type: array
+          items:
+            type: string
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/VariantDto'
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImageDto'
+        specs:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpecDto'
+        status:
+          type: string
+          enum:
+          - DRAFT
+          - ACTIVE
+          - INACTIVE
+          - COMING_SOON
+        featured:
+          type: boolean
+        onlineExclusive:
+          type: boolean
+        campaignBadge:
+          type: string
+        soldCount:
+          type: integer
+          format: int32
+        avgRating:
+          type: number
+        reviewCount:
+          type: integer
+          format: int32
+        metaTitle:
+          type: string
+        metaDescription:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        related:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductCard'
+    ProductRow:
+      type: object
+      properties:
+        productId:
+          type: integer
+          format: int64
+        productName:
+          type: string
+        category:
+          type: string
+        brand:
+          type: string
+        quantity:
+          type: integer
+          format: int64
+        revenue:
+          type: number
+        cost:
+          type: number
+        profit:
+          type: number
+        margin:
+          type: number
+          format: double
+    ProductUpsertRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 200
+          minLength: 0
+        slug:
+          type: string
+          maxLength: 220
+          minLength: 0
+        shortDescription:
+          type: string
+          maxLength: 500
+          minLength: 0
+        description:
+          type: string
+        categoryId:
+          type: integer
+          format: int64
+        brandId:
+          type: integer
+          format: int64
+        franchiseIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+        ageMinMonths:
+          type: integer
+          format: int32
+          maximum: 240
+          minimum: 0
+        ageMaxMonths:
+          type: integer
+          format: int32
+          maximum: 240
+          minimum: 0
+        gender:
+          type: string
+          enum:
+          - BOY
+          - GIRL
+          - UNISEX
+        material:
+          type: string
+          maxLength: 100
+          minLength: 0
+        brandOrigin:
+          type: string
+          maxLength: 100
+          minLength: 0
+        madeIn:
+          type: string
+          maxLength: 100
+          minLength: 0
+        manufactureYear:
+          type: integer
+          format: int32
+        battery:
+          type: string
+          maxLength: 100
+          minLength: 0
+        smallPartsWarning:
+          type: boolean
+        safetyWarning:
+          type: string
+          maxLength: 500
+          minLength: 0
+        crCertified:
+          type: boolean
+        importer:
+          type: string
+          maxLength: 255
+          minLength: 0
+        lengthCm:
+          type: integer
+          format: int32
+          minimum: 1
+        widthCm:
+          type: integer
+          format: int32
+          minimum: 1
+        heightCm:
+          type: integer
+          format: int32
+          minimum: 1
+        videoUrl:
+          type: string
+          maxLength: 500
+          minLength: 0
+        status:
+          type: string
+          enum:
+          - DRAFT
+          - ACTIVE
+          - INACTIVE
+          - COMING_SOON
+        featured:
+          type: boolean
+        onlineExclusive:
+          type: boolean
+        metaTitle:
+          type: string
+          maxLength: 200
+          minLength: 0
+        metaDescription:
+          type: string
+          maxLength: 500
+          minLength: 0
+        option1Name:
+          type: string
+          maxLength: 50
+          minLength: 0
+        option2Name:
+          type: string
+          maxLength: 50
+          minLength: 0
+        specs:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpecRequest'
+        images:
+          type: array
+          items:
+            type: string
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/VariantRequest'
+          minItems: 1
+      required:
+      - categoryId
+      - gender
+      - name
+      - status
+      - variants
+    ProfileDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        fullName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+          enum:
+          - ADMIN
+          - STAFF
+          - CUSTOMER
+        createdAt:
+          type: string
+          format: date-time
+        consentAt:
+          type: string
+          format: date-time
+        emailVerified:
+          type: boolean
+    ProfileRequest:
+      type: object
+      properties:
+        fullName:
+          type: string
+          maxLength: 100
+          minLength: 0
+        email:
+          type: string
+          minLength: 1
+        phone:
+          type: string
+          pattern: ^$|^0\d{9,10}$
+      required:
+      - email
+      - fullName
+    Quote:
+      type: object
+      properties:
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartLine'
+        subtotal:
+          type: number
+        discount:
+          type: number
+        shippingFee:
+          type: number
+        shippingDiscount:
+          type: number
+        giftWrapFee:
+          type: number
+        total:
+          type: number
+        voucherCode:
+          type: string
+        voucherName:
+          type: string
+        voucherError:
+          type: string
+        shippingProvider:
+          type: string
+        shippingMessage:
+          type: string
+        freeShipThreshold:
+          type: number
+        canPlaceOrder:
+          type: boolean
+        issues:
+          type: array
+          items:
+            type: string
+        momoEnabled:
+          type: boolean
+        pointsBalance:
+          type: integer
+          format: int32
+        pointsMax:
+          type: integer
+          format: int32
+        pointsUsed:
+          type: integer
+          format: int32
+        pointsDiscount:
+          type: number
+        pointsToEarn:
+          type: integer
+          format: int32
+        pointValue:
+          type: integer
+          format: int32
+    QuoteRequest:
+      type: object
+      properties:
+        addressId:
+          type: integer
+          format: int64
+        voucherCode:
+          type: string
+        giftWrap:
+          type: boolean
+        usePoints:
+          type: boolean
+    RatingSummary:
+      type: object
+      properties:
+        average:
+          type: number
+        total:
+          type: integer
+          format: int64
+        counts:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int64
+        withImages:
+          type: integer
+          format: int64
+    ReceiptDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        code:
+          type: string
+        supplierId:
+          type: integer
+          format: int64
+        supplier:
+          type: string
+        note:
+          type: string
+        totalQuantity:
+          type: integer
+          format: int32
+        totalCost:
+          type: number
+        createdBy:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReceiptItemDto'
+    ReceiptItemDto:
+      type: object
+      properties:
+        variantId:
+          type: integer
+          format: int64
+        sku:
+          type: string
+        productName:
+          type: string
+        quantity:
+          type: integer
+          format: int32
+        unitCost:
+          type: number
+    ReceiptItemRequest:
+      type: object
+      properties:
+        variantId:
+          type: integer
+          format: int64
+        quantity:
+          type: integer
+          format: int32
+          minimum: 1
+        unitCost:
+          type: number
+      required:
+      - quantity
+      - unitCost
+      - variantId
+    ReceiptRequest:
+      type: object
+      properties:
+        supplierId:
+          type: integer
+          format: int64
+        supplier:
+          type: string
+          maxLength: 200
+          minLength: 0
+        note:
+          type: string
+          maxLength: 500
+          minLength: 0
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReceiptItemRequest'
+          minItems: 1
+      required:
+      - items
+    RefreshRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+          minLength: 1
+      required:
+      - refreshToken
+    RefundQueueRow:
+      type: object
+      properties:
+        orderId:
+          type: integer
+          format: int64
+        orderCode:
+          type: string
+        customerName:
+          type: string
+        phone:
+          type: string
+        orderStatus:
+          type: string
+          enum:
+          - PENDING_PAYMENT
+          - PENDING
+          - CONFIRMED
+          - PACKING
+          - SHIPPING
+          - DELIVERED
+          - DELIVERY_FAILED
+          - COMPLETED
+          - CANCELLED
+          - RETURN_REQUESTED
+          - RETURNED
+        paymentMethod:
+          type: string
+          enum:
+          - COD
+          - MOMO
+          - PARTNER
+        total:
+          type: number
+        paid:
+          type: number
+        refunded:
+          type: number
+        remaining:
+          type: number
+        reason:
+          type: string
+        since:
+          type: string
+          format: date-time
+    RefundRequest:
+      type: object
+      properties:
+        amount:
+          type: number
+          minimum: 1000
+        method:
+          type: string
+          minLength: 1
+          pattern: BANK_TRANSFER|CASH|MOMO
+        reference:
+          type: string
+          maxLength: 50
+          minLength: 0
+        note:
+          type: string
+          maxLength: 300
+          minLength: 0
+      required:
+      - amount
+      - method
+    RegisterRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          maxLength: 50
+          minLength: 4
+          pattern: ^[a-zA-Z0-9._]+$
+        password:
+          type: string
+          maxLength: 100
+          minLength: 6
+        fullName:
+          type: string
+          maxLength: 100
+          minLength: 0
+        email:
+          type: string
+          minLength: 1
+        phone:
+          type: string
+          pattern: ^$|^0\d{9,10}$
+        agreeTerms:
+          type: boolean
+      required:
+      - email
+      - fullName
+      - password
+      - username
+    ReplyRequest:
+      type: object
+      properties:
+        reply:
+          type: string
+          maxLength: 2000
+          minLength: 0
+    ResetPasswordRequest:
+      type: object
+      properties:
+        token:
+          type: string
+          minLength: 1
+        newPassword:
+          type: string
+          maxLength: 100
+          minLength: 6
+      required:
+      - newPassword
+      - token
+    ReturnCreateRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 200
+          minLength: 0
+        description:
+          type: string
+          maxLength: 1000
+          minLength: 0
+        imageUrls:
+          type: array
+          items:
+            type: string
+      required:
+      - reason
+    ReturnDecisionRequest:
+      type: object
+      properties:
+        adminNote:
+          type: string
+          maxLength: 500
+          minLength: 0
+        refundAmount:
+          type: number
+    ReturnDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        reason:
+          type: string
+        description:
+          type: string
+        imageUrls:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum:
+          - REQUESTED
+          - APPROVED
+          - REJECTED
+        adminNote:
+          type: string
+        refundAmount:
+          type: number
+        processedBy:
+          type: string
+        processedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    ReviewCreateRequest:
+      type: object
+      properties:
+        orderItemId:
+          type: integer
+          format: int64
+        rating:
+          type: integer
+          format: int32
+          maximum: 5
+          minimum: 1
+        comment:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        imageUrls:
+          type: array
+          items:
+            type: string
+      required:
+      - orderItemId
+      - rating
+    ReviewDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        userName:
+          type: string
+        rating:
+          type: integer
+          format: int32
+        comment:
+          type: string
+        imageUrls:
+          type: array
+          items:
+            type: string
+        variantName:
+          type: string
+        verifiedPurchase:
+          type: boolean
+        adminReply:
+          type: string
+        repliedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        pendingModeration:
+          type: boolean
+    SalesReport:
+      type: object
+      properties:
+        period:
+          $ref: '#/components/schemas/Period'
+        groupBy:
+          type: string
+          enum:
+          - DAY
+          - MONTH
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/SalesRow'
+        total:
+          $ref: '#/components/schemas/SalesRow'
+    SalesRow:
+      type: object
+      properties:
+        period:
+          type: string
+        orders:
+          type: integer
+          format: int64
+        itemsSold:
+          type: integer
+          format: int64
+        goodsRevenue:
+          type: number
+        discounts:
+          type: number
+        netRevenue:
+          type: number
+        cost:
+          type: number
+        grossProfit:
+          type: number
+        margin:
+          type: number
+          format: double
+    SeriesPoint:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        revenue:
+          type: number
+        orders:
+          type: integer
+          format: int64
+    ShippingConfig:
+      type: object
+      properties:
+        ghnEnabled:
+          type: boolean
+        freeShipThreshold:
+          type: number
+        fixedFee:
+          type: number
+        giftWrapFee:
+          type: number
+    SpecDto:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+    SpecRequest:
+      type: object
+      properties:
+        key:
+          type: string
+          maxLength: 100
+          minLength: 0
+        value:
+          type: string
+          maxLength: 255
+          minLength: 0
+      required:
+      - key
+      - value
+    StatusUpdateRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - PENDING_PAYMENT
+          - PENDING
+          - CONFIRMED
+          - PACKING
+          - SHIPPING
+          - DELIVERED
+          - DELIVERY_FAILED
+          - COMPLETED
+          - CANCELLED
+          - RETURN_REQUESTED
+          - RETURNED
+        note:
+          type: string
+          maxLength: 500
+          minLength: 0
+      required:
+      - status
+    StockRow:
+      type: object
+      properties:
+        variantId:
+          type: integer
+          format: int64
+        productId:
+          type: integer
+          format: int64
+        productName:
+          type: string
+        productSlug:
+          type: string
+        sku:
+          type: string
+        variantName:
+          type: string
+        imageUrl:
+          type: string
+        stock:
+          type: integer
+          format: int32
+        price:
+          type: number
+        costPrice:
+          type: number
+        lowStock:
+          type: boolean
+    Suggestion:
+      type: object
+      properties:
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductCard'
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacetItem'
+        brands:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacetItem'
+    Summary:
+      type: object
+      properties:
+        points:
+          type: integer
+          format: int32
+        lifetimePoints:
+          type: integer
+          format: int32
+        tier:
+          $ref: '#/components/schemas/TierDto'
+        nextTier:
+          $ref: '#/components/schemas/TierDto'
+        pointsToNextTier:
+          type: integer
+          format: int32
+        pointsValue:
+          type: number
+        pointValue:
+          type: integer
+          format: int32
+        earnPerAmount:
+          type: integer
+          format: int32
+        maxRedeemPercent:
+          type: integer
+          format: int32
+    SupplierDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        code:
+          type: string
+        name:
+          type: string
+        contactName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        address:
+          type: string
+        taxCode:
+          type: string
+        note:
+          type: string
+        active:
+          type: boolean
+        receiptCount:
+          type: integer
+          format: int64
+        totalImported:
+          type: number
+        lastReceiptAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    SupplierOption:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        code:
+          type: string
+        name:
+          type: string
+    SupplierRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          maxLength: 30
+          minLength: 0
+          pattern: ^$|^[A-Za-z0-9_-]+$
+        name:
+          type: string
+          maxLength: 200
+          minLength: 0
+        contactName:
+          type: string
+          maxLength: 100
+          minLength: 0
+        phone:
+          type: string
+          maxLength: 20
+          minLength: 0
+          pattern: ^$|^[0-9+ .()-]{8,20}$
+        email:
+          type: string
+          maxLength: 100
+          minLength: 0
+        address:
+          type: string
+          maxLength: 300
+          minLength: 0
+        taxCode:
+          type: string
+          maxLength: 20
+          minLength: 0
+        note:
+          type: string
+          maxLength: 500
+          minLength: 0
+        active:
+          type: boolean
+      required:
+      - name
+    TierDto:
+      type: object
+      properties:
+        code:
+          type: string
+        label:
+          type: string
+        minPoints:
+          type: integer
+          format: int32
+        multiplier:
+          type: number
+    TopProduct:
+      type: object
+      properties:
+        productId:
+          type: integer
+          format: int64
+        name:
+          type: string
+        quantity:
+          type: integer
+          format: int64
+        revenue:
+          type: number
+    TrackingDto:
+      type: object
+      properties:
+        orderCode:
+          type: string
+        status:
+          type: string
+          enum:
+          - PENDING_PAYMENT
+          - PENDING
+          - CONFIRMED
+          - PACKING
+          - SHIPPING
+          - DELIVERED
+          - DELIVERY_FAILED
+          - COMPLETED
+          - CANCELLED
+          - RETURN_REQUESTED
+          - RETURNED
+        statusLabel:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        totalAmount:
+          type: number
+        paymentMethod:
+          type: string
+          enum:
+          - COD
+          - MOMO
+          - PARTNER
+        paymentStatus:
+          type: string
+          enum:
+          - UNPAID
+          - PAID
+          - FAILED
+          - REFUND_PENDING
+          - REFUNDED
+        receiverName:
+          type: string
+        items:
+          type: array
+          items:
+            type: string
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoryDto'
+    TransactionDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        orderId:
+          type: integer
+          format: int64
+        orderCode:
+          type: string
+        customerName:
+          type: string
+        provider:
+          type: string
+        kind:
+          type: string
+          enum:
+          - PAYMENT
+          - REFUND
+        amount:
+          type: number
+        status:
+          type: string
+        bankCode:
+          type: string
+        transactionNo:
+          type: string
+        responseCode:
+          type: string
+        txnRef:
+          type: string
+        note:
+          type: string
+        createdBy:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    TxDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        orderId:
+          type: integer
+          format: int64
+        type:
+          type: string
+          enum:
+          - EARN
+          - REDEEM
+          - REFUND
+          - ADJUST
+        points:
+          type: integer
+          format: int32
+        balanceAfter:
+          type: integer
+          format: int32
+        note:
+          type: string
+        createdBy:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    UpdateQuantityRequest:
+      type: object
+      properties:
+        quantity:
+          type: integer
+          format: int32
+          maximum: 99
+          minimum: 1
+      required:
+      - quantity
+    UserSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        fullName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+          enum:
+          - ADMIN
+          - STAFF
+          - CUSTOMER
+        emailVerified:
+          type: boolean
+    VariantDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        sku:
+          type: string
+        option1:
+          type: string
+        option2:
+          type: string
+        name:
+          type: string
+        price:
+          type: number
+        originalPrice:
+          type: number
+        discountPercent:
+          type: integer
+          format: int32
+        stock:
+          type: integer
+          format: int32
+        inStock:
+          type: boolean
+        imageUrl:
+          type: string
+        weightGram:
+          type: integer
+          format: int32
+    VariantRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        sku:
+          type: string
+          maxLength: 60
+          minLength: 0
+        barcode:
+          type: string
+          maxLength: 60
+          minLength: 0
+        option1:
+          type: string
+          maxLength: 100
+          minLength: 0
+        option2:
+          type: string
+          maxLength: 100
+          minLength: 0
+        price:
+          type: number
+          minimum: 0
+        compareAtPrice:
+          type: number
+          minimum: 0
+        costPrice:
+          type: number
+          minimum: 0
+        initialStock:
+          type: integer
+          format: int32
+          minimum: 0
+        weightGram:
+          type: integer
+          format: int32
+          minimum: 1
+        imageUrl:
+          type: string
+          maxLength: 500
+          minLength: 0
+        active:
+          type: boolean
+      required:
+      - price
+      - sku
+    VerifyEmailRequest:
+      type: object
+      properties:
+        token:
+          type: string
+          maxLength: 100
+          minLength: 0
+      required:
+      - token
+    VerifyEmailResponse:
+      type: object
+      properties:
+        alreadyVerified:
+          type: boolean
+        email:
+          type: string
+        message:
+          type: string
+    VoucherDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum:
+          - PERCENT
+          - FIXED
+          - FREESHIP
+        value:
+          type: number
+        maxDiscount:
+          type: number
+        minOrderValue:
+          type: number
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        usageLimit:
+          type: integer
+          format: int32
+        usedCount:
+          type: integer
+          format: int32
+        perUserLimit:
+          type: integer
+          format: int32
+        active:
+          type: boolean
+        summary:
+          type: string
+    VoucherRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          pattern: ^[A-Za-z0-9_-]{3,30}$
+        name:
+          type: string
+          maxLength: 150
+          minLength: 0
+        description:
+          type: string
+          maxLength: 500
+          minLength: 0
+        type:
+          type: string
+          enum:
+          - PERCENT
+          - FIXED
+          - FREESHIP
+        value:
+          type: number
+        maxDiscount:
+          type: number
+        minOrderValue:
+          type: number
+        startAt:
+          type: string
+          format: date-time
+        endAt:
+          type: string
+          format: date-time
+        usageLimit:
+          type: integer
+          format: int32
+          minimum: 1
+        perUserLimit:
+          type: integer
+          format: int32
+          minimum: 1
+        active:
+          type: boolean
+      required:
+      - code
+      - endAt
+      - minOrderValue
+      - name
+      - startAt
+      - type
+      - value

@@ -51,7 +51,7 @@ public class ReviewService {
 
 	@Transactional(readOnly = true)
 	public PageResponse<ReviewDto> list(Long productId, Integer rating, boolean withImages, int page, int size) {
-		return PageResponse.of(repo.findVisible(productId, rating, withImages, PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 500))), r -> new ReviewDto(
+		return PageResponse.of(repo.findVisible(productId, rating, withImages, PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100))), r -> new ReviewDto(
 				r.getId(), TextUtils.maskName(r.getUser().getFullName()), r.getRating(), r.getComment(), r.getImageUrls(),
 				r.getVariantName(), r.getOrderItem() != null, r.getAdminReply(), r.getRepliedAt(), r.getCreatedAt(), false));
 	}
@@ -102,7 +102,7 @@ public class ReviewService {
 	@Transactional(readOnly = true)
 	public PageResponse<AdminReviewDto> adminList(Integer rating, Boolean hidden, Boolean flagged, String keyword, int page, int size) {
 		String kw = TextUtils.isBlank(keyword) ? null : TextUtils.normalize(keyword);
-		return PageResponse.of(repo.adminSearch(rating, hidden, flagged, kw, PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 500))), this::toAdmin);
+		return PageResponse.of(repo.adminSearch(rating, hidden, flagged, kw, PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100))), this::toAdmin);
 	}
 
 	/** Hien lai 1 danh gia bi gan co = duyet (bo co vi pham). */
