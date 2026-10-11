@@ -90,6 +90,11 @@ class CatalogApiImpl implements CatalogApi {
 		return variantRepository.findSellableBySku(sku).map(CatalogApiImpl::toItem);
 	}
 
+	@Override
+	public Optional<ProductVariant> findSellableVariant(String sku) {
+		return variantRepository.findSellableBySku(sku);
+	}
+
 	private static SellableItem toItem(ProductVariant v) {
 		Product p = v.getProduct();
 		String variantName = java.util.stream.Stream.of(v.getOption1(), v.getOption2())

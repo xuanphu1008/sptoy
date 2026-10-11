@@ -58,6 +58,9 @@ public class NotificationService {
 
 	/** Goi toi 1 nguoi (vd khach hang khi don doi trang thai). */
 	public void notifyUser(User u, String type, String title, String message, String link) {
+		if (u == null) {
+			return; // don do doi tac dat khong co tai khoan khach
+		}
 		Notification n = new Notification();
 		n.setUserId(u.getId());
 		n.setType(type);

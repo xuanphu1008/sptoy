@@ -61,11 +61,11 @@ public class OrderWorkflow {
 		o.setStatus(to);
 		o.addHistory(from, to, note, actor);
 		// thong bao trong ung dung cho khach (tru khi chinh khach thao tac)
-		if (actor == null || !actor.equals(o.getUser().getUsername())) {
+		if (o.getUser() != null && (actor == null || !actor.equals(o.getUser().getUsername()))) {
 			notificationService.notifyUser(o.getUser(), "ORDER_STATUS", "Đơn " + o.getOrderCode() + ": " + to.getLabel(),
 					note != null ? note : "Trạng thái đơn hàng vừa được cập nhật", "/account/orders/" + o.getId());
 		}
-		if (to != OrderStatus.PENDING || from != OrderStatus.PENDING_PAYMENT) {
+		if (o.getUser() != null && (to != OrderStatus.PENDING || from != OrderStatus.PENDING_PAYMENT)) {
 			OrderMail m = mail(o, note);
 			AfterCommit.run(() -> mailService.sendOrderStatusChanged(m)); // gui sau khi commit
 		}
@@ -92,7 +92,7 @@ public class OrderWorkflow {
 			o.setPaymentStatus(PaymentStatus.PAID);
 			o.setPaidAt(LocalDateTime.now());
 			// ghi so thu: tien mat shipper thu ho (khach tu bam "da nhan hang" -> ghi la he thong)
-			ledger.recordCodCollected(o, actor == null || actor.equals(o.getUser().getUsername()) ? "system" : actor);
+			ledger.recordCodCollected(o, actor == null || (o.getUser() != null && actor.equals(o.getUser().getUsername())) ? "system" : actor);
 		}
 		for (OrderItem i : o.getItems()) {
 			Product p = i.getProduct();
@@ -136,7 +136,8 @@ public class OrderWorkflow {
 		notificationService.notifyStaff("ORDER_NEW", "Đơn hàng mới " + o.getOrderCode(),
 				o.getReceiverName() + " đặt " + qty + " sản phẩm · "
 						+ com.toyland.notification.NotificationService.vnd(o.getTotalAmount())
-						+ (o.getPaymentStatus() == PaymentStatus.PAID ? " · đã thanh toán MoMo" : " · COD"),
+						+ (o.getPaymentStatus() == PaymentStatus.PAID ? " · đã thanh toán MoMo"
+						: o.getPaymentMethod() == PaymentMethod.PARTNER ? " · đơn đối tác" : " · COD"),
 				"/admin/orders/" + o.getId());
 	}
 
@@ -148,8 +149,11 @@ public class OrderWorkflow {
 	public OrderMail mail(Order o, String note) {
 		List<String> lines = o.getItems().stream().map(i -> i.getProductName()
 				+ (i.getVariantName() != null ? " (" + i.getVariantName() + ")" : "") + " × " + i.getQuantity()).toList();
+		if (o.getUser() == null) {
+			return null; // don doi tac: khong gui mail cho khach
+		}
 		return new OrderMail(o.getUser().getEmail(), o.getUser().getFullName(), o.getId(), o.getOrderCode(),
-				o.getStatus().getLabel(), o.getTotalAmount(), o.getPaymentMethod() == PaymentMethod.COD ? "COD" : "Ví MoMo",
+				o.getStatus().getLabel(), o.getTotalAmount(), o.getPaymentMethod() == PaymentMethod.COD ? "COD" : o.getPaymentMethod() == PaymentMethod.PARTNER ? "Đối tác" : "Ví MoMo",
 				o.getFullAddress(), lines, note);
 	}
 }

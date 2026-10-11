@@ -2,6 +2,7 @@
 // Chay:  node tools/soa-demo.mjs partner   (API doi tac ky HMAC)
 //        node tools/soa-demo.mjs soap      (dich vu SOAP/WSDL cho doi tac)
 //        node tools/soa-demo.mjs idem      (chong dat hang trung)
+//        node tools/soa-demo.mjs order     (doi tac dat / xem / huy don qua API, co Idempotency-Key)
 // Bien moi truong: BASE (mac dinh http://localhost:8080), API_KEY, SECRET (cho "partner"),
 //                  USER, PASS (khach hang, cho "idem"; mac dinh khachhang / 123456)
 import crypto from 'node:crypto';
@@ -96,8 +97,59 @@ async function soap() {
   await call('SKU khong ton tai', 'GetStockRequest', 'KHONG-CO');
 }
 
+async function partnerPost(label, path, body, { idemKey, secret = process.env.SECRET, expect } = {}) {
+  const raw = body === undefined ? '' : JSON.stringify(body);
+  const ts = Math.floor(Date.now() / 1000);
+  const headers = { 'X-Api-Key': process.env.API_KEY, 'X-Timestamp': String(ts), 'X-Signature': sign(secret, ts, 'POST', path, raw), 'Content-Type': 'application/json' };
+  if (idemKey) headers['Idempotency-Key'] = idemKey;
+  const res = await fetch(BASE + path, { method: 'POST', headers, body: raw || undefined });
+  const t = await res.text(); let j; try { j = JSON.parse(t); } catch { j = t; }
+  const good = expect ? res.status === expect : res.status < 300;
+  console.log(`${good ? C.g(res.status) : C.r(res.status)}  ${C.b(label)}`);
+  console.log('    ' + JSON.stringify(j).slice(0, 240));
+  return { status: res.status, body: j };
+}
+
+async function order() {
+  if (!process.env.API_KEY || !process.env.SECRET) { console.log(C.r('Thieu API_KEY / SECRET')); process.exit(1); }
+  const list = await partnerCall('GET /products?size=5', '/api/partner/v1/products?page=0&size=5');
+  const item = (list.body?.items || []).find(i => i.stock >= 3);
+  if (!item) { console.log(C.r('Khong co SKU nao con >= 3 ton de demo')); return; }
+  const stockOf = async () => (await partnerCall('ton kho hien tai', `/api/partner/v1/stock/${item.sku}`)).body.available;
+  const ref = 'PO-' + Date.now();
+  const key = 'po-' + crypto.randomUUID();
+  const body = { externalRef: ref, receiverName: 'Nguyen Van Doi Tac', phone: '0900000001', province: 'Ha Noi', district: 'Cau Giay', ward: 'Dich Vong', addressDetail: '1 Pho Demo', note: 'Don thu nghiem tu doi tac', items: [{ sku: item.sku, quantity: 2 }] };
+
+  console.log(C.y(`\n[1] Ton kho truoc khi dat (${item.sku})`));
+  const before = await stockOf();
+  console.log(C.y('\n[2] Dat don (2 cai) kem Idempotency-Key -> 201'));
+  const created = await partnerPost('POST /orders', '/api/partner/v1/orders', body, { idemKey: key, expect: 201 });
+  const code = created.body?.orderCode;
+  console.log(C.y('\n[3] Gui lai DUNG yeu cau do (mat mang, gui lai) -> nhan lai cung don, khong tao don thu hai'));
+  const again = await partnerPost('POST /orders (gui lai)', '/api/partner/v1/orders', body, { idemKey: key, expect: 201 });
+  console.log('    ' + (again.body?.orderCode === code ? C.g('Cung ma don ' + code) : C.r('KHAC ma don')));
+  console.log(C.y('\n[4] Cung externalRef nhung khoa moi -> 409 PARTNER_REF_DUPLICATE'));
+  await partnerPost('trung externalRef', '/api/partner/v1/orders', body, { idemKey: 'po-' + crypto.randomUUID(), expect: 409 });
+  console.log(C.y('\n[5] Cung khoa, noi dung khac -> 409 IDEMPOTENCY_KEY_REUSED'));
+  await partnerPost('khoa dung lai', '/api/partner/v1/orders', { ...body, note: 'doi noi dung' }, { idemKey: key, expect: 409 });
+  console.log(C.y('\n[6] Thieu Idempotency-Key -> 400'));
+  await partnerPost('khong co khoa', '/api/partner/v1/orders', { ...body, externalRef: ref + '-b' }, { expect: 400 });
+  console.log(C.y('\n[7] Dat vuot ton kho -> 400 OUT_OF_STOCK, khong tru kho'));
+  await partnerPost('het hang', '/api/partner/v1/orders', { ...body, externalRef: ref + '-c', items: [{ sku: item.sku, quantity: 99 }] }, { idemKey: 'po-' + crypto.randomUUID(), expect: 400 });
+  console.log(C.y('\n[8] Ton kho sau khi dat: phai giam dung 2'));
+  const mid = await stockOf();
+  console.log('    ' + (before - mid === 2 ? C.g(`${before} -> ${mid}`) : C.r(`${before} -> ${mid}`)));
+  console.log(C.y('\n[9] Xem don'));
+  await partnerCall('GET /orders/' + code, '/api/partner/v1/orders/' + code);
+  console.log(C.y('\n[10] Huy don -> hoan kho'));
+  await partnerPost('POST /orders/' + code + '/cancel', `/api/partner/v1/orders/${code}/cancel`, { reason: 'Doi tac doi y' }, { expect: 200 });
+  const after = await stockOf();
+  console.log('    ' + (after === before ? C.g(`Kho tro ve ${after}`) : C.r(`Kho ${after}, ky vong ${before}`)));
+}
+
 const cmd = process.argv[2];
 if (cmd === 'partner') await partner();
 else if (cmd === 'soap') await soap();
 else if (cmd === 'idem') await idem();
-else console.log('Dung: node tools/soa-demo.mjs partner|soap|idem');
+else if (cmd === 'order') await order();
+else console.log('Dung: node tools/soa-demo.mjs partner|soap|idem|order');

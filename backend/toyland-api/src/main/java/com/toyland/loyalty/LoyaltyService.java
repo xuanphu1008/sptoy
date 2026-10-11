@@ -108,7 +108,7 @@ public class LoyaltyService {
 
 	/** Hoan lai diem da dung khi don bi huy / tra hang (moi don hoan 1 lan). */
 	public void refundRedeemed(Order o, String reason) {
-		if (o.getPointsUsed() <= 0 || txRepository.existsByOrderIdAndType(o.getId(), PointType.REFUND)) {
+		if (o.getUser() == null || o.getPointsUsed() <= 0 || txRepository.existsByOrderIdAndType(o.getId(), PointType.REFUND)) {
 			return;
 		}
 		Long uid = o.getUser().getId();
@@ -118,7 +118,7 @@ public class LoyaltyService {
 
 	/** Cong diem khi don HOAN TAT (theo hang thanh vien tai thoi diem hoan tat). */
 	public void earn(Order o) {
-		if (o.getPointsEarned() > 0 || txRepository.existsByOrderIdAndType(o.getId(), PointType.EARN)) {
+		if (o.getUser() == null || o.getPointsEarned() > 0 || txRepository.existsByOrderIdAndType(o.getId(), PointType.EARN)) {
 			return;
 		}
 		User u = o.getUser();

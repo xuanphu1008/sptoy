@@ -134,7 +134,7 @@ public class OrderService {
 	private Order own(Long id) {
 		User u = currentUser.require();
 		Order o = orderRepository.findById(id).orElseThrow(() -> ApiException.notFound("đơn hàng", id));
-		if (!o.getUser().getId().equals(u.getId())) {
+		if (o.getUser() == null || !o.getUser().getId().equals(u.getId())) {
 			throw ApiException.notFound("đơn hàng", id);
 		}
 		return o;

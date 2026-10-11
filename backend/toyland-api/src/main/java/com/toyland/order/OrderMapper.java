@@ -48,7 +48,8 @@ public class OrderMapper {
 				o.getPointsEarned(), o.getCancelReason(),
 				forAdmin ? o.getInternalNote() : null, o.getCreatedAt(), o.getPaidAt(), o.getDeliveredAt(),
 				o.getPaymentDeadline(), items, history, rr == null ? null : returnDto(rr),
-				new CustomerInfo(u.getId(), u.getUsername(), u.getFullName(), u.getEmail(), u.getPhone()), actions);
+				u == null ? new CustomerInfo(null, "partner", o.getReceiverName(), null, o.getPhone())
+				: new CustomerInfo(u.getId(), u.getUsername(), u.getFullName(), u.getEmail(), u.getPhone()), actions);
 	}
 
 	public static HistoryDto history(OrderStatusHistory h) {
@@ -66,7 +67,7 @@ public class OrderMapper {
 		int count = o.getItems().stream().mapToInt(OrderItem::getQuantity).sum();
 		return new OrderSummary(o.getId(), o.getOrderCode(), o.getStatus(), o.getStatus().getLabel(), o.getPaymentMethod(),
 				o.getPaymentStatus(), o.getTotalAmount(), count, first == null ? null : first.getProductName(),
-				first == null ? null : first.getImageUrl(), o.getReceiverName(), o.getPhone(), o.getUser().getFullName(),
+				first == null ? null : first.getImageUrl(), o.getReceiverName(), o.getPhone(), o.getUser() == null ? o.getReceiverName() : o.getUser().getFullName(),
 				o.getCreatedAt());
 	}
 }

@@ -25,8 +25,15 @@ public class Order {
 	private String orderCode;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", nullable = false)
+	@JoinColumn(name = "user_id")
 	private User user;
+
+	/** Don do doi tac (API ben thu ba) dat: khong co tai khoan khach, luu ma doi tac va ma don ben ho. */
+	@Column(name = "partner_id")
+	private Long partnerId;
+
+	@Column(name = "partner_ref", length = 64)
+	private String partnerRef;
 
 	@Column(name = "receiver_name", nullable = false, length = 100)
 	private String receiverName;
@@ -175,6 +182,10 @@ public class Order {
 	public String getOrderCode() { return orderCode; }
 	public void setOrderCode(String orderCode) { this.orderCode = orderCode; }
 	public User getUser() { return user; }
+	public Long getPartnerId() { return partnerId; }
+	public void setPartnerId(Long partnerId) { this.partnerId = partnerId; }
+	public String getPartnerRef() { return partnerRef; }
+	public void setPartnerRef(String partnerRef) { this.partnerRef = partnerRef; }
 	public void setUser(User user) { this.user = user; }
 	public String getReceiverName() { return receiverName; }
 	public void setReceiverName(String receiverName) { this.receiverName = receiverName; }

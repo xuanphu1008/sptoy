@@ -43,4 +43,7 @@ public interface CatalogApi {
 	SellablePage sellableItems(int page, int size);
 
 	Optional<SellableItem> sellableBySku(String sku);
+
+	/** Bien the dang ban theo SKU (entity day du) de mien Don hang tru kho khi doi tac dat hang. */
+	Optional<ProductVariant> findSellableVariant(String sku);
 }

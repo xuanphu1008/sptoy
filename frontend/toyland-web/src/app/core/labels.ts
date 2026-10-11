@@ -21,6 +21,7 @@ export const ORDER_STEPS: OrderStatus[] = ['PENDING', 'CONFIRMED', 'PACKING', 'S
 export const PAYMENT_METHOD: Record<PaymentMethod, string> = {
   COD: 'Thanh toán khi nhận hàng (COD)',
   MOMO: 'Thanh toán qua ví MoMo',
+  PARTNER: 'Đơn đối tác (đối soát ngoài hệ thống)',
 };
 export const PAYMENT_STATUS: Record<PaymentStatus, string> = {
   UNPAID: 'Chưa thanh toán', PAID: 'Đã thanh toán', FAILED: 'Thanh toán lỗi', REFUND_PENDING: 'Chờ hoàn tiền', REFUNDED: 'Đã hoàn tiền',

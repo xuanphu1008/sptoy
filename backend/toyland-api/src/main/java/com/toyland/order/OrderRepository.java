@@ -17,6 +17,10 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
 
 	boolean existsByOrderCode(String orderCode);
 
+	Optional<Order> findByPartnerIdAndPartnerRef(Long partnerId, String partnerRef);
+
+	Optional<Order> findByOrderCodeAndPartnerId(String orderCode, Long partnerId);
+
 	@Query("SELECT COUNT(o) FROM ShopOrder o WHERE o.user.id = :userId")
 	long countOfUser(@Param("userId") Long userId);
 

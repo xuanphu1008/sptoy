@@ -41,7 +41,7 @@ function iso(d: Date | null): string | null {
       <mat-form-field class="search-field" subscriptSizing="dynamic"><mat-icon matPrefix>search</mat-icon><input matInput [(ngModel)]="keyword" (keyup.enter)="search()" placeholder="Tìm mã đơn, tên, SĐT, email…" aria-label="Tìm đơn hàng" />@if (keyword) { <button mat-icon-button matSuffix type="button" (click)="keyword = ''; search()" aria-label="Xoá từ khoá"><mat-icon>close</mat-icon></button> }</mat-form-field>
       <mat-form-field><mat-label>Thanh toán</mat-label>
         <mat-select [(ngModel)]="paymentMethod" (selectionChange)="search()">
-          <mat-option [value]="null">Tất cả</mat-option><mat-option value="COD">COD</mat-option><mat-option value="MOMO">MoMo</mat-option>
+          <mat-option [value]="null">Tất cả</mat-option><mat-option value="COD">COD</mat-option><mat-option value="MOMO">MoMo</mat-option><mat-option value="PARTNER">Đối tác</mat-option>
         </mat-select></mat-form-field>
       <mat-form-field><mat-label>TT thanh toán</mat-label>
         <mat-select [(ngModel)]="paymentStatus" (selectionChange)="search()">

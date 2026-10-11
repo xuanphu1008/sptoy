@@ -6,7 +6,7 @@ export type ProductStatus = 'DRAFT' | 'ACTIVE' | 'INACTIVE' | 'COMING_SOON';
 export type OrderStatus =
   | 'PENDING_PAYMENT' | 'PENDING' | 'CONFIRMED' | 'PACKING' | 'SHIPPING'
   | 'DELIVERED' | 'DELIVERY_FAILED' | 'COMPLETED' | 'CANCELLED' | 'RETURN_REQUESTED' | 'RETURNED';
-export type PaymentMethod = 'COD' | 'MOMO';
+export type PaymentMethod = 'COD' | 'MOMO' | 'PARTNER';
 export type PaymentStatus = 'UNPAID' | 'PAID' | 'FAILED' | 'REFUND_PENDING' | 'REFUNDED';
 export type ReturnStatus = 'REQUESTED' | 'APPROVED' | 'REJECTED';
 export type VoucherType = 'PERCENT' | 'FIXED' | 'FREESHIP';
