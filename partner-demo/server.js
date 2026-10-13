@@ -139,7 +139,7 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, { toylandBase: BASE, configured: Boolean(API_KEY && SECRET), webhookUrl: `${proto}://${req.headers.host}/webhooks/toyland` });
     }
     if (req.method === 'GET' && url.pathname === '/api/catalog') {
-      return send(res, 200, await toyland('GET', '/api/partner/v1/products?page=0&size=12'));
+      return send(res, 200, await toyland('GET', '/api/partner/v1/products?page=0&size=24'));
     }
     if (req.method === 'GET' && url.pathname === '/api/orders') return send(res, 200, orders);
     if (req.method === 'GET' && url.pathname === '/api/webhooks') return send(res, 200, webhookLog);

@@ -3,253 +3,392 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cổng đại lý - đối tác ToyLand</title>
+<title>Cổng đại lý - ToyLand Partner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
 <style>
-  :root {
-    --bg:#f4f5f8; --card:#fff; --ink:#1b2130; --muted:#667085; --line:#e4e7ec; --soft:#f8f9fb;
-    --accent:#4f46e5; --accent-soft:#eef0ff; --ok:#047857; --ok-soft:#e6f6ef; --bad:#b42318; --bad-soft:#fdecea;
-    --warn:#b54708; --warn-soft:#fff4e0; --info:#175cd3; --info-soft:#e8f1ff; --code:#0f172a; --code-ink:#e2e8f0;
-    --shadow:0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.06);
-  }
-  @media (prefers-color-scheme: dark) { :root {
-    --bg:#0e1015; --card:#171a21; --ink:#e7e9ee; --muted:#98a2b3; --line:#272c36; --soft:#1c2029;
-    --accent:#8b93ff; --accent-soft:#222650; --ok:#4ade80; --ok-soft:#10301f; --bad:#f87171; --bad-soft:#3a1717;
-    --warn:#fbbf24; --warn-soft:#3a2a0c; --info:#7ab3ff; --info-soft:#14284a; --code:#0a0c10; --code-ink:#d7dce5;
-    --shadow:none;
-  } }
-  * { box-sizing:border-box; }
-  [hidden] { display:none !important; }
-  html { scroll-behavior:smooth; scroll-padding-top:76px; }
-  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
-  body { overflow-x:hidden; }
-  .wrap { max-width:1280px; margin:auto; padding:0 20px; }
+/* Dung chung he thiet ke "Clay Pastel" cua ToyLand (styles.scss + admin-layout) de cong dai ly trong cung mot ho san pham. */
+:root {
+  --ink:#2b2350; --ink-2:#5b5378; --ink-3:#8e88a8;
+  --p-pink:#ffd9e3; --p-peach:#ffe3cc; --p-butter:#fff1bf; --p-mint:#d2f4e6; --p-sky:#d6ebff; --p-lilac:#e7e0ff; --p-cream:#fff8f1;
+  --red:#f0524f; --red-dark:#d23b39; --red-soft:#ffe4e1;
+  --yellow-soft:#fff4d1; --yellow-ink:#8a6100;
+  --green:#1f8a5b; --green-soft:#daf5e8;
+  --blue:#2f6fd6; --blue-soft:#e0edff;
+  --violet:#6e4fd8; --violet-soft:#ece6ff;
+  --orange:#e0701b; --orange-soft:#ffeedd;
+  --border:#ebe7f3; --border-strong:#d7d1e6; --bg:var(--p-cream); --card:#fff; --hover:#faf8fd;
+  --radius:20px; --radius-sm:14px;
+  --grad-cta:linear-gradient(180deg,#ff7d70 0%,#f0524f 55%,#e24442 100%);
+  --grad-sun:linear-gradient(135deg,#ffd66b 0%,#ff9f6e 100%);
+  --clay-sm:0 4px 10px -3px rgb(43 35 80/12%), inset 0 -3px 0 rgb(43 35 80/5%), inset 0 2px 0 rgb(255 255 255/80%);
+  --clay:0 16px 32px -14px rgb(43 35 80/25%), 0 2px 6px rgb(43 35 80/5%), inset 0 -6px 0 rgb(43 35 80/5%), inset 0 3px 0 rgb(255 255 255/85%);
+  --clay-hover:0 24px 40px -16px rgb(43 35 80/32%), 0 2px 6px rgb(43 35 80/6%), inset 0 -6px 0 rgb(43 35 80/5%), inset 0 3px 0 rgb(255 255 255/85%);
+  --clay-btn:0 10px 18px -8px rgb(240 82 79/65%), inset 0 -4px 0 rgb(0 0 0/12%), inset 0 2px 0 rgb(255 255 255/35%);
+  --ease-bounce:cubic-bezier(.34,1.56,.64,1);
+  --font-display:'Baloo 2',Nunito,sans-serif;
+  --code-bg:#231d3d; --code-ink:#e9e4fb;
+}
+* { box-sizing:border-box; }
+[hidden] { display:none !important; }
+html { scroll-behavior:smooth; }
+body { margin:0; font-family:Nunito,Roboto,sans-serif; background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+a { color:inherit; text-decoration:none; }
+::selection { background:var(--p-butter); color:var(--ink); }
+:focus-visible { outline:3px solid color-mix(in srgb,var(--red) 45%,transparent); outline-offset:2px; border-radius:8px; }
+.mi { font-family:'Material Icons Round'; font-weight:normal; font-style:normal; font-size:20px; line-height:1; letter-spacing:normal; text-transform:none; display:inline-block; white-space:nowrap; direction:ltr; -webkit-font-smoothing:antialiased; font-feature-settings:'liga'; }
+h1,h2 { font-family:var(--font-display); font-weight:800; line-height:1.15; letter-spacing:-.01em; margin:0; }
+.muted { color:var(--ink-2); }
+.small { font-size:13px; }
+.tabular { font-variant-numeric:tabular-nums; }
+.spacer { flex:1; }
+@keyframes tl-fade-up { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+@keyframes sk { to { background-position:-200% 0; } }
 
-  /* ---- thanh trên ---- */
-  .top { background:var(--card); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:20; }
-  .top .wrap { display:flex; align-items:center; gap:18px; height:60px; }
-  .brand { display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:-.01em; white-space:nowrap; }
-  .logo { width:30px; height:30px; border-radius:9px; background:var(--accent); color:#fff; display:grid; place-items:center; font-size:15px; font-weight:800; }
-  .brand small { display:block; font-weight:500; color:var(--muted); font-size:11px; margin-top:-3px; }
-  nav { display:flex; gap:4px; margin-left:8px; overflow-x:auto; }
-  nav a { color:var(--muted); text-decoration:none; padding:6px 11px; border-radius:8px; font-size:13.5px; white-space:nowrap; }
-  nav a:hover { background:var(--soft); color:var(--ink); }
-  nav a.on { background:var(--accent-soft); color:var(--accent); font-weight:600; }
-  .pills { margin-left:auto; display:flex; gap:8px; }
+/* ================= Khung: thanh ben + noi dung (giong trang Quan tri) ================= */
+.side { position:fixed; inset:0 auto 0 0; width:264px; background:#2b2350; color:#cfc8ea; display:flex; flex-direction:column; z-index:40; transition:transform .3s ease; overflow-y:auto; }
+.brand { display:flex; align-items:center; gap:8px; padding:22px 20px 14px; }
+.logo-mark { width:34px; height:34px; flex:none; filter:drop-shadow(0 4px 6px rgb(229 67 63/30%)); transition:transform .3s var(--ease-bounce); }
+.brand:hover .logo-mark { transform:rotate(-8deg) scale(1.06); }
+.word { font-family:var(--font-display); font-weight:800; font-size:23px; letter-spacing:-.02em; color:#fff; line-height:1; }
+.word b { color:#ffc83d; }
+.tag { font-size:11px; font-weight:800; background:var(--grad-sun); color:#2b2350; padding:3px 8px; border-radius:999px; }
+.group { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.12em; color:#8a82ab; padding:18px 24px 6px; }
+.nav-link { display:flex; align-items:center; gap:12px; margin:2px 12px; padding:8px 12px 8px 8px; border-radius:16px; font-size:14px; font-weight:700; transition:background .2s,color .2s; }
+.nav-link .ni { width:34px; height:34px; border-radius:12px; display:grid; place-items:center; background:rgb(255 255 255/6%); transition:background .2s,transform .3s var(--ease-bounce); flex:none; }
+.nav-link:hover { background:rgb(255 255 255/6%); color:#fff; }
+.nav-link:hover .ni { transform:rotate(-8deg); }
+.nav-link.on { background:#fff; color:#2b2350; box-shadow:0 10px 20px -10px rgb(0 0 0/50%); }
+.nav-link.on .ni { background:var(--grad-cta); color:#fff; }
+.nav-link .count { margin-left:auto; font-size:11px; font-weight:800; min-width:22px; height:20px; padding:0 6px; border-radius:999px; display:grid; place-items:center; background:rgb(255 255 255/10%); color:#fff; }
+.nav-link.on .count { background:var(--red-soft); color:var(--red-dark); }
+.side-foot { margin:auto 16px 20px; display:grid; gap:8px; padding-top:16px; }
+.side-foot a { display:flex; align-items:center; gap:10px; padding:11px 14px; border-radius:16px; background:rgb(255 255 255/7%); font-weight:700; font-size:13.5px; }
+.side-foot a:hover { background:rgb(255 255 255/12%); color:#fff; }
+.side-foot .ext { margin-left:auto; font-size:16px; opacity:.6; }
+.scrim { position:fixed; inset:0; background:rgb(43 35 80/40%); z-index:35; }
 
-  .pill { display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:99px; font-size:12px; font-weight:600; background:var(--soft); color:var(--muted); border:1px solid var(--line); white-space:nowrap; }
-  .pill i { width:7px; height:7px; border-radius:50%; background:currentColor; }
-  .pill.ok { color:var(--ok); background:var(--ok-soft); border-color:transparent; }
-  .pill.bad { color:var(--bad); background:var(--bad-soft); border-color:transparent; }
-  .pill.warn { color:var(--warn); background:var(--warn-soft); border-color:transparent; }
-  .pill.info { color:var(--info); background:var(--info-soft); border-color:transparent; }
+.main { margin-left:264px; min-height:100vh; }
+.bar { position:sticky; top:0; z-index:30; display:flex; align-items:center; gap:12px; height:68px; padding:0 28px; background:color-mix(in srgb,var(--bg) 82%,transparent); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
+.menu-btn, .mbrand { display:none !important; }
+.mbrand { align-items:center; gap:6px; font-family:var(--font-display); font-weight:800; font-size:19px; }
+.mbrand svg { width:28px; height:28px; } .mbrand b { color:var(--red); }
+.hello { font-size:15px; color:var(--ink-2); }
+.hello b { color:var(--ink); }
+.user { display:flex; align-items:center; gap:10px; background:var(--card); box-shadow:var(--clay-sm); border-radius:999px; padding:4px 14px 4px 4px; }
+.user b { display:block; font-size:13px; line-height:1.2; } .user small { color:var(--ink-2); font-size:12px; }
+.avatar { width:34px; height:34px; border-radius:50%; display:grid; place-items:center; background:var(--grad-sun); color:#2b2350; font-weight:800; font-family:var(--font-display); }
+.content { padding:8px 28px 48px; max-width:1640px; animation:tl-fade-up .3s ease-out both; }
 
-  /* ---- bố cục ---- */
-  .layout > * { min-width:0; }
-  .layout { display:grid; grid-template-columns:minmax(0,1fr) 420px; gap:20px; align-items:start; padding:20px 0 56px; }
-  .col { display:grid; grid-template-columns:minmax(0,1fr); gap:18px; min-width:0; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); }
-  .card > .hd { flex-wrap:wrap; display:flex; align-items:center; gap:12px; padding:14px 18px; border-bottom:1px solid var(--line); }
-  .num { width:26px; height:26px; border-radius:50%; background:var(--accent); color:#fff; display:grid; place-items:center; font-size:13px; font-weight:700; flex:none; }
-  .hd h2 { margin:0; font-size:16px; letter-spacing:-.01em; }
-  .hd .hint { color:var(--muted); font-size:12.5px; }
-  .hd .right { margin-left:auto; display:flex; gap:8px; align-items:center; }
-  .bd { padding:16px 18px; }
-  .muted { color:var(--muted); font-size:12.5px; }
-  .tabular { font-variant-numeric:tabular-nums; }
+/* ================= Thanh phan ================= */
+.page-title { margin:6px 0 20px; }
+.page-title h1 { font-size:30px; }
+.page-title p { margin:4px 0 0; color:var(--ink-2); font-size:14.5px; }
 
-  /* ---- hộp cấu hình ---- */
-  .cfg { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr)); gap:12px; }
-  .cfg .box { background:var(--soft); border:1px solid var(--line); border-radius:10px; padding:10px 12px; min-width:0; }
-  .cfg .lbl { font-size:11.5px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
-  .cfg .val { display:flex; align-items:center; gap:8px; margin-top:3px; }
-  .cfg code { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; background:none; padding:0; font-size:12.5px; }
+.chip { display:inline-flex; align-items:center; gap:5px; padding:4px 11px; border-radius:999px; font-size:12px; font-weight:800; white-space:nowrap; }
+.chip .mi { font-size:16px; }
+.chip.red { background:var(--red-soft); color:var(--red-dark); }
+.chip.green { background:var(--green-soft); color:var(--green); }
+.chip.blue { background:var(--blue-soft); color:var(--blue); }
+.chip.yellow { background:var(--yellow-soft); color:var(--yellow-ink); }
+.chip.violet { background:var(--violet-soft); color:var(--violet); }
+.chip.orange { background:var(--orange-soft); color:var(--orange); }
+.chip.grey { background:#eeeaf5; color:var(--ink-2); }
 
-  /* ---- danh mục ---- */
-  .tools { display:flex; gap:10px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
-  .search { flex:1; min-width:180px; }
-  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(205px,100%),1fr)); gap:12px; }
-  .item { border:1px solid var(--line); border-radius:12px; padding:13px; display:flex; flex-direction:column; gap:7px; background:var(--card); transition:border-color .15s, box-shadow .15s; }
-  .item:hover { border-color:var(--accent); }
-  .item.sel { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
-  .item .name { font-weight:600; font-size:14px; line-height:1.35; min-height:38px; }
-  .item .meta { color:var(--muted); font-size:12px; }
-  .item .row { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-  .price { font-weight:700; font-size:15px; }
-  .stock { font-size:11.5px; font-weight:600; padding:1px 8px; border-radius:99px; background:var(--ok-soft); color:var(--ok); }
-  .stock.low { background:var(--warn-soft); color:var(--warn); }
-  .stock.out { background:var(--bad-soft); color:var(--bad); }
-  .skel { height:132px; border-radius:12px; background:linear-gradient(90deg,var(--soft),var(--line),var(--soft)); background-size:200% 100%; animation:sk 1.2s infinite; }
-  @keyframes sk { to { background-position:-200% 0; } }
+.stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; margin-bottom:20px; }
+.stat { background:var(--card); border-radius:var(--radius); box-shadow:var(--clay); padding:16px 18px; display:flex; align-items:center; gap:14px; }
+.stat .ico { width:46px; height:46px; border-radius:14px; display:grid; place-items:center; box-shadow:var(--clay-sm); flex:none; }
+.stat .ico .mi { font-size:24px; color:var(--ink); }
+.stat b { display:block; font-family:var(--font-display); font-size:26px; line-height:1.05; font-weight:800; }
+.stat span.l { font-size:13px; color:var(--ink-2); font-weight:700; }
 
-  /* ---- form ---- */
-  form { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr)); gap:12px; }
-  label { display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:var(--muted); }
-  input { font:inherit; font-weight:400; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--ink); min-width:0; }
-  input:focus { outline:2px solid var(--accent); outline-offset:-1px; border-color:transparent; }
-  input[readonly] { background:var(--soft); color:var(--muted); }
-  .span2 { grid-column:1/-1; }
-  .idem { background:var(--info-soft); color:var(--info); border-radius:10px; padding:9px 12px; font-size:12.5px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-  .idem code { background:none; color:inherit; padding:0; font-weight:600; }
-  .actions { grid-column:1/-1; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-  .selected { grid-column:1/-1; display:flex; align-items:center; gap:10px; background:var(--accent-soft); border-radius:10px; padding:9px 12px; font-size:13.5px; }
-  .empty { text-align:center; color:var(--muted); padding:22px 8px; font-size:13.5px; }
+.layout { display:grid; grid-template-columns:minmax(0,1fr) 410px; gap:20px; align-items:start; }
+.colm { display:grid; grid-template-columns:minmax(0,1fr); gap:20px; min-width:0; }
+.card { background:var(--card); border-radius:var(--radius); box-shadow:var(--clay); scroll-margin-top:84px; min-width:0; }
+.card-hd { display:flex; align-items:center; gap:12px; padding:18px 22px 6px; flex-wrap:wrap; }
+.card-hd > div:not(.right) { min-width:0; flex:1 1 220px; }
+.card-hd .ico { width:40px; height:40px; border-radius:13px; display:grid; place-items:center; box-shadow:var(--clay-sm); flex:none; }
+.card-hd .ico .mi { color:var(--ink); }
+.card-hd h2 { font-size:20px; }
+.card-hd .sub { font-size:13px; color:var(--ink-2); font-weight:600; }
+.card-hd .right { margin-left:auto; display:flex; gap:8px; align-items:center; }
+.card-bd { padding:14px 22px 22px; }
+.bg-pink { background:var(--p-pink); } .bg-peach { background:var(--p-peach); } .bg-butter { background:var(--p-butter); }
+.bg-mint { background:var(--p-mint); } .bg-sky { background:var(--p-sky); } .bg-lilac { background:var(--p-lilac); }
 
-  /* ---- nút ---- */
-  button { font:inherit; font-size:13.5px; font-weight:600; border:1px solid var(--line); background:var(--card); color:var(--ink); padding:7px 13px; border-radius:8px; cursor:pointer; transition:background .12s, border-color .12s; }
-  button:hover:not(:disabled) { background:var(--soft); border-color:#c6ccd8; }
-  button.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
-  button.primary:hover:not(:disabled) { filter:brightness(1.08); background:var(--accent); }
-  button.warn { color:var(--warn); border-color:var(--warn-soft); background:var(--warn-soft); }
-  button.sm { padding:4px 10px; font-size:12.5px; }
-  button.ghost { border-color:transparent; background:transparent; color:var(--muted); }
-  button:disabled { opacity:.45; cursor:not-allowed; }
-  button:focus-visible, a:focus-visible, summary:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+/* Nut "dat nan" */
+.btn { font:inherit; font-size:14px; font-weight:800; letter-spacing:.01em; display:inline-flex; align-items:center; justify-content:center; gap:6px; height:40px; padding:0 18px; border-radius:999px; border:0; cursor:pointer; background:var(--card); color:var(--ink); box-shadow:var(--clay-sm); white-space:nowrap; transition:transform .18s var(--ease-bounce),box-shadow .18s,filter .18s; }
+.btn .mi { font-size:18px; }
+.btn:hover:not(:disabled) { transform:translateY(-1px); box-shadow:var(--clay); }
+.btn:active:not(:disabled) { transform:translateY(1px) scale(.98); }
+.btn.primary { background-image:var(--grad-cta); color:#fff; box-shadow:var(--clay-btn); }
+.btn.primary:hover:not(:disabled) { transform:translateY(-2px); filter:saturate(1.1); box-shadow:var(--clay-btn); }
+.btn.soft { background:var(--red-soft); color:var(--red-dark); box-shadow:none; }
+.btn.ghost { background:transparent; box-shadow:none; color:var(--ink-2); }
+.btn.ghost:hover:not(:disabled) { background:#f4f1f9; box-shadow:none; }
+.btn.sm { height:32px; padding:0 13px; font-size:12.5px; }
+.btn.icon { width:40px; padding:0; }
+.btn.sm.icon { width:32px; }
+.btn:disabled { opacity:.45; cursor:not-allowed; box-shadow:none; }
 
-  /* ---- thông báo ---- */
-  #msg { padding:0 18px; }
-  .note { margin:12px 0 0; padding:10px 13px; border-radius:10px; font-size:13.5px; display:flex; gap:8px; align-items:flex-start; }
-  .note.ok { background:var(--ok-soft); color:var(--ok); }
-  .note.bad { background:var(--bad-soft); color:var(--bad); }
+/* Ket noi */
+.conn { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+.conn .box { background:var(--hover); border:1px dashed var(--border-strong); border-radius:var(--radius-sm); padding:12px 14px; min-width:0; }
+.conn .lbl { font-size:11.5px; font-weight:800; color:var(--ink-3); text-transform:uppercase; letter-spacing:.08em; display:flex; align-items:center; gap:6px; }
+.conn .lbl .mi { font-size:16px; }
+.conn .val { display:flex; align-items:center; gap:8px; margin-top:6px; min-width:0; min-height:32px; }
+.conn code { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:600 12.5px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
 
-  /* ---- bảng ---- */
-  .tw { overflow-x:auto; }
-  table { width:100%; border-collapse:collapse; font-size:14px; }
-  th, td { text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); vertical-align:middle; }
-  th { font-size:11.5px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.04em; background:var(--soft); position:sticky; top:0; }
-  tr:last-child td { border-bottom:0; }
-  td.r, th.r { text-align:right; }
-  code { font:12.5px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; background:var(--soft); padding:1px 6px; border-radius:5px; }
-  .st { display:inline-block; padding:2px 10px; border-radius:99px; font-size:12px; font-weight:700; background:var(--soft); color:var(--muted); }
-  .st.PENDING { background:var(--warn-soft); color:var(--warn); }
-  .st.CONFIRMED, .st.PACKING { background:var(--info-soft); color:var(--info); }
-  .st.SHIPPING { background:var(--accent-soft); color:var(--accent); }
-  .st.DELIVERED, .st.COMPLETED { background:var(--ok-soft); color:var(--ok); }
-  .st.CANCELLED { background:var(--bad-soft); color:var(--bad); }
-  .soapres { display:block; margin-top:4px; font-size:12px; color:var(--accent); }
-  .ok { color:var(--ok); } .bad { color:var(--bad); }
-  td .res { font-weight:600; }
+/* Danh muc */
+.tools { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
+.search { flex:1; min-width:200px; display:flex; align-items:center; gap:8px; height:44px; padding:0 16px; background:var(--hover); border:1px solid var(--border); border-radius:999px; }
+.search input { flex:1; border:0; background:transparent; font:inherit; font-size:14.5px; color:var(--ink); outline:0; min-width:0; }
+.search .mi { color:var(--ink-3); }
+.search:focus-within { border-color:var(--violet); box-shadow:0 0 0 3px var(--violet-soft); }
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(200px,100%),1fr)); gap:16px; }
+.pcard { background:var(--card); border-radius:var(--radius); box-shadow:var(--clay-sm); border:1px solid var(--border); overflow:hidden; display:flex; flex-direction:column; transition:transform .25s var(--ease-bounce),box-shadow .25s; min-width:0; }
+.pcard:hover { transform:translateY(-3px); box-shadow:var(--clay-hover); }
+.pcard.sel { outline:3px solid var(--violet); outline-offset:-3px; }
+.thumb { aspect-ratio:4/3; display:grid; place-items:center; position:relative; overflow:hidden; }
+.thumb img { width:100%; height:100%; object-fit:cover; }
+.thumb > .mi { font-size:44px; color:rgb(43 35 80/55%); }
+.thumb .badge { position:absolute; top:10px; left:10px; }
+.pbody { padding:12px 14px 14px; display:flex; flex-direction:column; gap:6px; flex:1; }
+.pname { font-weight:800; font-size:14.5px; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:38px; }
+.pmeta { font-size:12px; color:var(--ink-3); font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.prow { display:flex; align-items:center; justify-content:space-between; gap:6px; flex-wrap:wrap; margin-top:auto; padding-top:4px; }
+.price { color:var(--red-dark); font-weight:800; font-variant-numeric:tabular-nums; font-size:16px; }
+.price-old { color:var(--ink-3); text-decoration:line-through; font-size:12px; font-weight:600; margin-left:4px; }
+.pcard .btn { margin-top:8px; width:100%; }
+.skel { height:268px; border-radius:var(--radius); background:linear-gradient(90deg,#f6f3fb,#ece7f6,#f6f3fb); background-size:200% 100%; animation:sk 1.2s infinite; }
 
-  /* ---- bằng chứng kỹ thuật ---- */
-  aside { position:sticky; top:76px; max-height:calc(100vh - 92px); display:flex; flex-direction:column; }
-  aside .card { display:flex; flex-direction:column; min-height:0; max-height:inherit; }
-  .chips { display:flex; gap:6px; padding:10px 18px 0; flex-wrap:wrap; }
-  .chip { padding:3px 11px; border-radius:99px; font-size:12px; font-weight:600; border:1px solid var(--line); background:var(--card); color:var(--muted); cursor:pointer; }
-  .chip.on { background:var(--accent); border-color:var(--accent); color:#fff; }
-  #traces { overflow:auto; padding:10px 12px 14px; display:grid; gap:8px; align-content:start; }
-  details.tr { border:1px solid var(--line); border-radius:10px; background:var(--card); }
-  details.tr[open] { border-color:var(--accent); }
-  details.tr > summary { list-style:none; cursor:pointer; padding:9px 11px; display:flex; align-items:center; gap:8px; font-size:13px; }
-  details.tr > summary::-webkit-details-marker { display:none; }
-  .kind { font-size:10.5px; font-weight:800; letter-spacing:.05em; padding:2px 7px; border-radius:6px; }
-  .kind.REST { background:var(--info-soft); color:var(--info); }
-  .kind.SOAP { background:var(--warn-soft); color:var(--warn); }
-  .kind.WEBHOOK { background:var(--ok-soft); color:var(--ok); }
-  .ttl { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; }
-  .code2 { font-weight:700; font-size:12px; padding:1px 7px; border-radius:6px; }
-  .code2.s2 { background:var(--ok-soft); color:var(--ok); }
-  .code2.s4 { background:var(--warn-soft); color:var(--warn); }
-  .code2.s5 { background:var(--bad-soft); color:var(--bad); }
-  .tr .body { padding:0 11px 11px; display:grid; gap:8px; }
-  .tr h4 { margin:6px 0 0; font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); }
-  pre { margin:0; background:var(--code); color:var(--code-ink); border-radius:8px; padding:9px 11px; font:11.5px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; overflow:auto; max-height:220px; white-space:pre-wrap; word-break:break-all; }
+/* Dat hang */
+.empty { text-align:center; color:var(--ink-2); padding:26px 12px; font-size:14px; font-weight:600; }
+.empty .mi { font-size:40px; color:var(--ink-3); display:block; margin:0 auto 6px; }
+.picked { display:flex; align-items:center; gap:14px; padding:12px; border-radius:var(--radius-sm); background:var(--p-lilac); margin-bottom:14px; }
+.picked .pi { width:56px; height:56px; border-radius:12px; overflow:hidden; display:grid; place-items:center; background:#fff; flex:none; }
+.picked .pi img { width:100%; height:100%; object-fit:cover; }
+.picked b { display:block; font-weight:800; }
+.idem { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 14px; border-radius:var(--radius-sm); background:var(--p-sky); color:#1c4a8f; font-size:13px; font-weight:700; margin-bottom:16px; }
+.idem code { font:700 12.5px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; background:#fff; padding:2px 8px; border-radius:8px; color:var(--blue); word-break:break-all; }
+.form { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
+.field { display:flex; flex-direction:column; gap:5px; font-size:12.5px; font-weight:800; color:var(--ink-2); min-width:0; }
+.field input { font:inherit; font-size:14.5px; font-weight:600; color:var(--ink); height:44px; padding:0 14px; border-radius:var(--radius-sm); border:1px solid var(--border-strong); background:var(--card); min-width:0; transition:border-color .15s,box-shadow .15s; }
+.field input:focus { outline:0; border-color:var(--violet); box-shadow:0 0 0 3px var(--violet-soft); }
+.field input[readonly] { background:var(--hover); color:var(--ink-2); }
+.actions { grid-column:1/-1; display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:4px; }
 
-  @media (max-width:1020px) {
-    .layout { grid-template-columns:minmax(0,1fr); }
-    aside { position:static; max-height:none; }
-    #traces { max-height:520px; }
-    .pills { display:none; }
-    nav { min-width:0; }
-  }
-  @media (max-width:600px) {
-    .wrap { padding:0 12px; } .brand small { display:none; }
-    th, td { padding:9px 10px; }
-  }
+/* Thong bao */
+.note { display:flex; gap:10px; align-items:flex-start; padding:12px 14px; border-radius:var(--radius-sm); font-size:14px; font-weight:700; margin:8px 22px 6px; }
+.note .mi { font-size:20px; }
+.note.ok { background:var(--green-soft); color:var(--green); }
+.note.bad { background:var(--red-soft); color:var(--red-dark); }
+
+/* Bang */
+.tw { overflow-x:auto; padding:4px 10px 12px; }
+table { width:100%; border-collapse:collapse; font-size:14px; }
+th,td { text-align:left; padding:12px; border-bottom:1px solid var(--border); vertical-align:middle; }
+th { font-size:11.5px; font-weight:800; color:var(--ink-3); text-transform:uppercase; letter-spacing:.06em; white-space:nowrap; }
+tr:last-child td { border-bottom:0; }
+tbody tr:hover td { background:var(--hover); }
+td.r,th.r { text-align:right; }
+.code { font:700 12.5px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; background:#f4f1f9; padding:3px 8px; border-radius:8px; white-space:nowrap; }
+.soapres { display:block; margin-top:5px; font-size:12px; font-weight:700; color:var(--violet); }
+.row-actions { display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap; }
+
+/* Bang chung ky thuat */
+.evi { position:sticky; top:84px; max-height:calc(100vh - 104px); display:flex; flex-direction:column; }
+.filters { display:flex; gap:6px; padding:6px 22px 4px; flex-wrap:wrap; align-items:center; }
+.fchip { font:inherit; font-size:12.5px; font-weight:800; padding:6px 13px; border-radius:999px; border:0; cursor:pointer; background:#f4f1f9; color:var(--ink-2); transition:background .15s; }
+.fchip:hover { background:#ece7f6; }
+.fchip.on { background:var(--ink); color:#fff; }
+#traces { overflow:auto; padding:10px 16px 18px; display:grid; gap:10px; align-content:start; min-height:120px; }
+details.tr { border-radius:var(--radius-sm); background:var(--hover); border:1px solid var(--border); transition:border-color .15s; }
+details.tr[open] { border-color:var(--border-strong); background:#fff; box-shadow:var(--clay-sm); }
+details.tr > summary { list-style:none; cursor:pointer; padding:10px 12px; display:flex; align-items:center; gap:8px; font-size:13px; }
+details.tr > summary::-webkit-details-marker { display:none; }
+.kind { font-size:10.5px; font-weight:800; letter-spacing:.06em; padding:3px 8px; border-radius:8px; flex:none; }
+.kind.REST { background:var(--blue-soft); color:var(--blue); }
+.kind.SOAP { background:var(--orange-soft); color:var(--orange); }
+.kind.WEBHOOK { background:var(--green-soft); color:var(--green); }
+.ttl { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:800; }
+.sc { font-weight:800; font-size:12px; padding:2px 8px; border-radius:8px; flex:none; }
+.sc.s2 { background:var(--green-soft); color:var(--green); }
+.sc.s4 { background:var(--yellow-soft); color:var(--yellow-ink); }
+.sc.s5 { background:var(--red-soft); color:var(--red-dark); }
+.ms { font-size:12px; color:var(--ink-3); font-weight:700; flex:none; }
+.tr .body { padding:0 12px 12px; display:grid; gap:6px; }
+.tr h4 { margin:8px 0 2px; font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); }
+pre { margin:0; background:var(--code-bg); color:var(--code-ink); border-radius:12px; padding:10px 12px; font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; overflow:auto; max-height:230px; white-space:pre-wrap; word-break:break-all; }
+
+/* ================= Man hinh nho ================= */
+@media (max-width:1380px) {
+  .layout { grid-template-columns:minmax(0,1fr); }
+  .evi { position:static; max-height:none; }
+  #traces { max-height:560px; }
+}
+@media (max-width:1100px) { .form { grid-template-columns:repeat(2,minmax(0,1fr)); } .conn { grid-template-columns:minmax(0,1fr); } .stats { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:960px) {
+  .side { transform:translateX(-100%); }
+  body.nav-open .side { transform:none; }
+  .main { margin-left:0; }
+  .menu-btn, .mbrand { display:inline-flex !important; }
+  .bar { padding:0 12px; }
+  .content { padding:8px 14px 32px; }
+  .hide-sm { display:none !important; }
+}
+@media (max-width:560px) {
+  .form { grid-template-columns:minmax(0,1fr); }
+  .grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+  .stats { gap:12px; } .stat { padding:12px; gap:10px; } .stat .ico { width:38px; height:38px; } .stat .ico .mi { font-size:20px; } .stat b { font-size:22px; } .stat span.l { font-size:12px; line-height:1.3; display:block; }
+  .card-hd { padding:16px 16px 4px; } .card-bd { padding:12px 16px 18px; }
+  .page-title h1 { font-size:26px; }
+  th,td { padding:10px 8px; }
+  .pbody { padding:10px; } .pcard .btn { font-size:12px; padding:0 8px; }
+}
+@media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; } }
 </style>
 </head>
 <body>
-<div class="top"><div class="wrap">
-  <div class="brand"><div class="logo">Đ</div><div>Cổng đại lý<small>Đối tác của ToyLand</small></div></div>
+
+<aside class="side" aria-label="Điều hướng cổng đại lý">
+  <a class="brand" href="#s-overview">
+    <svg class="logo-mark" viewBox="0 0 48 48" aria-hidden="true">
+      <defs>
+        <linearGradient id="lga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8a7d"/><stop offset="1" stop-color="#e5433f"/></linearGradient>
+        <linearGradient id="lgb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#ffb938"/></linearGradient>
+      </defs>
+      <rect x="4" y="14" width="40" height="30" rx="10" fill="url(#lga)"/>
+      <rect x="10" y="8" width="10" height="9" rx="4" fill="#ff8a7d"/><rect x="28" y="8" width="10" height="9" rx="4" fill="#ff8a7d"/>
+      <rect x="6" y="16" width="36" height="6" rx="3" fill="#fff" opacity=".28"/>
+      <path d="M24 22l3 6 6.5.9-4.7 4.6 1.1 6.5L24 37l-5.9 3 1.1-6.5-4.7-4.6L21 28z" fill="url(#lgb)" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/>
+    </svg>
+    <span class="word">Toy<b>Land</b></span><span class="tag">Đại lý</span>
+  </a>
   <nav id="nav">
-    <a href="#s-cfg" class="on">Kết nối</a><a href="#s-cat">Danh mục</a><a href="#s-order">Đặt hàng</a><a href="#s-orders">Đơn đã đặt</a><a href="#s-hooks">Webhook</a>
+    <div class="group">Kết nối</div>
+    <a class="nav-link on" href="#s-overview"><span class="ni"><span class="mi">hub</span></span><span>Tổng quan kết nối</span></a>
+    <div class="group">Bán hàng</div>
+    <a class="nav-link" href="#s-cat"><span class="ni"><span class="mi">toys</span></span><span>Danh mục hàng</span><span class="count" id="nc-cat">0</span></a>
+    <a class="nav-link" href="#s-order"><span class="ni"><span class="mi">add_shopping_cart</span></span><span>Đặt hàng cho khách</span></a>
+    <a class="nav-link" href="#s-orders"><span class="ni"><span class="mi">receipt_long</span></span><span>Đơn đã đặt</span><span class="count" id="nc-orders">0</span></a>
+    <div class="group">Tích hợp</div>
+    <a class="nav-link" href="#s-hooks"><span class="ni"><span class="mi">notifications_active</span></span><span>Webhook đã nhận</span><span class="count" id="nc-hooks">0</span></a>
+    <a class="nav-link" href="#s-evi"><span class="ni"><span class="mi">terminal</span></span><span>Bằng chứng kỹ thuật</span><span class="count" id="nc-evi">0</span></a>
   </nav>
-  <div class="pills" id="pills"></div>
-</div></div>
-
-<div class="wrap layout">
-  <div class="col">
-
-    <section class="card" id="s-cfg">
-      <div class="hd"><h2>Kết nối với ToyLand</h2><span class="hint">Ứng dụng Node.js độc lập, dùng dịch vụ qua REST, SOAP và webhook</span></div>
-      <div class="bd"><div class="cfg" id="cfg"></div></div>
-    </section>
-
-    <section class="card" id="s-cat">
-      <div class="hd"><span class="num">1</span><h2>Danh mục hàng</h2><span class="hint">REST có ký HMAC-SHA256</span>
-        <div class="right"><button class="sm" id="reload">Tải lại</button></div></div>
-      <div class="bd">
-        <div class="tools"><input class="search" id="q" type="search" placeholder="Lọc theo tên hoặc mã hàng…" aria-label="Lọc sản phẩm"><span class="muted" id="count"></span></div>
-        <div class="grid" id="catalog"><div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
-      </div>
-    </section>
-
-    <section class="card" id="s-order">
-      <div class="hd"><span class="num">2</span><h2>Đặt hàng cho khách</h2><span class="hint">Idempotency-Key chống đặt trùng</span></div>
-      <div class="bd">
-        <div id="noSel" class="empty">Chọn một sản phẩm ở mục 1 để bắt đầu đặt hàng.</div>
-        <form id="form" hidden>
-          <div class="selected" id="selected"></div>
-          <div class="idem span2">Mã chống trùng của lần mở biểu mẫu này: <code id="token"></code><span>Bấm đặt hai lần vẫn chỉ ra một đơn.</span></div>
-          <label>Mã hàng (SKU)<input name="sku" readonly></label>
-          <label>Số lượng<input name="quantity" type="number" min="1" max="99" value="1" required></label>
-          <label>Người nhận<input name="receiverName" value="Nguyễn Văn Khách" required></label>
-          <label>Điện thoại<input name="phone" value="0900000002" required></label>
-          <label>Tỉnh/Thành<input name="province" value="Hà Nội" required></label>
-          <label>Quận/Huyện<input name="district" value="Cầu Giấy" required></label>
-          <label>Phường/Xã<input name="ward" value="Dịch Vọng" required></label>
-          <label>Địa chỉ chi tiết<input name="addressDetail" value="12 Phố Demo" required></label>
-          <div class="actions">
-            <button class="primary" type="submit" id="submit">Đặt hàng</button>
-            <button type="button" id="double">Bấm hai lần liên tiếp</button>
-            <button type="button" class="ghost" id="newform">Làm đơn mới</button>
-          </div>
-        </form>
-      </div>
-    </section>
-
-    <section class="card" id="s-orders">
-      <div class="hd"><span class="num">3</span><h2>Đơn đã đặt</h2><span class="hint">Trạng thái cập nhật tự động khi nhận webhook</span></div>
-      <div id="msg"></div>
-      <div class="tw"><table>
-        <thead><tr><th>Mã đơn ToyLand</th><th>Mã đơn đại lý</th><th>Trạng thái</th><th class="r">Tổng</th><th></th></tr></thead>
-        <tbody id="orders"><tr><td colspan="5" class="empty">Chưa có đơn nào.</td></tr></tbody>
-      </table></div>
-    </section>
-
-    <section class="card" id="s-hooks">
-      <div class="hd"><span class="num">4</span><h2>Webhook đã nhận</h2><span class="hint">Kiểm tra chữ ký, bỏ qua sự kiện trùng</span></div>
-      <div class="tw"><table>
-        <thead><tr><th>Lúc</th><th>Sự kiện</th><th>Đơn</th><th>Trạng thái</th><th>Kết quả</th></tr></thead>
-        <tbody id="hooks"><tr><td colspan="5" class="empty">Chưa nhận webhook nào. Đổi trạng thái đơn ở trang Quản trị để thử.</td></tr></tbody>
-      </table></div>
-    </section>
+  <div class="side-foot">
+    <a id="lnk-swagger" href="#" target="_blank" rel="noopener"><span class="mi">description</span>Hợp đồng REST<span class="mi ext">open_in_new</span></a>
+    <a id="lnk-wsdl" href="#" target="_blank" rel="noopener"><span class="mi">code</span>Hợp đồng SOAP (WSDL)<span class="mi ext">open_in_new</span></a>
   </div>
+</aside>
+<div class="scrim" id="scrim" hidden></div>
 
-  <aside>
-    <div class="card">
-      <div class="hd"><span class="num">5</span><h2>Bằng chứng kỹ thuật</h2><div class="right"><button class="sm ghost" id="clearTr">Ẩn cũ</button></div></div>
-      <div class="chips" id="chips">
-        <button class="chip on" data-k="">Tất cả</button><button class="chip" data-k="REST">REST</button><button class="chip" data-k="SOAP">SOAP</button><button class="chip" data-k="WEBHOOK">Webhook</button>
-      </div>
-      <div id="traces"><div class="empty">Mỗi lần gọi ToyLand sẽ hiện ở đây: tiêu đề ký, mã trạng thái, nội dung gửi và nhận.</div></div>
+<div class="main">
+  <header class="bar">
+    <button class="btn icon ghost menu-btn" id="menuBtn" aria-label="Mở menu"><span class="mi">menu</span></button>
+    <a class="mbrand" href="#s-overview"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="4" y="14" width="40" height="30" rx="10" fill="#f0524f"/><rect x="10" y="8" width="10" height="9" rx="4" fill="#ff8a7d"/><rect x="28" y="8" width="10" height="9" rx="4" fill="#ff8a7d"/><path d="M24 22l3 6 6.5.9-4.7 4.6 1.1 6.5L24 37l-5.9 3 1.1-6.5-4.7-4.6L21 28z" fill="#ffc83d" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg><span>Toy<b>Land</b></span></a>
+    <div class="hello hide-sm">Xin chào, <b>Đại lý đối tác</b> 👋</div>
+    <span class="spacer"></span>
+    <span id="pills"></span>
+    <div class="user hide-sm"><span class="avatar">Đ</span><span><b>Đại lý Demo</b><small>Đối tác của ToyLand</small></span></div>
+  </header>
+
+  <main class="content">
+    <div class="page-title">
+      <h1>Cổng đại lý</h1><p>Ứng dụng Node.js độc lập của đại lý, dùng dịch vụ ToyLand qua REST, SOAP và nhận thông báo qua webhook.</p>
     </div>
-  </aside>
+
+    <div class="stats">
+      <div class="stat"><span class="ico bg-butter"><span class="mi">toys</span></span><div><b class="tabular" id="st-cat">0</b><span class="l">Sản phẩm đang bán</span></div></div>
+      <div class="stat"><span class="ico bg-pink"><span class="mi">receipt_long</span></span><div><b class="tabular" id="st-orders">0</b><span class="l">Đơn đã đặt</span></div></div>
+      <div class="stat"><span class="ico bg-mint"><span class="mi">notifications_active</span></span><div><b class="tabular" id="st-hooks">0</b><span class="l">Webhook đã nhận</span></div></div>
+      <div class="stat"><span class="ico bg-sky"><span class="mi">sync_alt</span></span><div><b class="tabular" id="st-calls">0</b><span class="l">Lần gọi ToyLand</span></div></div>
+    </div>
+
+    <div class="layout">
+      <div class="colm">
+        <section class="card" id="s-overview">
+          <div class="card-hd"><span class="ico bg-lilac"><span class="mi">hub</span></span><div><h2>Kết nối với ToyLand</h2><div class="sub">Khóa API do ToyLand cấp ở trang Quản trị → Đối tác &amp; API</div></div></div>
+          <div class="card-bd"><div class="conn" id="cfg"></div></div>
+        </section>
+
+        <section class="card" id="s-cat">
+          <div class="card-hd"><span class="ico bg-butter"><span class="mi">toys</span></span><div><h2>Danh mục hàng</h2><div class="sub">REST <span class="code">GET /api/partner/v1/products</span> có ký HMAC-SHA256</div></div>
+            <div class="right"><button class="btn sm" id="reload"><span class="mi">refresh</span>Tải lại</button></div></div>
+          <div class="card-bd">
+            <div class="tools"><label class="search"><span class="mi">search</span><input id="q" type="search" placeholder="Lọc theo tên hoặc mã hàng…" aria-label="Lọc sản phẩm"></label><span class="chip grey" id="count">0 sản phẩm</span></div>
+            <div class="grid" id="catalog"><div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+          </div>
+        </section>
+
+        <section class="card" id="s-order">
+          <div class="card-hd"><span class="ico bg-peach"><span class="mi">add_shopping_cart</span></span><div><h2>Đặt hàng cho khách</h2><div class="sub">REST <span class="code">POST /api/partner/v1/orders</span> kèm Idempotency-Key</div></div></div>
+          <div class="card-bd">
+            <div id="noSel" class="empty"><span class="mi">touch_app</span>Chọn một sản phẩm ở <b>Danh mục hàng</b> để bắt đầu đặt.</div>
+            <form id="form" hidden>
+              <div class="picked" id="picked"></div>
+              <div class="idem"><span class="mi">fingerprint</span>Mã chống trùng của lần mở biểu mẫu này <code id="token"></code><span>Bấm đặt hai lần vẫn chỉ ra một đơn.</span></div>
+              <div class="form">
+                <label class="field">Mã hàng (SKU)<input name="sku" readonly></label>
+                <label class="field">Số lượng<input name="quantity" type="number" min="1" max="99" value="1" required></label>
+                <label class="field">Người nhận<input name="receiverName" value="Nguyễn Văn Khách" required></label>
+                <label class="field">Điện thoại<input name="phone" value="0900000002" required></label>
+                <label class="field">Tỉnh/Thành<input name="province" value="Hà Nội" required></label>
+                <label class="field">Quận/Huyện<input name="district" value="Cầu Giấy" required></label>
+                <label class="field">Phường/Xã<input name="ward" value="Dịch Vọng" required></label>
+                <label class="field">Địa chỉ chi tiết<input name="addressDetail" value="12 Phố Demo" required></label>
+                <div class="actions">
+                  <button class="btn primary" type="submit" id="submit"><span class="mi">shopping_bag</span>Đặt hàng</button>
+                  <button class="btn" type="button" id="double"><span class="mi">ads_click</span>Bấm hai lần liên tiếp</button>
+                  <button class="btn ghost" type="button" id="newform"><span class="mi">restart_alt</span>Làm đơn mới</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section class="card" id="s-orders">
+          <div class="card-hd"><span class="ico bg-pink"><span class="mi">receipt_long</span></span><div><h2>Đơn đã đặt</h2><div class="sub">Trạng thái tự cập nhật khi nhận webhook, tra lại bằng SOAP <span class="code">GetOrderStatus</span></div></div></div>
+          <div id="msg"></div>
+          <div class="tw"><table>
+            <thead><tr><th>Mã đơn ToyLand</th><th>Mã đơn đại lý</th><th>Trạng thái</th><th class="r">Tổng</th><th class="r">Thao tác</th></tr></thead>
+            <tbody id="orders"><tr><td colspan="5"><div class="empty"><span class="mi">inbox</span>Chưa có đơn nào.</div></td></tr></tbody>
+          </table></div>
+        </section>
+
+        <section class="card" id="s-hooks">
+          <div class="card-hd"><span class="ico bg-mint"><span class="mi">notifications_active</span></span><div><h2>Webhook đã nhận</h2><div class="sub">Kiểm tra chữ ký <span class="code">X-Toyland-Signature</span>, bỏ qua sự kiện trùng</div></div></div>
+          <div class="tw"><table>
+            <thead><tr><th>Lúc</th><th>Sự kiện</th><th>Đơn</th><th>Trạng thái</th><th>Kết quả</th></tr></thead>
+            <tbody id="hooks"><tr><td colspan="5"><div class="empty"><span class="mi">notifications_none</span>Chưa nhận webhook nào. Đổi trạng thái đơn ở trang Quản trị ToyLand để thử.</div></td></tr></tbody>
+          </table></div>
+        </section>
+      </div>
+
+      <section class="card evi" id="s-evi">
+        <div class="card-hd"><span class="ico bg-sky"><span class="mi">terminal</span></span><div><h2>Bằng chứng kỹ thuật</h2><div class="sub">Yêu cầu và phản hồi thật giữa đại lý với ToyLand</div></div>
+          <div class="right"><button class="btn sm icon ghost" id="clearTr" title="Ẩn các lần gọi hiện có" aria-label="Ẩn các lần gọi hiện có"><span class="mi">clear_all</span></button></div>
+        </div>
+        <div class="filters" id="chips">
+          <button class="fchip on" data-k="">Tất cả</button><button class="fchip" data-k="REST">REST</button><button class="fchip" data-k="SOAP">SOAP</button><button class="fchip" data-k="WEBHOOK">Webhook</button>
+        </div>
+        <div id="traces"><div class="empty"><span class="mi">sync_alt</span>Mỗi lần gọi ToyLand sẽ hiện ở đây: tiêu đề đã ký, mã trạng thái, nội dung gửi và nhận.</div></div>
+      </section>
+    </div>
+  </main>
 </div>
 
 <script>
 const $ = (s) => document.querySelector(s);
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const vnd = (n) => new Intl.NumberFormat('vi-VN').format(n) + ' ₫';
-let token = crypto.randomUUID(), products = [], traceKind = '', hideBefore = 0, cfg = null;
+const PASTEL = ['bg-butter', 'bg-pink', 'bg-mint', 'bg-sky', 'bg-lilac', 'bg-peach'];
+const realImg = (u) => !!u && !/placehold\.co|placeholder\.com/i.test(u);
+const STATUS_VI = { PENDING: 'Chờ xác nhận', CONFIRMED: 'Đã xác nhận', PACKING: 'Đang đóng gói', SHIPPING: 'Đang giao', DELIVERED: 'Đã giao', COMPLETED: 'Hoàn tất', CANCELLED: 'Đã huỷ', RETURNED: 'Trả hàng' };
+const STATUS = { PENDING: 'yellow', CONFIRMED: 'blue', PACKING: 'violet', SHIPPING: 'orange', DELIVERED: 'green', COMPLETED: 'green', CANCELLED: 'red', RETURNED: 'grey' };
+let token = crypto.randomUUID(), products = [], traceKind = '', hideBefore = 0, cfg = null, link = 'wait';
 
 async function api(path, opt) {
   const r = await fetch(path, opt);
@@ -257,65 +396,76 @@ async function api(path, opt) {
   if (!r.ok) throw Object.assign(new Error(j.message || r.statusText), { status: r.status, code: j.code });
   return j;
 }
-const say = (t, bad) => { $('#msg').innerHTML = `<div class="note ${bad ? 'bad' : 'ok'}">${esc(t)}</div>`; };
-const copy = (t, btn) => { navigator.clipboard?.writeText(t); const o = btn.textContent; btn.textContent = 'Đã chép'; setTimeout(() => (btn.textContent = o), 1200); };
+const say = (t, bad) => { $('#msg').innerHTML = `<div class="note ${bad ? 'bad' : 'ok'}"><span class="mi">${bad ? 'error' : 'check_circle'}</span><span>${esc(t)}</span></div>`; };
+const copy = (t, btn) => { navigator.clipboard?.writeText(t); const o = btn.innerHTML; btn.innerHTML = '<span class="mi">done</span>Đã chép'; setTimeout(() => (btn.innerHTML = o), 1200); };
+const setCount = (id, n) => { $('#nc-' + id).textContent = n; const s = $('#st-' + id); if (s) s.textContent = n; };
 
-/* ---------- kết nối ---------- */
+/* ---------- ket noi ---------- */
 async function loadConfig() {
   cfg = await api('/api/config');
+  $('#lnk-swagger').href = cfg.toylandBase + '/swagger-ui.html';
+  $('#lnk-wsdl').href = cfg.toylandBase + '/soap/partner/partner.wsdl';
   $('#cfg').innerHTML = `
-    <div class="box"><div class="lbl">Khóa API</div><div class="val"><span class="pill ${cfg.configured ? 'ok' : 'bad'}"><i></i>${cfg.configured ? 'Đã cấu hình' : 'Chưa cấu hình'}</span></div></div>
-    <div class="box"><div class="lbl">ToyLand API</div><div class="val"><code>${esc(cfg.toylandBase)}</code></div></div>
-    <div class="box"><div class="lbl">Địa chỉ webhook (dán vào Quản trị → Đối tác & API)</div><div class="val"><code>${esc(cfg.webhookUrl)}</code><button class="sm" data-copy="${esc(cfg.webhookUrl)}">Sao chép</button></div></div>`;
+    <div class="box"><div class="lbl"><span class="mi">key</span>Khóa API</div><div class="val">${cfg.configured ? '<span class="chip green"><span class="mi">verified</span>Đã cấu hình</span>' : '<span class="chip red"><span class="mi">error</span>Chưa cấu hình</span>'}</div></div>
+    <div class="box"><div class="lbl"><span class="mi">dns</span>Máy chủ ToyLand</div><div class="val"><code>${esc(cfg.toylandBase)}</code></div></div>
+    <div class="box"><div class="lbl"><span class="mi">webhook</span>Địa chỉ webhook của đại lý</div><div class="val"><code>${esc(cfg.webhookUrl)}</code><button class="btn sm" data-copy="${esc(cfg.webhookUrl)}"><span class="mi">content_copy</span>Chép</button></div></div>`;
   renderPills();
 }
-let link = 'wait';
 function renderPills() {
-  const l = { wait: ['info', 'Đang kiểm tra'], up: ['ok', 'Kết nối ToyLand'], down: ['bad', 'Mất kết nối'] }[link];
-  $('#pills').innerHTML = `<span class="pill ${cfg?.configured ? 'ok' : 'bad'}"><i></i>${cfg?.configured ? 'Có khóa API' : 'Thiếu khóa'}</span><span class="pill ${l[0]}"><i></i>${l[1]}</span>`;
+  const l = { wait: ['blue', 'sync', 'Đang kiểm tra'], up: ['green', 'cloud_done', 'Đã kết nối ToyLand'], down: ['red', 'cloud_off', 'Mất kết nối'] }[link];
+  $('#pills').innerHTML = `<span class="chip ${l[0]}"><span class="mi">${l[1]}</span><span class="hide-sm">${l[2]}</span></span>`;
 }
 document.addEventListener('click', (e) => { const t = e.target.closest('[data-copy]'); if (t) copy(t.dataset.copy, t); });
 
-/* ---------- danh mục ---------- */
+/* ---------- danh muc ---------- */
+const thumb = (p) => realImg(p.imageUrl)
+  ? `<img src="${esc(p.imageUrl)}" alt="" loading="lazy" onerror="this.outerHTML='<span class=&quot;mi&quot;>toys</span>'">`
+  : '<span class="mi">toys</span>';
 function renderCatalog() {
   const q = $('#q').value.trim().toLowerCase();
-  const list = products.filter((p) => !q || (p.productName + ' ' + p.sku).toLowerCase().includes(q));
-  $('#count').textContent = products.length ? `${list.length}/${products.length} sản phẩm` : '';
+  const list = products.filter((p) => !q || (p.productName + ' ' + p.sku + ' ' + (p.variantName || '')).toLowerCase().includes(q));
+  $('#count').textContent = `${list.length}/${products.length} sản phẩm`;
   const cur = $('#form').sku.value;
-  $('#catalog').innerHTML = list.map((i) => `<div class="item ${i.sku === cur ? 'sel' : ''}"><div class="name">${esc(i.productName)}</div>
-      <div class="meta">${esc(i.sku)} · ${esc(i.brand || '')}</div>
-      <div class="row"><span class="price tabular">${vnd(i.price)}</span>
-      <span class="stock ${i.stock <= 0 ? 'out' : i.stock <= 5 ? 'low' : ''}">${i.stock > 0 ? 'Còn ' + i.stock : 'Hết hàng'}</span></div>
-      <button class="primary sm" data-sku="${esc(i.sku)}" ${i.stock > 0 ? '' : 'disabled'}>Đặt cho khách</button></div>`).join('')
-    || '<div class="empty" style="grid-column:1/-1">Không có sản phẩm phù hợp.</div>';
+  $('#catalog').innerHTML = list.map((p, i) => {
+    const off = p.compareAtPrice && p.compareAtPrice > p.price ? Math.round((1 - p.price / p.compareAtPrice) * 100) : 0;
+    const stock = p.stock <= 0 ? '<span class="chip red">Hết hàng</span>' : p.stock <= 5 ? `<span class="chip yellow">Còn ${p.stock}</span>` : `<span class="chip green">Còn ${p.stock}</span>`;
+    return `<article class="pcard ${p.sku === cur ? 'sel' : ''}">
+      <div class="thumb ${PASTEL[i % PASTEL.length]}">${thumb(p)}${off ? `<span class="chip red badge">-${off}%</span>` : ''}</div>
+      <div class="pbody"><div class="pname">${esc(p.productName)}</div>
+        <div class="pmeta">${esc(p.sku)}${p.variantName ? ' · ' + esc(p.variantName) : ''}${p.brand ? ' · ' + esc(p.brand) : ''}</div>
+        <div class="prow"><span><span class="price">${vnd(p.price)}</span>${off ? `<span class="price-old">${vnd(p.compareAtPrice)}</span>` : ''}</span>${stock}</div>
+        <button class="btn primary sm" data-sku="${esc(p.sku)}" ${p.stock > 0 ? '' : 'disabled'}><span class="mi">add_shopping_cart</span>Đặt cho khách</button></div></article>`;
+  }).join('') || '<div class="empty" style="grid-column:1/-1"><span class="mi">search_off</span>Không có sản phẩm phù hợp.</div>';
 }
 async function loadCatalog() {
   try {
-    const t0 = performance.now();
     products = (await api('/api/catalog')).items || [];
-    link = 'up'; renderPills(); renderCatalog();
+    link = 'up'; setCount('cat', products.length);
   } catch (e) {
     link = 'down'; renderPills();
-    $('#catalog').innerHTML = `<div class="note bad" style="grid-column:1/-1">Không tải được danh mục: ${esc(e.message)}${e.code ? ' [' + esc(e.code) + ']' : ''}. Nếu ToyLand đang ngủ, chờ khoảng 1 đến 4 phút rồi bấm Tải lại.</div>`;
+    $('#catalog').innerHTML = `<div class="note bad" style="grid-column:1/-1;margin:0"><span class="mi">cloud_off</span><span>Không tải được danh mục: ${esc(e.message)}${e.code ? ' [' + esc(e.code) + ']' : ''}. Nếu ToyLand đang ngủ, chờ 1 đến 4 phút rồi bấm Tải lại.</span></div>`;
+    return;
   }
+  renderPills(); renderCatalog();
 }
 $('#reload').onclick = () => { $('#catalog').innerHTML = '<div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div>'; loadCatalog(); };
 $('#q').addEventListener('input', renderCatalog);
 $('#catalog').addEventListener('click', (e) => {
-  const sku = e.target.dataset?.sku; if (!sku) return;
-  const p = products.find((x) => x.sku === sku);
+  const b = e.target.closest('[data-sku]'); if (!b) return;
+  const sku = b.dataset.sku, p = products.find((x) => x.sku === sku);
   $('#form').hidden = false; $('#noSel').hidden = true; $('#form').sku.value = sku; newToken();
-  $('#selected').innerHTML = `<b>${esc(p?.productName || sku)}</b><span class="muted">${esc(sku)} · ${p ? vnd(p.price) : ''}</span>`;
+  $('#picked').innerHTML = `<span class="pi">${p && realImg(p.imageUrl) ? `<img src="${esc(p.imageUrl)}" alt="">` : '<span class="mi">toys</span>'}</span>
+    <div style="min-width:0"><b>${esc(p?.productName || sku)}</b><span class="muted small">${esc(sku)}${p?.variantName ? ' · ' + esc(p.variantName) : ''}</span></div>
+    <span class="spacer"></span><span class="price">${p ? vnd(p.price) : ''}</span>`;
   renderCatalog(); $('#s-order').scrollIntoView({ behavior: 'smooth' });
 });
 
-/* ---------- đặt hàng ---------- */
+/* ---------- dat hang ---------- */
 function newToken() { token = crypto.randomUUID(); $('#token').textContent = token; }
 $('#newform').onclick = newToken;
 const payload = () => ({ ...Object.fromEntries(new FormData($('#form'))), clientToken: token });
 const place = () => api('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload()) });
 const refresh = () => { loadOrders(); loadCatalog(); loadTraces(); };
-
 $('#form').addEventListener('submit', async (e) => {
   e.preventDefault(); $('#submit').disabled = true;
   try { const o = await place(); say(`Đã đặt đơn ${o.orderCode} (${vnd(o.total)}).`); }
@@ -327,63 +477,74 @@ $('#double').onclick = async () => {
   const rs = await Promise.allSettled([place(), place()]);
   const codes = rs.map((r) => r.status === 'fulfilled' ? r.value.orderCode : 'lỗi: ' + (r.reason.code || r.reason.message));
   const same = codes[0] === codes[1] && !codes.some((c) => c.startsWith('lỗi'));
-  say(same ? `Gửi 2 yêu cầu cùng mã chống trùng, chỉ có một đơn: ${codes[0]}` : `Kết quả: ${codes.join(' | ')}`, !same);
+  say(same ? `Gửi 2 yêu cầu cùng mã chống trùng, ToyLand chỉ tạo một đơn: ${codes[0]}` : `Kết quả: ${codes.join(' | ')}`, !same);
   refresh(); $('#s-orders').scrollIntoView({ behavior: 'smooth' });
 };
 
-/* ---------- đơn và webhook ---------- */
+/* ---------- don va webhook ---------- */
 async function loadOrders() {
   const list = await api('/api/orders');
+  setCount('orders', list.length);
   $('#orders').innerHTML = list.length ? list.map((o) => `<tr>
-    <td><code>${esc(o.orderCode)}</code></td><td>${esc(o.externalRef)}</td>
-    <td><span class="st ${esc(o.status)}">${esc(o.statusLabel)}</span><span class="soapres" id="s-${esc(o.orderCode)}"></span></td>
-    <td class="r tabular">${vnd(o.total)}</td>
-    <td class="r"><button class="sm" data-soap="${esc(o.orderCode)}">Tra qua SOAP</button> <button class="sm warn" data-cancel="${esc(o.orderCode)}" ${o.status === 'PENDING' ? '' : 'disabled'}>Huỷ</button></td></tr>`).join('')
-    : '<tr><td colspan="5" class="empty">Chưa có đơn nào. Chọn sản phẩm ở mục 1 để đặt.</td></tr>';
+    <td><span class="code">${esc(o.orderCode)}</span></td><td class="muted">${esc(o.externalRef)}</td>
+    <td><span class="chip ${STATUS[o.status] || 'grey'}">${esc(o.statusLabel)}</span><span class="soapres" id="s-${esc(o.orderCode)}"></span></td>
+    <td class="r price">${vnd(o.total)}</td>
+    <td class="r"><div class="row-actions"><button class="btn sm" data-soap="${esc(o.orderCode)}"><span class="mi">travel_explore</span>Tra qua SOAP</button>
+      <button class="btn sm soft" data-cancel="${esc(o.orderCode)}" ${o.status === 'PENDING' ? '' : 'disabled'}><span class="mi">block</span>Huỷ</button></div></td></tr>`).join('')
+    : '<tr><td colspan="5"><div class="empty"><span class="mi">inbox</span>Chưa có đơn nào. Chọn sản phẩm ở Danh mục hàng để đặt.</div></td></tr>';
 }
 $('#orders').addEventListener('click', async (e) => {
   const b = e.target.closest('button'); if (!b) return;
   const soap = b.dataset.soap, cancel = b.dataset.cancel;
   try {
-    if (soap) { b.disabled = true; const r = await api(`/api/orders/${soap}/soap-status`); $('#s-' + soap).textContent = `SOAP: ${r.statusLabel} · ${r.paymentStatus}`; b.disabled = false; loadTraces(); }
+    if (soap) { b.disabled = true; const r = await api(`/api/orders/${soap}/soap-status`); $('#s-' + soap).textContent = `SOAP trả về: ${r.statusLabel} · ${r.paymentStatus}`; b.disabled = false; loadTraces(); }
     if (cancel) { await api(`/api/orders/${cancel}/cancel`, { method: 'POST' }); say(`Đã huỷ ${cancel}, kho được hoàn lại.`); refresh(); }
   } catch (er) { say(er.message, true); b.disabled = false; loadTraces(); }
 });
 const outcomeVi = (o) => o.replace('DA XU LY', 'Đã xử lý').replace('BO QUA: nhan trung', 'Bỏ qua: nhận trùng').replace('TU CHOI:', 'Từ chối:').replace('Chu ky sai', 'chữ ký sai').replace('Thieu header chu ky', 'thiếu header chữ ký').replace('Timestamp lech qua 5 phut', 'timestamp lệch quá 5 phút');
 async function loadHooks() {
   const list = await api('/api/webhooks');
-  $('#hooks').innerHTML = list.length ? list.map((h) => `<tr><td class="tabular">${esc(new Date(h.at).toLocaleTimeString('vi-VN'))}</td><td>${esc(h.type)}</td>
-    <td><code>${esc(h.orderCode)}</code></td><td>${esc(h.status)}</td><td class="res ${h.outcome.startsWith('DA') ? 'ok' : 'bad'}">${esc(outcomeVi(h.outcome))}</td></tr>`).join('')
-    : '<tr><td colspan="5" class="empty">Chưa nhận webhook nào. Đổi trạng thái đơn ở trang Quản trị để thử.</td></tr>';
+  setCount('hooks', list.length);
+  $('#hooks').innerHTML = list.length ? list.map((h) => `<tr><td class="tabular">${esc(new Date(h.at).toLocaleTimeString('vi-VN'))}</td><td><span class="code">${esc(h.type || '-')}</span></td>
+    <td>${h.orderCode ? `<span class="code">${esc(h.orderCode)}</span>` : '-'}</td><td>${h.status ? `<span class="chip ${STATUS[h.status] || 'grey'}">${esc(STATUS_VI[h.status] || h.status)}</span>` : '-'}</td>
+    <td>${h.outcome.startsWith('DA') ? '<span class="chip green"><span class="mi">verified</span>' : '<span class="chip red"><span class="mi">gpp_bad</span>'}${esc(outcomeVi(h.outcome))}</span></td></tr>`).join('')
+    : '<tr><td colspan="5"><div class="empty"><span class="mi">notifications_none</span>Chưa nhận webhook nào. Đổi trạng thái đơn ở trang Quản trị ToyLand để thử.</div></td></tr>';
 }
 
-/* ---------- bằng chứng kỹ thuật ---------- */
-let openIds = new Set();
+/* ---------- bang chung ky thuat ---------- */
+const openIds = new Set();
 async function loadTraces() {
   const all = await api('/api/traces');
+  $('#st-calls').textContent = all.filter((t) => t.kind !== 'WEBHOOK').length;
   const list = all.filter((t) => t.id > hideBefore && (!traceKind || t.kind === traceKind));
-  if (!list.length) { $('#traces').innerHTML = '<div class="empty">Chưa có lần gọi nào. Mỗi yêu cầu tới ToyLand sẽ hiện ở đây.</div>'; return; }
+  $('#nc-evi').textContent = list.length;
+  if (!list.length) { $('#traces').innerHTML = '<div class="empty"><span class="mi">sync_alt</span>Chưa có lần gọi nào. Mỗi yêu cầu tới ToyLand sẽ hiện ở đây.</div>'; return; }
   const hdrs = (h) => Object.entries(h || {}).map(([k, v]) => `${k}: ${v}`).join('\n');
   $('#traces').innerHTML = list.map((t) => {
-    const cls = t.status >= 500 || t.status === 0 ? 's5' : t.status >= 400 ? 's4' : 's2';
+    const cls = t.status >= 500 || !t.status ? 's5' : t.status >= 400 ? 's4' : 's2';
+    const wh = t.kind === 'WEBHOOK';
     return `<details class="tr" data-id="${t.id}" ${openIds.has(t.id) ? 'open' : ''}><summary>
       <span class="kind ${t.kind}">${t.kind}</span><span class="ttl">${esc(t.title)}</span>
-      <span class="code2 ${cls}">${t.status || 'lỗi'}</span><span class="muted tabular">${t.ms != null ? t.ms + ' ms' : new Date(t.at).toLocaleTimeString('vi-VN')}</span></summary>
+      <span class="sc ${cls}">${t.status || 'lỗi'}</span><span class="ms tabular">${t.ms != null ? t.ms + ' ms' : new Date(t.at).toLocaleTimeString('vi-VN')}</span></summary>
       <div class="body">
-        ${t.requestHeaders ? `<h4>Tiêu đề ${t.kind === 'WEBHOOK' ? 'nhận được' : 'đã ký'}</h4><pre>${esc(hdrs(t.requestHeaders))}</pre>` : ''}
-        ${t.requestBody ? `<h4>${t.kind === 'WEBHOOK' ? 'Nội dung nhận' : 'Nội dung gửi'}</h4><pre>${esc(t.requestBody)}</pre>` : ''}
-        <h4>${t.kind === 'WEBHOOK' ? 'Kết quả xử lý' : 'Phản hồi'}</h4><pre>${esc(t.responseBody)}</pre>
+        ${t.requestHeaders ? `<h4>${wh ? 'Tiêu đề nhận được' : 'Tiêu đề đã ký'}</h4><pre>${esc(hdrs(t.requestHeaders))}</pre>` : ''}
+        ${t.requestBody ? `<h4>${wh ? 'Nội dung nhận' : 'Nội dung gửi'}</h4><pre>${esc(t.requestBody)}</pre>` : ''}
+        <h4>${wh ? 'Kết quả xử lý' : 'Phản hồi'}</h4><pre>${esc(t.responseBody)}</pre>
       </div></details>`;
   }).join('');
 }
 $('#traces').addEventListener('toggle', (e) => { const id = Number(e.target.dataset?.id); if (id) e.target.open ? openIds.add(id) : openIds.delete(id); }, true);
-$('#chips').addEventListener('click', (e) => { const c = e.target.closest('.chip'); if (!c) return; traceKind = c.dataset.k; document.querySelectorAll('.chip').forEach((x) => x.classList.toggle('on', x === c)); loadTraces(); });
+$('#chips').addEventListener('click', (e) => { const c = e.target.closest('.fchip'); if (!c) return; traceKind = c.dataset.k; document.querySelectorAll('.fchip').forEach((x) => x.classList.toggle('on', x === c)); loadTraces(); });
 $('#clearTr').onclick = async () => { const all = await api('/api/traces'); hideBefore = all[0]?.id || hideBefore; loadTraces(); };
 
-/* ---------- điều hướng ---------- */
-const links = [...document.querySelectorAll('#nav a')];
-const io = new IntersectionObserver((es) => es.forEach((en) => { if (en.isIntersecting) links.forEach((a) => a.classList.toggle('on', a.getAttribute('href') === '#' + en.target.id)); }), { rootMargin: '-30% 0px -60% 0px' });
-['s-cfg', 's-cat', 's-order', 's-orders', 's-hooks'].forEach((id) => io.observe(document.getElementById(id)));
+/* ---------- dieu huong ---------- */
+const links = [...document.querySelectorAll('.nav-link')];
+const setOpen = (o) => { document.body.classList.toggle('nav-open', o); $('#scrim').hidden = !o; };
+$('#menuBtn').onclick = () => setOpen(true);
+$('#scrim').onclick = () => setOpen(false);
+links.forEach((a) => a.addEventListener('click', () => setOpen(false)));
+const io = new IntersectionObserver((es) => es.forEach((en) => { if (en.isIntersecting) links.forEach((a) => a.classList.toggle('on', a.getAttribute('href') === '#' + en.target.id)); }), { rootMargin: '-35% 0px -55% 0px' });
+['s-overview', 's-cat', 's-order', 's-orders', 's-hooks', 's-evi'].forEach((id) => io.observe(document.getElementById(id)));
 
 newToken(); loadConfig(); loadCatalog(); loadOrders(); loadHooks(); loadTraces();
 setInterval(() => { loadOrders(); loadHooks(); loadTraces(); }, 3000);
