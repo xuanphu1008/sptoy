@@ -5,93 +5,251 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cổng đại lý - đối tác ToyLand</title>
 <style>
-  :root { --bg:#f6f7f9; --card:#fff; --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb; --accent:#2563eb; --ok:#047857; --bad:#b91c1c; }
-  @media (prefers-color-scheme: dark) { :root { --bg:#0f1115; --card:#181b21; --ink:#e5e7eb; --muted:#9ca3af; --line:#2a2f38; --accent:#60a5fa; --ok:#34d399; --bad:#f87171; } }
-  * { box-sizing: border-box; }
-  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
-  header { padding:20px 16px 8px; max-width:1100px; margin:auto; }
-  h1 { margin:0; font-size:22px; letter-spacing:-.01em; }
-  .sub { color:var(--muted); font-size:13px; margin-top:4px; }
-  main { max-width:1100px; margin:auto; padding:8px 16px 48px; display:grid; gap:16px; }
-  section { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
-  h2 { margin:0 0 12px; font-size:16px; }
-  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px; }
-  .item { border:1px solid var(--line); border-radius:8px; padding:12px; display:flex; flex-direction:column; gap:6px; }
-  .item b { font-size:14px; } .price { font-variant-numeric:tabular-nums; font-weight:600; }
-  .muted { color:var(--muted); font-size:12px; }
-  button { font:inherit; border:1px solid var(--line); background:transparent; color:var(--ink); padding:6px 12px; border-radius:6px; cursor:pointer; }
-  button.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
-  button:disabled { opacity:.5; cursor:not-allowed; }
-  form { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; margin-top:8px; }
-  label { display:flex; flex-direction:column; gap:3px; font-size:12px; color:var(--muted); }
-  input { font:inherit; padding:7px 9px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--ink); }
+  :root {
+    --bg:#f4f5f8; --card:#fff; --ink:#1b2130; --muted:#667085; --line:#e4e7ec; --soft:#f8f9fb;
+    --accent:#4f46e5; --accent-soft:#eef0ff; --ok:#047857; --ok-soft:#e6f6ef; --bad:#b42318; --bad-soft:#fdecea;
+    --warn:#b54708; --warn-soft:#fff4e0; --info:#175cd3; --info-soft:#e8f1ff; --code:#0f172a; --code-ink:#e2e8f0;
+    --shadow:0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.06);
+  }
+  @media (prefers-color-scheme: dark) { :root {
+    --bg:#0e1015; --card:#171a21; --ink:#e7e9ee; --muted:#98a2b3; --line:#272c36; --soft:#1c2029;
+    --accent:#8b93ff; --accent-soft:#222650; --ok:#4ade80; --ok-soft:#10301f; --bad:#f87171; --bad-soft:#3a1717;
+    --warn:#fbbf24; --warn-soft:#3a2a0c; --info:#7ab3ff; --info-soft:#14284a; --code:#0a0c10; --code-ink:#d7dce5;
+    --shadow:none;
+  } }
+  * { box-sizing:border-box; }
+  [hidden] { display:none !important; }
+  html { scroll-behavior:smooth; scroll-padding-top:76px; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  body { overflow-x:hidden; }
+  .wrap { max-width:1280px; margin:auto; padding:0 20px; }
+
+  /* ---- thanh trên ---- */
+  .top { background:var(--card); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:20; }
+  .top .wrap { display:flex; align-items:center; gap:18px; height:60px; }
+  .brand { display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:-.01em; white-space:nowrap; }
+  .logo { width:30px; height:30px; border-radius:9px; background:var(--accent); color:#fff; display:grid; place-items:center; font-size:15px; font-weight:800; }
+  .brand small { display:block; font-weight:500; color:var(--muted); font-size:11px; margin-top:-3px; }
+  nav { display:flex; gap:4px; margin-left:8px; overflow-x:auto; }
+  nav a { color:var(--muted); text-decoration:none; padding:6px 11px; border-radius:8px; font-size:13.5px; white-space:nowrap; }
+  nav a:hover { background:var(--soft); color:var(--ink); }
+  nav a.on { background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  .pills { margin-left:auto; display:flex; gap:8px; }
+
+  .pill { display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:99px; font-size:12px; font-weight:600; background:var(--soft); color:var(--muted); border:1px solid var(--line); white-space:nowrap; }
+  .pill i { width:7px; height:7px; border-radius:50%; background:currentColor; }
+  .pill.ok { color:var(--ok); background:var(--ok-soft); border-color:transparent; }
+  .pill.bad { color:var(--bad); background:var(--bad-soft); border-color:transparent; }
+  .pill.warn { color:var(--warn); background:var(--warn-soft); border-color:transparent; }
+  .pill.info { color:var(--info); background:var(--info-soft); border-color:transparent; }
+
+  /* ---- bố cục ---- */
+  .layout > * { min-width:0; }
+  .layout { display:grid; grid-template-columns:minmax(0,1fr) 420px; gap:20px; align-items:start; padding:20px 0 56px; }
+  .col { display:grid; grid-template-columns:minmax(0,1fr); gap:18px; min-width:0; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); }
+  .card > .hd { flex-wrap:wrap; display:flex; align-items:center; gap:12px; padding:14px 18px; border-bottom:1px solid var(--line); }
+  .num { width:26px; height:26px; border-radius:50%; background:var(--accent); color:#fff; display:grid; place-items:center; font-size:13px; font-weight:700; flex:none; }
+  .hd h2 { margin:0; font-size:16px; letter-spacing:-.01em; }
+  .hd .hint { color:var(--muted); font-size:12.5px; }
+  .hd .right { margin-left:auto; display:flex; gap:8px; align-items:center; }
+  .bd { padding:16px 18px; }
+  .muted { color:var(--muted); font-size:12.5px; }
+  .tabular { font-variant-numeric:tabular-nums; }
+
+  /* ---- hộp cấu hình ---- */
+  .cfg { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr)); gap:12px; }
+  .cfg .box { background:var(--soft); border:1px solid var(--line); border-radius:10px; padding:10px 12px; min-width:0; }
+  .cfg .lbl { font-size:11.5px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+  .cfg .val { display:flex; align-items:center; gap:8px; margin-top:3px; }
+  .cfg code { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; background:none; padding:0; font-size:12.5px; }
+
+  /* ---- danh mục ---- */
+  .tools { display:flex; gap:10px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
+  .search { flex:1; min-width:180px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(205px,100%),1fr)); gap:12px; }
+  .item { border:1px solid var(--line); border-radius:12px; padding:13px; display:flex; flex-direction:column; gap:7px; background:var(--card); transition:border-color .15s, box-shadow .15s; }
+  .item:hover { border-color:var(--accent); }
+  .item.sel { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+  .item .name { font-weight:600; font-size:14px; line-height:1.35; min-height:38px; }
+  .item .meta { color:var(--muted); font-size:12px; }
+  .item .row { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .price { font-weight:700; font-size:15px; }
+  .stock { font-size:11.5px; font-weight:600; padding:1px 8px; border-radius:99px; background:var(--ok-soft); color:var(--ok); }
+  .stock.low { background:var(--warn-soft); color:var(--warn); }
+  .stock.out { background:var(--bad-soft); color:var(--bad); }
+  .skel { height:132px; border-radius:12px; background:linear-gradient(90deg,var(--soft),var(--line),var(--soft)); background-size:200% 100%; animation:sk 1.2s infinite; }
+  @keyframes sk { to { background-position:-200% 0; } }
+
+  /* ---- form ---- */
+  form { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr)); gap:12px; }
+  label { display:flex; flex-direction:column; gap:4px; font-size:12px; font-weight:600; color:var(--muted); }
+  input { font:inherit; font-weight:400; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--ink); min-width:0; }
+  input:focus { outline:2px solid var(--accent); outline-offset:-1px; border-color:transparent; }
+  input[readonly] { background:var(--soft); color:var(--muted); }
+  .span2 { grid-column:1/-1; }
+  .idem { background:var(--info-soft); color:var(--info); border-radius:10px; padding:9px 12px; font-size:12.5px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .idem code { background:none; color:inherit; padding:0; font-weight:600; }
   .actions { grid-column:1/-1; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .selected { grid-column:1/-1; display:flex; align-items:center; gap:10px; background:var(--accent-soft); border-radius:10px; padding:9px 12px; font-size:13.5px; }
+  .empty { text-align:center; color:var(--muted); padding:22px 8px; font-size:13.5px; }
+
+  /* ---- nút ---- */
+  button { font:inherit; font-size:13.5px; font-weight:600; border:1px solid var(--line); background:var(--card); color:var(--ink); padding:7px 13px; border-radius:8px; cursor:pointer; transition:background .12s, border-color .12s; }
+  button:hover:not(:disabled) { background:var(--soft); border-color:#c6ccd8; }
+  button.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  button.primary:hover:not(:disabled) { filter:brightness(1.08); background:var(--accent); }
+  button.warn { color:var(--warn); border-color:var(--warn-soft); background:var(--warn-soft); }
+  button.sm { padding:4px 10px; font-size:12.5px; }
+  button.ghost { border-color:transparent; background:transparent; color:var(--muted); }
+  button:disabled { opacity:.45; cursor:not-allowed; }
+  button:focus-visible, a:focus-visible, summary:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+
+  /* ---- thông báo ---- */
+  #msg { padding:0 18px; }
+  .note { margin:12px 0 0; padding:10px 13px; border-radius:10px; font-size:13.5px; display:flex; gap:8px; align-items:flex-start; }
+  .note.ok { background:var(--ok-soft); color:var(--ok); }
+  .note.bad { background:var(--bad-soft); color:var(--bad); }
+
+  /* ---- bảng ---- */
+  .tw { overflow-x:auto; }
   table { width:100%; border-collapse:collapse; font-size:14px; }
-  th, td { text-align:left; padding:8px 6px; border-bottom:1px solid var(--line); vertical-align:top; }
-  th { font-size:12px; color:var(--muted); font-weight:600; }
-  .num { font-variant-numeric:tabular-nums; text-align:right; }
-  .tag { display:inline-block; padding:1px 8px; border-radius:99px; font-size:12px; border:1px solid var(--line); }
+  th, td { text-align:left; padding:10px 14px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  th { font-size:11.5px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.04em; background:var(--soft); position:sticky; top:0; }
+  tr:last-child td { border-bottom:0; }
+  td.r, th.r { text-align:right; }
+  code { font:12.5px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; background:var(--soft); padding:1px 6px; border-radius:5px; }
+  .st { display:inline-block; padding:2px 10px; border-radius:99px; font-size:12px; font-weight:700; background:var(--soft); color:var(--muted); }
+  .st.PENDING { background:var(--warn-soft); color:var(--warn); }
+  .st.CONFIRMED, .st.PACKING { background:var(--info-soft); color:var(--info); }
+  .st.SHIPPING { background:var(--accent-soft); color:var(--accent); }
+  .st.DELIVERED, .st.COMPLETED { background:var(--ok-soft); color:var(--ok); }
+  .st.CANCELLED { background:var(--bad-soft); color:var(--bad); }
+  .soapres { display:block; margin-top:4px; font-size:12px; color:var(--accent); }
   .ok { color:var(--ok); } .bad { color:var(--bad); }
-  #msg { min-height:20px; font-size:13px; }
-  code { font-size:12px; background:var(--bg); padding:1px 5px; border-radius:4px; word-break:break-all; }
-  .cfg { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:6px; }
-  @media (max-width:600px) { table, thead, tbody, tr, th, td { display:block; } thead { display:none; } td { border:0; padding:2px 0; } tr { border-bottom:1px solid var(--line); padding:8px 0; } }
+  td .res { font-weight:600; }
+
+  /* ---- bằng chứng kỹ thuật ---- */
+  aside { position:sticky; top:76px; max-height:calc(100vh - 92px); display:flex; flex-direction:column; }
+  aside .card { display:flex; flex-direction:column; min-height:0; max-height:inherit; }
+  .chips { display:flex; gap:6px; padding:10px 18px 0; flex-wrap:wrap; }
+  .chip { padding:3px 11px; border-radius:99px; font-size:12px; font-weight:600; border:1px solid var(--line); background:var(--card); color:var(--muted); cursor:pointer; }
+  .chip.on { background:var(--accent); border-color:var(--accent); color:#fff; }
+  #traces { overflow:auto; padding:10px 12px 14px; display:grid; gap:8px; align-content:start; }
+  details.tr { border:1px solid var(--line); border-radius:10px; background:var(--card); }
+  details.tr[open] { border-color:var(--accent); }
+  details.tr > summary { list-style:none; cursor:pointer; padding:9px 11px; display:flex; align-items:center; gap:8px; font-size:13px; }
+  details.tr > summary::-webkit-details-marker { display:none; }
+  .kind { font-size:10.5px; font-weight:800; letter-spacing:.05em; padding:2px 7px; border-radius:6px; }
+  .kind.REST { background:var(--info-soft); color:var(--info); }
+  .kind.SOAP { background:var(--warn-soft); color:var(--warn); }
+  .kind.WEBHOOK { background:var(--ok-soft); color:var(--ok); }
+  .ttl { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; }
+  .code2 { font-weight:700; font-size:12px; padding:1px 7px; border-radius:6px; }
+  .code2.s2 { background:var(--ok-soft); color:var(--ok); }
+  .code2.s4 { background:var(--warn-soft); color:var(--warn); }
+  .code2.s5 { background:var(--bad-soft); color:var(--bad); }
+  .tr .body { padding:0 11px 11px; display:grid; gap:8px; }
+  .tr h4 { margin:6px 0 0; font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); }
+  pre { margin:0; background:var(--code); color:var(--code-ink); border-radius:8px; padding:9px 11px; font:11.5px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; overflow:auto; max-height:220px; white-space:pre-wrap; word-break:break-all; }
+
+  @media (max-width:1020px) {
+    .layout { grid-template-columns:minmax(0,1fr); }
+    aside { position:static; max-height:none; }
+    #traces { max-height:520px; }
+    .pills { display:none; }
+    nav { min-width:0; }
+  }
+  @media (max-width:600px) {
+    .wrap { padding:0 12px; } .brand small { display:none; }
+    th, td { padding:9px 10px; }
+  }
 </style>
 </head>
 <body>
-<header>
-  <h1>Cổng đại lý</h1>
-  <div class="sub">Ứng dụng Node.js độc lập, đóng vai một đại lý dùng dịch vụ của ToyLand qua REST, SOAP và webhook.</div>
-  <div class="cfg" id="cfg"></div>
-</header>
-<main>
-  <section>
-    <h2>1. Danh mục hàng (REST có ký HMAC)</h2>
-    <div class="grid" id="catalog"><span class="muted">Đang tải…</span></div>
-  </section>
+<div class="top"><div class="wrap">
+  <div class="brand"><div class="logo">Đ</div><div>Cổng đại lý<small>Đối tác của ToyLand</small></div></div>
+  <nav id="nav">
+    <a href="#s-cfg" class="on">Kết nối</a><a href="#s-cat">Danh mục</a><a href="#s-order">Đặt hàng</a><a href="#s-orders">Đơn đã đặt</a><a href="#s-hooks">Webhook</a>
+  </nav>
+  <div class="pills" id="pills"></div>
+</div></div>
 
-  <section id="orderBox" hidden>
-    <h2>2. Đặt hàng cho khách</h2>
-    <div class="muted">Mã chống trùng của lần mở biểu mẫu này: <code id="token"></code>. Bấm đặt hai lần vẫn chỉ ra một đơn.</div>
-    <form id="form">
-      <label>Mã hàng (SKU)<input name="sku" readonly></label>
-      <label>Số lượng<input name="quantity" type="number" min="1" max="99" value="1" required></label>
-      <label>Người nhận<input name="receiverName" value="Nguyễn Văn Khách" required></label>
-      <label>Điện thoại<input name="phone" value="0900000002" required></label>
-      <label>Tỉnh/Thành<input name="province" value="Hà Nội" required></label>
-      <label>Quận/Huyện<input name="district" value="Cầu Giấy" required></label>
-      <label>Phường/Xã<input name="ward" value="Dịch Vọng" required></label>
-      <label>Địa chỉ chi tiết<input name="addressDetail" value="12 Phố Demo" required></label>
-      <div class="actions">
-        <button class="primary" type="submit">Đặt hàng</button>
-        <button type="button" id="double">Bấm hai lần liên tiếp (thử chống trùng)</button>
-        <button type="button" id="newform">Làm đơn mới</button>
+<div class="wrap layout">
+  <div class="col">
+
+    <section class="card" id="s-cfg">
+      <div class="hd"><h2>Kết nối với ToyLand</h2><span class="hint">Ứng dụng Node.js độc lập, dùng dịch vụ qua REST, SOAP và webhook</span></div>
+      <div class="bd"><div class="cfg" id="cfg"></div></div>
+    </section>
+
+    <section class="card" id="s-cat">
+      <div class="hd"><span class="num">1</span><h2>Danh mục hàng</h2><span class="hint">REST có ký HMAC-SHA256</span>
+        <div class="right"><button class="sm" id="reload">Tải lại</button></div></div>
+      <div class="bd">
+        <div class="tools"><input class="search" id="q" type="search" placeholder="Lọc theo tên hoặc mã hàng…" aria-label="Lọc sản phẩm"><span class="muted" id="count"></span></div>
+        <div class="grid" id="catalog"><div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
       </div>
-    </form>
-  </section>
+    </section>
 
-  <section>
-    <h2>3. Đơn đã đặt</h2>
-    <div id="msg"></div>
-    <table>
-      <thead><tr><th>Mã đơn ToyLand</th><th>Mã đơn đại lý</th><th>Trạng thái</th><th class="num">Tổng</th><th></th></tr></thead>
-      <tbody id="orders"><tr><td colspan="5" class="muted">Chưa có đơn.</td></tr></tbody>
-    </table>
-  </section>
+    <section class="card" id="s-order">
+      <div class="hd"><span class="num">2</span><h2>Đặt hàng cho khách</h2><span class="hint">Idempotency-Key chống đặt trùng</span></div>
+      <div class="bd">
+        <div id="noSel" class="empty">Chọn một sản phẩm ở mục 1 để bắt đầu đặt hàng.</div>
+        <form id="form" hidden>
+          <div class="selected" id="selected"></div>
+          <div class="idem span2">Mã chống trùng của lần mở biểu mẫu này: <code id="token"></code><span>Bấm đặt hai lần vẫn chỉ ra một đơn.</span></div>
+          <label>Mã hàng (SKU)<input name="sku" readonly></label>
+          <label>Số lượng<input name="quantity" type="number" min="1" max="99" value="1" required></label>
+          <label>Người nhận<input name="receiverName" value="Nguyễn Văn Khách" required></label>
+          <label>Điện thoại<input name="phone" value="0900000002" required></label>
+          <label>Tỉnh/Thành<input name="province" value="Hà Nội" required></label>
+          <label>Quận/Huyện<input name="district" value="Cầu Giấy" required></label>
+          <label>Phường/Xã<input name="ward" value="Dịch Vọng" required></label>
+          <label>Địa chỉ chi tiết<input name="addressDetail" value="12 Phố Demo" required></label>
+          <div class="actions">
+            <button class="primary" type="submit" id="submit">Đặt hàng</button>
+            <button type="button" id="double">Bấm hai lần liên tiếp</button>
+            <button type="button" class="ghost" id="newform">Làm đơn mới</button>
+          </div>
+        </form>
+      </div>
+    </section>
 
-  <section>
-    <h2>4. Webhook đã nhận (kiểm tra chữ ký, bỏ qua nếu trùng)</h2>
-    <table>
-      <thead><tr><th>Lúc</th><th>Sự kiện</th><th>Đơn</th><th>Trạng thái</th><th>Kết quả</th></tr></thead>
-      <tbody id="hooks"><tr><td colspan="5" class="muted">Chưa nhận webhook nào.</td></tr></tbody>
-    </table>
-  </section>
-</main>
+    <section class="card" id="s-orders">
+      <div class="hd"><span class="num">3</span><h2>Đơn đã đặt</h2><span class="hint">Trạng thái cập nhật tự động khi nhận webhook</span></div>
+      <div id="msg"></div>
+      <div class="tw"><table>
+        <thead><tr><th>Mã đơn ToyLand</th><th>Mã đơn đại lý</th><th>Trạng thái</th><th class="r">Tổng</th><th></th></tr></thead>
+        <tbody id="orders"><tr><td colspan="5" class="empty">Chưa có đơn nào.</td></tr></tbody>
+      </table></div>
+    </section>
+
+    <section class="card" id="s-hooks">
+      <div class="hd"><span class="num">4</span><h2>Webhook đã nhận</h2><span class="hint">Kiểm tra chữ ký, bỏ qua sự kiện trùng</span></div>
+      <div class="tw"><table>
+        <thead><tr><th>Lúc</th><th>Sự kiện</th><th>Đơn</th><th>Trạng thái</th><th>Kết quả</th></tr></thead>
+        <tbody id="hooks"><tr><td colspan="5" class="empty">Chưa nhận webhook nào. Đổi trạng thái đơn ở trang Quản trị để thử.</td></tr></tbody>
+      </table></div>
+    </section>
+  </div>
+
+  <aside>
+    <div class="card">
+      <div class="hd"><span class="num">5</span><h2>Bằng chứng kỹ thuật</h2><div class="right"><button class="sm ghost" id="clearTr">Ẩn cũ</button></div></div>
+      <div class="chips" id="chips">
+        <button class="chip on" data-k="">Tất cả</button><button class="chip" data-k="REST">REST</button><button class="chip" data-k="SOAP">SOAP</button><button class="chip" data-k="WEBHOOK">Webhook</button>
+      </div>
+      <div id="traces"><div class="empty">Mỗi lần gọi ToyLand sẽ hiện ở đây: tiêu đề ký, mã trạng thái, nội dung gửi và nhận.</div></div>
+    </div>
+  </aside>
+</div>
+
 <script>
 const $ = (s) => document.querySelector(s);
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const vnd = (n) => new Intl.NumberFormat('vi-VN').format(n) + ' ₫';
-let token = crypto.randomUUID();
+let token = crypto.randomUUID(), products = [], traceKind = '', hideBefore = 0, cfg = null;
 
 async function api(path, opt) {
   const r = await fetch(path, opt);
@@ -99,75 +257,136 @@ async function api(path, opt) {
   if (!r.ok) throw Object.assign(new Error(j.message || r.statusText), { status: r.status, code: j.code });
   return j;
 }
-const say = (t, bad) => { $('#msg').innerHTML = `<span class="${bad ? 'bad' : 'ok'}">${esc(t)}</span>`; };
+const say = (t, bad) => { $('#msg').innerHTML = `<div class="note ${bad ? 'bad' : 'ok'}">${esc(t)}</div>`; };
+const copy = (t, btn) => { navigator.clipboard?.writeText(t); const o = btn.textContent; btn.textContent = 'Đã chép'; setTimeout(() => (btn.textContent = o), 1200); };
 
+/* ---------- kết nối ---------- */
 async function loadConfig() {
-  const c = await api('/api/config');
-  $('#cfg').innerHTML = `<span class="tag ${c.configured ? 'ok' : 'bad'}">${c.configured ? 'Đã có khóa API' : 'Chưa cấu hình khóa API'}</span>
-    <span class="muted">ToyLand: <code>${esc(c.toylandBase)}</code></span>
-    <span class="muted">Địa chỉ webhook để dán vào trang Quản trị đối tác: <code>${esc(c.webhookUrl)}</code></span>`;
+  cfg = await api('/api/config');
+  $('#cfg').innerHTML = `
+    <div class="box"><div class="lbl">Khóa API</div><div class="val"><span class="pill ${cfg.configured ? 'ok' : 'bad'}"><i></i>${cfg.configured ? 'Đã cấu hình' : 'Chưa cấu hình'}</span></div></div>
+    <div class="box"><div class="lbl">ToyLand API</div><div class="val"><code>${esc(cfg.toylandBase)}</code></div></div>
+    <div class="box"><div class="lbl">Địa chỉ webhook (dán vào Quản trị → Đối tác & API)</div><div class="val"><code>${esc(cfg.webhookUrl)}</code><button class="sm" data-copy="${esc(cfg.webhookUrl)}">Sao chép</button></div></div>`;
+  renderPills();
 }
+let link = 'wait';
+function renderPills() {
+  const l = { wait: ['info', 'Đang kiểm tra'], up: ['ok', 'Kết nối ToyLand'], down: ['bad', 'Mất kết nối'] }[link];
+  $('#pills').innerHTML = `<span class="pill ${cfg?.configured ? 'ok' : 'bad'}"><i></i>${cfg?.configured ? 'Có khóa API' : 'Thiếu khóa'}</span><span class="pill ${l[0]}"><i></i>${l[1]}</span>`;
+}
+document.addEventListener('click', (e) => { const t = e.target.closest('[data-copy]'); if (t) copy(t.dataset.copy, t); });
 
+/* ---------- danh mục ---------- */
+function renderCatalog() {
+  const q = $('#q').value.trim().toLowerCase();
+  const list = products.filter((p) => !q || (p.productName + ' ' + p.sku).toLowerCase().includes(q));
+  $('#count').textContent = products.length ? `${list.length}/${products.length} sản phẩm` : '';
+  const cur = $('#form').sku.value;
+  $('#catalog').innerHTML = list.map((i) => `<div class="item ${i.sku === cur ? 'sel' : ''}"><div class="name">${esc(i.productName)}</div>
+      <div class="meta">${esc(i.sku)} · ${esc(i.brand || '')}</div>
+      <div class="row"><span class="price tabular">${vnd(i.price)}</span>
+      <span class="stock ${i.stock <= 0 ? 'out' : i.stock <= 5 ? 'low' : ''}">${i.stock > 0 ? 'Còn ' + i.stock : 'Hết hàng'}</span></div>
+      <button class="primary sm" data-sku="${esc(i.sku)}" ${i.stock > 0 ? '' : 'disabled'}>Đặt cho khách</button></div>`).join('')
+    || '<div class="empty" style="grid-column:1/-1">Không có sản phẩm phù hợp.</div>';
+}
 async function loadCatalog() {
   try {
-    const p = await api('/api/catalog');
-    $('#catalog').innerHTML = p.items.map((i) => `<div class="item"><b>${esc(i.productName)}</b>
-      <span class="muted">${esc(i.sku)} · ${esc(i.brand || '')}</span>
-      <span class="price">${vnd(i.price)}</span>
-      <span class="muted">${i.stock > 0 ? 'Còn ' + i.stock : '<span class="bad">Hết hàng</span>'}</span>
-      <button data-sku="${esc(i.sku)}" ${i.stock > 0 ? '' : 'disabled'}>Đặt cho khách</button></div>`).join('') || '<span class="muted">Không có hàng.</span>';
-  } catch (e) { $('#catalog').innerHTML = `<span class="bad">${esc(e.message)}</span>`; }
+    const t0 = performance.now();
+    products = (await api('/api/catalog')).items || [];
+    link = 'up'; renderPills(); renderCatalog();
+  } catch (e) {
+    link = 'down'; renderPills();
+    $('#catalog').innerHTML = `<div class="note bad" style="grid-column:1/-1">Không tải được danh mục: ${esc(e.message)}${e.code ? ' [' + esc(e.code) + ']' : ''}. Nếu ToyLand đang ngủ, chờ khoảng 1 đến 4 phút rồi bấm Tải lại.</div>`;
+  }
 }
-
+$('#reload').onclick = () => { $('#catalog').innerHTML = '<div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div>'; loadCatalog(); };
+$('#q').addEventListener('input', renderCatalog);
 $('#catalog').addEventListener('click', (e) => {
   const sku = e.target.dataset?.sku; if (!sku) return;
-  $('#orderBox').hidden = false; $('#form').sku.value = sku; newToken(); $('#orderBox').scrollIntoView({ behavior: 'smooth' });
+  const p = products.find((x) => x.sku === sku);
+  $('#form').hidden = false; $('#noSel').hidden = true; $('#form').sku.value = sku; newToken();
+  $('#selected').innerHTML = `<b>${esc(p?.productName || sku)}</b><span class="muted">${esc(sku)} · ${p ? vnd(p.price) : ''}</span>`;
+  renderCatalog(); $('#s-order').scrollIntoView({ behavior: 'smooth' });
 });
+
+/* ---------- đặt hàng ---------- */
 function newToken() { token = crypto.randomUUID(); $('#token').textContent = token; }
 $('#newform').onclick = newToken;
-
-function payload() { const f = Object.fromEntries(new FormData($('#form'))); return { ...f, clientToken: token }; }
+const payload = () => ({ ...Object.fromEntries(new FormData($('#form'))), clientToken: token });
 const place = () => api('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload()) });
+const refresh = () => { loadOrders(); loadCatalog(); loadTraces(); };
 
 $('#form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  try { const o = await place(); say(`Đã đặt đơn ${o.orderCode} (${vnd(o.total)}).`); loadOrders(); loadCatalog(); }
+  e.preventDefault(); $('#submit').disabled = true;
+  try { const o = await place(); say(`Đã đặt đơn ${o.orderCode} (${vnd(o.total)}).`); }
   catch (er) { say(`${er.message}${er.code ? ' [' + er.code + ']' : ''}`, true); }
+  $('#submit').disabled = false; refresh(); $('#s-orders').scrollIntoView({ behavior: 'smooth' });
 });
 $('#double').onclick = async () => {
   if (!$('#form').reportValidity()) return;
   const rs = await Promise.allSettled([place(), place()]);
   const codes = rs.map((r) => r.status === 'fulfilled' ? r.value.orderCode : 'lỗi: ' + (r.reason.code || r.reason.message));
-  say(`Gửi 2 yêu cầu cùng mã chống trùng → ${codes.join(' | ')}`, codes[0] === codes[1] && !codes.some((c) => c.startsWith('lỗi')));
-  loadOrders(); loadCatalog();
+  const same = codes[0] === codes[1] && !codes.some((c) => c.startsWith('lỗi'));
+  say(same ? `Gửi 2 yêu cầu cùng mã chống trùng, chỉ có một đơn: ${codes[0]}` : `Kết quả: ${codes.join(' | ')}`, !same);
+  refresh(); $('#s-orders').scrollIntoView({ behavior: 'smooth' });
 };
 
+/* ---------- đơn và webhook ---------- */
 async function loadOrders() {
   const list = await api('/api/orders');
   $('#orders').innerHTML = list.length ? list.map((o) => `<tr>
     <td><code>${esc(o.orderCode)}</code></td><td>${esc(o.externalRef)}</td>
-    <td><span class="tag">${esc(o.statusLabel)}</span> <span class="muted" id="s-${esc(o.orderCode)}"></span></td>
-    <td class="num">${vnd(o.total)}</td>
-    <td><button data-soap="${esc(o.orderCode)}">Tra qua SOAP</button> <button data-cancel="${esc(o.orderCode)}" ${o.status === 'PENDING' ? '' : 'disabled'}>Huỷ</button></td></tr>`).join('')
-    : '<tr><td colspan="5" class="muted">Chưa có đơn.</td></tr>';
+    <td><span class="st ${esc(o.status)}">${esc(o.statusLabel)}</span><span class="soapres" id="s-${esc(o.orderCode)}"></span></td>
+    <td class="r tabular">${vnd(o.total)}</td>
+    <td class="r"><button class="sm" data-soap="${esc(o.orderCode)}">Tra qua SOAP</button> <button class="sm warn" data-cancel="${esc(o.orderCode)}" ${o.status === 'PENDING' ? '' : 'disabled'}>Huỷ</button></td></tr>`).join('')
+    : '<tr><td colspan="5" class="empty">Chưa có đơn nào. Chọn sản phẩm ở mục 1 để đặt.</td></tr>';
 }
 $('#orders').addEventListener('click', async (e) => {
-  const soap = e.target.dataset?.soap, cancel = e.target.dataset?.cancel;
+  const b = e.target.closest('button'); if (!b) return;
+  const soap = b.dataset.soap, cancel = b.dataset.cancel;
   try {
-    if (soap) { const r = await api(`/api/orders/${soap}/soap-status`); $('#s-' + soap).textContent = `SOAP: ${r.statusLabel} · ${r.paymentStatus}`; }
-    if (cancel) { await api(`/api/orders/${cancel}/cancel`, { method: 'POST' }); say(`Đã huỷ ${cancel}, kho được hoàn lại.`); loadOrders(); loadCatalog(); }
-  } catch (er) { say(er.message, true); }
+    if (soap) { b.disabled = true; const r = await api(`/api/orders/${soap}/soap-status`); $('#s-' + soap).textContent = `SOAP: ${r.statusLabel} · ${r.paymentStatus}`; b.disabled = false; loadTraces(); }
+    if (cancel) { await api(`/api/orders/${cancel}/cancel`, { method: 'POST' }); say(`Đã huỷ ${cancel}, kho được hoàn lại.`); refresh(); }
+  } catch (er) { say(er.message, true); b.disabled = false; loadTraces(); }
 });
-
+const outcomeVi = (o) => o.replace('DA XU LY', 'Đã xử lý').replace('BO QUA: nhan trung', 'Bỏ qua: nhận trùng').replace('TU CHOI:', 'Từ chối:').replace('Chu ky sai', 'chữ ký sai').replace('Thieu header chu ky', 'thiếu header chữ ký').replace('Timestamp lech qua 5 phut', 'timestamp lệch quá 5 phút');
 async function loadHooks() {
   const list = await api('/api/webhooks');
-  $('#hooks').innerHTML = list.length ? list.map((h) => `<tr><td>${esc(new Date(h.at).toLocaleTimeString('vi-VN'))}</td><td>${esc(h.type)}</td>
-    <td><code>${esc(h.orderCode)}</code></td><td>${esc(h.status)}</td><td class="${h.outcome.startsWith('DA') ? 'ok' : 'bad'}">${esc(h.outcome)}</td></tr>`).join('')
-    : '<tr><td colspan="5" class="muted">Chưa nhận webhook nào.</td></tr>';
+  $('#hooks').innerHTML = list.length ? list.map((h) => `<tr><td class="tabular">${esc(new Date(h.at).toLocaleTimeString('vi-VN'))}</td><td>${esc(h.type)}</td>
+    <td><code>${esc(h.orderCode)}</code></td><td>${esc(h.status)}</td><td class="res ${h.outcome.startsWith('DA') ? 'ok' : 'bad'}">${esc(outcomeVi(h.outcome))}</td></tr>`).join('')
+    : '<tr><td colspan="5" class="empty">Chưa nhận webhook nào. Đổi trạng thái đơn ở trang Quản trị để thử.</td></tr>';
 }
 
-newToken(); loadConfig(); loadCatalog(); loadOrders(); loadHooks();
-setInterval(() => { loadOrders(); loadHooks(); }, 3000);
+/* ---------- bằng chứng kỹ thuật ---------- */
+let openIds = new Set();
+async function loadTraces() {
+  const all = await api('/api/traces');
+  const list = all.filter((t) => t.id > hideBefore && (!traceKind || t.kind === traceKind));
+  if (!list.length) { $('#traces').innerHTML = '<div class="empty">Chưa có lần gọi nào. Mỗi yêu cầu tới ToyLand sẽ hiện ở đây.</div>'; return; }
+  const hdrs = (h) => Object.entries(h || {}).map(([k, v]) => `${k}: ${v}`).join('\n');
+  $('#traces').innerHTML = list.map((t) => {
+    const cls = t.status >= 500 || t.status === 0 ? 's5' : t.status >= 400 ? 's4' : 's2';
+    return `<details class="tr" data-id="${t.id}" ${openIds.has(t.id) ? 'open' : ''}><summary>
+      <span class="kind ${t.kind}">${t.kind}</span><span class="ttl">${esc(t.title)}</span>
+      <span class="code2 ${cls}">${t.status || 'lỗi'}</span><span class="muted tabular">${t.ms != null ? t.ms + ' ms' : new Date(t.at).toLocaleTimeString('vi-VN')}</span></summary>
+      <div class="body">
+        ${t.requestHeaders ? `<h4>Tiêu đề ${t.kind === 'WEBHOOK' ? 'nhận được' : 'đã ký'}</h4><pre>${esc(hdrs(t.requestHeaders))}</pre>` : ''}
+        ${t.requestBody ? `<h4>${t.kind === 'WEBHOOK' ? 'Nội dung nhận' : 'Nội dung gửi'}</h4><pre>${esc(t.requestBody)}</pre>` : ''}
+        <h4>${t.kind === 'WEBHOOK' ? 'Kết quả xử lý' : 'Phản hồi'}</h4><pre>${esc(t.responseBody)}</pre>
+      </div></details>`;
+  }).join('');
+}
+$('#traces').addEventListener('toggle', (e) => { const id = Number(e.target.dataset?.id); if (id) e.target.open ? openIds.add(id) : openIds.delete(id); }, true);
+$('#chips').addEventListener('click', (e) => { const c = e.target.closest('.chip'); if (!c) return; traceKind = c.dataset.k; document.querySelectorAll('.chip').forEach((x) => x.classList.toggle('on', x === c)); loadTraces(); });
+$('#clearTr').onclick = async () => { const all = await api('/api/traces'); hideBefore = all[0]?.id || hideBefore; loadTraces(); };
+
+/* ---------- điều hướng ---------- */
+const links = [...document.querySelectorAll('#nav a')];
+const io = new IntersectionObserver((es) => es.forEach((en) => { if (en.isIntersecting) links.forEach((a) => a.classList.toggle('on', a.getAttribute('href') === '#' + en.target.id)); }), { rootMargin: '-30% 0px -60% 0px' });
+['s-cfg', 's-cat', 's-order', 's-orders', 's-hooks'].forEach((id) => io.observe(document.getElementById(id)));
+
+newToken(); loadConfig(); loadCatalog(); loadOrders(); loadHooks(); loadTraces();
+setInterval(() => { loadOrders(); loadHooks(); loadTraces(); }, 3000);
 </script>
 </body>
 </html>

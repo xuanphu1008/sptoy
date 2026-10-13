@@ -20,6 +20,14 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const orders = [];               // don da dat qua ung dung nay
 const webhookLog = [];           // cac webhook da nhan
 const seenEvents = new Set();    // eventId da xu ly: nhan trung thi bo qua
+const traces = [];               // nhat ky giao tiep (bang chung ky thuat) cho man hinh demo
+let traceSeq = 0;
+const mask = (v, keep = 8) => (v && v.length > keep ? v.slice(0, keep) + '…' : v || '');
+function addTrace(t) {
+  traces.unshift({ id: ++traceSeq, at: new Date().toISOString(), ...t });
+  traces.length = Math.min(traces.length, 40);
+}
+const pretty = (raw) => { try { return JSON.stringify(JSON.parse(raw), null, 2); } catch { return raw; } };
 
 // ---------------------------------------------------------------- goi REST co ky
 function sha256Hex(s) { return crypto.createHash('sha256').update(s).digest('hex'); }
@@ -35,8 +43,18 @@ async function toyland(method, pathQuery, body, idemKey) {
   };
   if (raw) headers['Content-Type'] = 'application/json';
   if (idemKey) headers['Idempotency-Key'] = idemKey;
-  const res = await fetch(BASE + pathQuery, { method, headers, body: raw || undefined });
-  const text = await res.text();
+  const t0 = Date.now();
+  const shown = { 'X-Api-Key': mask(API_KEY), 'X-Timestamp': String(ts), 'X-Signature': mask(headers['X-Signature'], 16) };
+  if (idemKey) shown['Idempotency-Key'] = idemKey;
+  let res, text;
+  try {
+    res = await fetch(BASE + pathQuery, { method, headers, body: raw || undefined });
+    text = await res.text();
+  } catch (e) {
+    addTrace({ kind: 'REST', title: `${method} ${pathQuery.split('?')[0]}`, status: 0, ms: Date.now() - t0, requestHeaders: shown, requestBody: raw ? pretty(raw) : '', responseBody: 'Khong ket noi duoc: ' + e.message });
+    throw e;
+  }
+  addTrace({ kind: 'REST', title: `${method} ${pathQuery.split('?')[0]}`, status: res.status, ms: Date.now() - t0, requestHeaders: shown, requestBody: raw ? pretty(raw) : '', responseBody: pretty(text).slice(0, 4000) });
   let json; try { json = JSON.parse(text); } catch { json = { message: text }; }
   if (!res.ok) throw httpError(res.status, json.message || 'Loi tu ToyLand', json.code);
   return json;
@@ -64,10 +82,15 @@ async function soapStatus(orderCode) {
   const sig = crypto.createHmac('sha256', SECRET).update(`${ts}\nGetOrderStatusRequest\n${orderCode}`).digest('hex');
   soapClient.clearSoapHeaders();
   soapClient.addSoapHeader(`<t:Auth xmlns:t="http://toyland.vn/soap/partner"><t:apiKey>${API_KEY}</t:apiKey><t:timestamp>${ts}</t:timestamp><t:signature>${sig}</t:signature></t:Auth>`);
+  const t0 = Date.now();
+  const hide = (xml) => String(xml || '').split(API_KEY).join(mask(API_KEY)).replace(/(<(?:\w+:)?signature>)([0-9a-f]{16})[0-9a-f]+/gi, '$1$2…');
+  const record = (status) => addTrace({ kind: 'SOAP', title: 'SOAP GetOrderStatus', status, ms: Date.now() - t0, requestHeaders: null, requestBody: hide(soapClient.lastRequest), responseBody: String(soapClient.lastResponse || '').slice(0, 4000) });
   try {
     const [result] = await soapClient.GetOrderStatusAsync({ orderCode });
+    record(200);
     return result;
   } catch (e) {
+    record(e?.response?.status || 500);
     const fault = e?.root?.Envelope?.Body?.Fault?.faultstring || e.message;
     throw httpError(502, 'SOAP Fault: ' + (typeof fault === 'string' ? fault : JSON.stringify(fault)));
   }
@@ -83,6 +106,12 @@ function verifyWebhook(req, raw) {
   const a = Buffer.from(expected), b = Buffer.from(sig);
   if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return 'Chu ky sai';
   return null;
+}
+
+function traceWebhook(req, raw, status, outcome) {
+  addTrace({ kind: 'WEBHOOK', title: 'Webhook nhận từ ToyLand', status, ms: null,
+    requestHeaders: { 'X-Toyland-Event-Id': req.headers['x-toyland-event-id'] || '', 'X-Toyland-Timestamp': req.headers['x-toyland-timestamp'] || '', 'X-Toyland-Signature': mask(String(req.headers['x-toyland-signature'] || ''), 22) },
+    requestBody: pretty(raw), responseBody: outcome });
 }
 
 function onWebhook(event, outcome) {
@@ -114,6 +143,7 @@ const server = http.createServer(async (req, res) => {
     }
     if (req.method === 'GET' && url.pathname === '/api/orders') return send(res, 200, orders);
     if (req.method === 'GET' && url.pathname === '/api/webhooks') return send(res, 200, webhookLog);
+    if (req.method === 'GET' && url.pathname === '/api/traces') return send(res, 200, traces);
 
     if (req.method === 'POST' && url.pathname === '/api/orders') {
       const r = JSON.parse((await readBody(req)) || '{}');
@@ -140,13 +170,14 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && url.pathname === '/webhooks/toyland') {
       const raw = await readBody(req);
       const bad = verifyWebhook(req, raw);
-      if (bad) { onWebhook(null, 'TU CHOI: ' + bad); return send(res, 401, { error: bad }); }
+      if (bad) { onWebhook(null, 'TU CHOI: ' + bad); traceWebhook(req, raw, 401, 'Từ chối: ' + bad); return send(res, 401, { error: bad }); }
       const event = JSON.parse(raw);
-      if (seenEvents.has(event.eventId)) { onWebhook(event, 'BO QUA: nhan trung'); return send(res, 200, { status: 'duplicate' }); }
+      if (seenEvents.has(event.eventId)) { onWebhook(event, 'BO QUA: nhan trung'); traceWebhook(req, raw, 200, 'Bỏ qua: sự kiện trùng (đã xử lý trước đó)'); return send(res, 200, { status: 'duplicate' }); }
       seenEvents.add(event.eventId);
       const o = orders.find((x) => x.orderCode === event.data?.orderCode);
       if (o) { o.status = event.data.status; o.statusLabel = event.data.statusLabel; o.paymentStatus = event.data.paymentStatus ?? o.paymentStatus; }
       onWebhook(event, 'DA XU LY');
+      traceWebhook(req, raw, 200, 'Chữ ký hợp lệ, đã cập nhật trạng thái đơn');
       return send(res, 200, { status: 'ok' });
     }
     send(res, 404, { message: 'Khong tim thay' });
