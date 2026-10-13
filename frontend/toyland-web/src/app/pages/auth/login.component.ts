@@ -30,14 +30,6 @@ import { NotifyService, errorMessage } from '../../core/notify.service';
           <button mat-flat-button class="full submit" [disabled]="loading()">{{ loading() ? 'Đang đăng nhập…' : 'Đăng nhập' }}</button>
         </form>
         <p class="center">Chưa có tài khoản? <a routerLink="/register" [queryParams]="{ returnUrl }" class="link bold">Đăng ký ngay</a></p>
-        <div class="demo small">
-          <b>Tài khoản demo</b> (bấm để điền nhanh):
-          <div class="row wrap mt-8">
-            <button mat-stroked-button type="button" (click)="fill('admin', 'admin123')">admin</button>
-            <button mat-stroked-button type="button" (click)="fill('staff', 'staff123')">staff</button>
-            <button mat-stroked-button type="button" (click)="fill('khachhang', '123456')">khachhang</button>
-          </div>
-        </div>
       </div>
     </div>
   `,
@@ -56,10 +48,6 @@ export class LoginComponent {
   loading = signal(false);
   error = signal<string | null>(null);
   f = this.fb.nonNullable.group({ username: ['', Validators.required], password: ['', Validators.required] });
-
-  fill(u: string, pw: string): void {
-    this.f.setValue({ username: u, password: pw });
-  }
 
   submit(): void {
     if (this.f.invalid) {

@@ -18,6 +18,11 @@ import { WishlistStore } from '../../core/wishlist.store';
 import { ProductCardComponent } from '../../shared/product-card.component';
 import { StarsComponent } from '../../shared/stars.component';
 
+/** Anh bien the chi dung khi la anh that; link placehold.co tu du lieu mau bi bo qua de khong de len anh san pham. */
+function isRealImage(url?: string | null): boolean {
+  return !!url && !/placehold\.co|placeholder\.com/i.test(url);
+}
+
 @Component({
   selector: 'tl-product-detail',
   imports: [RouterLink, DatePipe, DecimalPipe, MatButtonModule, MatIconModule, MatTabsModule, MatTooltipModule, MatPaginatorModule,
@@ -65,7 +70,7 @@ export class ProductDetailComponent {
     const p = this.p();
     if (!p) return [];
     const list = p.images.map((i) => i.url);
-    for (const v of p.variants) if (v.imageUrl && !list.includes(v.imageUrl)) list.push(v.imageUrl);
+    for (const v of p.variants) if (isRealImage(v.imageUrl) && !list.includes(v.imageUrl!)) list.push(v.imageUrl!);
     return list.length ? list : [PLACEHOLDER_IMG];
   });
 
@@ -109,7 +114,7 @@ export class ProductDetailComponent {
         const first = p.variants.find((v) => v.inStock) ?? p.variants[0];
         this.sel1.set(first?.option1 ?? null);
         this.sel2.set(first?.option2 ?? null);
-        this.activeImage.set(first?.imageUrl || p.images[0]?.url || null);
+        this.activeImage.set((isRealImage(first?.imageUrl) ? first!.imageUrl : null) || p.images[0]?.url || null);
         this.title.setTitle(p.metaTitle || `${p.name} - ToyLand`);
         this.meta.updateTag({ name: 'description', content: p.metaDescription || p.shortDescription || p.name });
         this.recent.add(p.id);
@@ -172,7 +177,7 @@ export class ProductDetailComponent {
     }
     this.qty.set(1);
     const img = this.variant()?.imageUrl;
-    if (img) this.activeImage.set(img);
+    if (isRealImage(img)) this.activeImage.set(img!);
   }
 
   changeQty(d: number): void {
